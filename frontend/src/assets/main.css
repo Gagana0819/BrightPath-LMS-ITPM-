@@ -1,80 +1,22 @@
-:root {
-  /* Lighter Color Palette based on reference */
-  --color-primary: #1a2238;
-  /* Dark navy for text */
-  --color-accent: #6c7cf2;
-  /* Bright blue for CTA */
-  --color-accent-hover: #5566de;
-  --color-teal: #78a8a4;
-  /* Teal accent for image frame */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-  --color-text-primary: #151d30;
-  --color-text-secondary: #3b445c;
-
-  --color-bg-main: #f0f6ff;
-  /* Soft pale blue */
-  --color-bg-alt: #ffffff;
-
-  /* Spacing System */
-  --spacing-xs: 0.25rem;
-  --spacing-sm: 0.5rem;
-  --spacing-md: 1rem;
-  --spacing-lg: 1.5rem;
-  --spacing-xl: 2rem;
-  --spacing-2xl: 3rem;
-  --spacing-3xl: 4rem;
-  --spacing-4xl: 6rem;
-
-  /* Border Radius */
-  --radius-sm: 0.25rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 1rem;
-  --radius-xl: 1.5rem;
-  --radius-full: 9999px;
-
-  /* Typography */
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-900 antialiased min-h-screen;
+    background-image:
+      radial-gradient(circle at top right, rgba(93, 109, 255, 0.05) 0%, transparent 40%),
+      radial-gradient(circle at bottom left, rgba(99, 102, 241, 0.05) 0%, transparent 40%);
+  }
 }
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+@layer utilities {
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
 }
 
-html {
-  font-family: var(--font-sans);
-  font-size: 16px;
-  line-height: 1.6;
-  color: var(--color-text-primary);
-  background-color: var(--color-bg-main);
-  scroll-behavior: smooth;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-body {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  overflow-x: hidden;
-  background: linear-gradient(120deg, #e0effd 0%, #fef1f8 100%);
-}
-
-#app {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-/* Utilities */
-.text-gradient {
-  color: var(--color-accent);
-}
-
-/* Animations */
 @keyframes float {
   0% {
     transform: translateY(0px);
@@ -87,8 +29,4 @@ body {
   100% {
     transform: translateY(0px);
   }
-}
-
-.animate-float {
-  animation: float 6s ease-in-out infinite;
 }

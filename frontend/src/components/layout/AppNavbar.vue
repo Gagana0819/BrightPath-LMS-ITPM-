@@ -1,97 +1,70 @@
 <script setup>
+import { ref, onMounted, onUnmounted } from 'vue'
+
+const isScrolled = ref(false)
+
+const handleScroll = () => {
+  isScrolled.value = window.scrollY > 50
+}
+
+onMounted(() => {
+  window.addEventListener('scroll', handleScroll)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
+})
 </script>
 
 <template>
-  <header class="navbar">
-    <div class="navbar-container">
-      <div class="brand">
-        <RouterLink to="/" class="brand-link">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" class="brand-icon">
-            <path d="M4 19V5C4 3.89543 4.89543 3 6 3H19V19C19 20.1046 18.1046 21 17 21H6C4.89543 21 4 20.1046 4 19Z" stroke="#6c7cf2" stroke-width="2"/>
-            <path d="M4 15L15 3" stroke="#6c7cf2" stroke-width="2"/>
-            <path d="M10 12L10 21" stroke="#6c7cf2" stroke-width="1" stroke-dasharray="2 2"/>
-            <path d="M14 12L14 21" stroke="#6c7cf2" stroke-width="1" stroke-dasharray="2 2"/>
+  <header class="fixed top-0 left-0 w-full z-50 py-4 transition-all duration-300">
+    <div class="max-w-[1800px] mx-auto px-4 lg:px-6 relative flex justify-between items-center h-[80px]">
+      
+      <!-- Brand -->
+      <div 
+        class="brand z-20 transition-all duration-300 ease-in-out"
+        :class="[isScrolled ? 'opacity-0 invisible -translate-y-4' : 'opacity-100 visible translate-y-0']"
+      >
+        <RouterLink to="/" class="flex items-center gap-2 text-2xl font-bold text-[#333333] tracking-tight">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" class="text-[#5D6DFF]">
+            <path d="M4 19V5C4 3.89543 4.89543 3 6 3H19V19C19 20.1046 18.1046 21 17 21H6C4.89543 21 4 20.1046 4 19Z" stroke="currentColor" stroke-width="2"/>
+            <path d="M4 15L15 3" stroke="currentColor" stroke-width="2"/>
+            <path d="M10 12L10 21" stroke="currentColor" stroke-width="1" stroke-dasharray="2 2"/>
+            <path d="M14 12L14 21" stroke="currentColor" stroke-width="1" stroke-dasharray="2 2"/>
           </svg>
           BrightPath
         </RouterLink>
       </div>
-      
-      <nav class="nav-links">
-        <RouterLink to="/" class="nav-link" active-class="active">HOME</RouterLink>
-        <RouterLink to="/library" class="nav-link" active-class="active">LIBRARY</RouterLink>
-        <RouterLink to="/dashboard" class="nav-link" active-class="active">KUPPI</RouterLink>
-        <RouterLink to="/login" class="nav-link" active-class="active">LOGIN</RouterLink>
+
+      <!-- Center Background Pill -->
+      <div class="absolute left-1/2 -translate-x-1/2 w-full max-w-[500px] h-[80px] bg-[#e4f8f6] shadow-[0_2px_10px_rgba(0,0,0,0.1)] rounded-[50px] z-0 transition-all duration-300"></div>
+
+      <!-- Navigation Links -->
+      <nav class="hidden md:flex gap-12 absolute left-1/2 -translate-x-1/2 z-10 w-full justify-center">
+        <RouterLink to="/" class="text-lms-navy font-medium text-[1.3rem] tracking-wide relative pb-1 hover:text-lms-violet transition-colors after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-lms-navy after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:origin-left [&.active]:text-lms-navy [&.active]:after:scale-x-100" active-class="active">HOME</RouterLink>
+        <RouterLink to="/library" class="text-lms-navy font-medium text-[1.3rem] tracking-wide relative pb-1 hover:text-lms-violet transition-colors after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-lms-navy after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:origin-left [&.active]:text-lms-navy [&.active]:after:scale-x-100" active-class="active">LIBRARY</RouterLink>
+        <RouterLink to="/dashboard" class="text-lms-navy font-medium text-[1.3rem] tracking-wide relative pb-1 hover:text-lms-violet transition-colors after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-lms-navy after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:origin-left [&.active]:text-lms-navy [&.active]:after:scale-x-100" active-class="active">KUPPI</RouterLink>
+        <RouterLink to="/courses" class="text-lms-navy font-medium text-[1.3rem] tracking-wide relative pb-1 hover:text-lms-violet transition-colors after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-lms-navy after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:origin-left [&.active]:text-lms-navy [&.active]:after:scale-x-100" active-class="active">COURSES</RouterLink>
+        
       </nav>
+
+      <!-- Action Buttons -->
+      <div 
+        class="hidden md:flex z-20 items-center gap-4 transition-all duration-300 ease-in-out"
+        :class="[isScrolled ? 'opacity-0 invisible -translate-y-4' : 'opacity-100 visible translate-y-0']"
+      >
+        <button class="relative p-2.5 rounded-full text-[#333333] hover:bg-black/5 hover:text-[#5D6DFF] transition-all" aria-label="Notifications">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+          <span class="absolute top-1.5 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+        </button>
+        <RouterLink to="/login" class="inline-flex items-center justify-center px-8 py-2.5 rounded-full font-bold text-[1.1rem] text-white bg-[#5D6DFF] hover:bg-[#4a58e6] transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5">
+          LOGIN
+        </RouterLink>
+      </div>
+      
     </div>
   </header>
 </template>
-
-<style scoped>
-.navbar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  z-index: 100;
-  padding: var(--spacing-md) 0;
-}
-
-.navbar-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 var(--spacing-2xl);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.brand-link {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--color-primary);
-  text-decoration: none;
-  letter-spacing: -0.5px;
-}
-
-.nav-links {
-  display: flex;
-  gap: var(--spacing-2xl);
-}
-
-.nav-link {
-  color: var(--color-primary);
-  text-decoration: none;
-  font-weight: 500;
-  font-size: 0.95rem;
-  letter-spacing: 0.5px;
-  position: relative;
-  padding-bottom: 4px;
-}
-
-.nav-link:hover {
-  color: var(--color-accent);
-}
-
-.nav-link.active {
-  color: var(--color-primary);
-}
-
-.nav-link.active::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background-color: var(--color-primary);
-}
-
-@media (max-width: 768px) {
-  .nav-links {
-    display: none;
-  }
-}
-</style>

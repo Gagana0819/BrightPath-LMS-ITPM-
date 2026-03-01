@@ -1,37 +1,141 @@
 <script setup>
+import { ref, onMounted, onUnmounted } from 'vue'
+
+const slides = [
+  {
+    image: '/hero image 03.png',
+    highlight1: 'Your',
+    line1: 'Partner In',
+    line2: 'Learning',
+    highlight2: 'Success',
+    description: 'Your all-in-one LMS solution with an admin panel, website, and mobile app. Perfect for mentors to teach effectively and learners to gain knowledge easily. Modern tools for modern education.'
+  },
+  {
+    image: '/hero image 05.png',
+    highlight1: 'Seamless',
+    line1: 'Digital Library',
+    line2: 'Access',
+    highlight2: 'Anywhere',
+    description: 'Access a world-class digital repository of peer-reviewed resources. Download, study, and rank materials curated for modern university students.'
+  },
+  {
+    image: '/hero image 06.png',
+    highlight1: 'Interactive',
+    line1: 'Live Kuppi',
+    line2: 'Sessions',
+    highlight2: 'Real-time',
+    description: 'Join real-time virtual classrooms seamlessly integrated with your schedule. Engage with educators and peers to clear your doubts instantly.'
+  },
+  {
+    image: '/hero image 07.png',
+    highlight1: 'Smart',
+    line1: 'Notifications &',
+    line2: 'Alerts',
+    highlight2: 'Always',
+    description: 'Never miss an important update. Get personalized recommendations and automated review requests tailored specifically to your academic stream.'
+  }
+]
+
+const currentIndex = ref(0)
+let intervalId
+
+onMounted(() => {
+  intervalId = setInterval(() => {
+    currentIndex.value = (currentIndex.value + 1) % slides.length
+  }, 4000)
+})
+
+onUnmounted(() => {
+  if (intervalId) clearInterval(intervalId)
+})
 </script>
 
 <template>
-  <section class="hero-wrapper">
-    <!-- Decorative background elements -->
-    <div class="bg-shape-large text-gradient"></div>
-    <div class="bg-dot-grid"></div>
-    
-    <div class="hero-container">
-      <div class="hero-content">
-        <h1 class="hero-title">
-          YOUR PARTNER<br/>
-          IN LEARNING FOR<br/>
-          <span class="text-gradient">COLLABORATIVE<br/>SUCCESS</span>
-        </h1>
-        <p class="hero-subtitle">
-          BrightPath: The centralized peer-to-peer LMS for University Students. Share, access, and rank resources for collaborative success.
-        </p>
-        
-        <div class="hero-actions">
-          <RouterLink to="/login" class="btn btn-primary">BUY NOW</RouterLink>
-          <RouterLink to="/library" class="btn btn-secondary">View Demo</RouterLink>
+  <section class="relative min-h-screen flex items-center overflow-hidden pt-20 hero-gradient">
+    <!-- Background diagonal shapes -->
+    <div
+      class="absolute top-0 -right-[10%] w-[55%] h-[105%] bg-[#a1c4bd] -skew-x-[20deg] z-0 hidden lg:block shadow-inner"
+    ></div>
+
+    <div
+      class="max-w-[1800px] mx-auto px-4 lg:px-6 w-full z-10 flex flex-col lg:flex-row items-center justify-between gap-12 pt-12 lg:pt-0"
+    >
+      <!-- Left Content -->
+      <div class="flex-1 w-full max-w-[650px] py-10 lg:py-16 relative flex flex-col justify-center">
+        <!-- Floating shapes: Top Right -->
+        <div class="absolute -top-6 right-[15%] opacity-90 hidden md:block">
+          <div class="w-10 h-10 rounded-xl bg-[#d5e2fc] absolute top-2 right-2"></div>
+          <div
+            class="w-10 h-10 rounded-xl border border-[#5D6DFF] bg-transparent absolute top-0 right-0"
+          ></div>
         </div>
-        
-        <!-- Small decorative floating shapes -->
-        <div class="floating-shape square"></div>
-        <div class="floating-shape circle"></div>
+
+        <transition name="text-slide" mode="out-in">
+          <div :key="currentIndex" class="w-full">
+            <h1
+              class="text-[3.5rem] lg:text-[4.5rem] leading-[1.2] text-[#333333] font-normal mb-10 relative z-10 tracking-tight"
+            >
+              <span class="text-[#5D6DFF] font-bold relative inline-block pb-2">
+                {{ slides[currentIndex].highlight1 }}
+                <span class="absolute bottom-0 left-0 w-[110%] h-[3px] bg-[#5D6DFF]"></span>
+              </span>
+              {{ slides[currentIndex].line1 }}<br />
+              {{ slides[currentIndex].line2 }}
+              <span class="text-[#5D6DFF] font-bold relative inline-block pb-2">
+                {{ slides[currentIndex].highlight2 }}
+                <span class="absolute bottom-0 left-0 w-full h-[3px] bg-[#5D6DFF]"></span>
+              </span>
+            </h1>
+
+            <div class="border-l-[3px] border-[#5D6DFF] pl-6 mb-12 relative z-10">
+              <p
+                class="text-[1.15rem] lg:text-[1.25rem] text-[#333333] font-medium leading-relaxed max-w-[600px]"
+              >
+                {{ slides[currentIndex].description }}
+              </p>
+            </div>
+          </div>
+        </transition>
+
+        <!-- Floating shapes: Bottom Left -->
+        <div class="absolute bottom-[2%] left-[25%] hidden md:block">
+          <div class="absolute w-10 h-10 bg-[#d5e2fc] rounded-xl -top-2 -right-2"></div>
+          <div class="absolute w-10 h-10 bg-[#5D6DFF] rounded-xl"></div>
+        </div>
+
+        <!-- Floating shapes: Circle -->
+        <div
+          class="absolute bottom-[20%] right-[5%] w-10 h-10 rounded-full border-[3px] border-[#5D6DFF] opacity-70 hidden md:block"
+        ></div>
+
+        <!-- Dot grid -->
+        <div
+          class="absolute -bottom-10 -left-4 w-[120px] h-[90px] opacity-40 hidden md:block"
+          style="
+            background-image: radial-gradient(#94a3b8 2px, transparent 2px);
+            background-size: 16px 16px;
+          "
+        ></div>
       </div>
-      
-      <div class="hero-visual">
-        <div class="image-frame">
-          <div class="teal-accent-bg"></div>
-          <img src="/student_laptop.png" alt="University student using BrightPath LMS" class="hero-image" />
+
+      <!-- Right Visual -->
+      <div
+        class="flex-1 w-full relative flex items-center justify-center lg:justify-end z-10 mt-10 lg:mt-0"
+      >
+        <!-- Added -skew-x-[20deg] to match background, and inner skew-x-[20deg] with scale to un-skew the photo -->
+        <div
+          class="relative w-full lg:w-[105%] h-[600px] rounded-[2rem] overflow-hidden border-[10px] border-transparent lg:mr-8  "
+        >
+          <div class="w-full h-full scale-[1.35] relative">
+            <transition name="carousel">
+              <img
+                :key="currentIndex"
+                :src="slides[currentIndex].image"
+                alt="University student using BrightPath LMS"
+                class="absolute inset-0 w-full h-full object-cover"
+              />
+            </transition>
+          </div>
         </div>
       </div>
     </div>
@@ -39,194 +143,47 @@
 </template>
 
 <style scoped>
-.hero-wrapper {
-  position: relative;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  overflow: hidden;
-  padding-top: 80px; /* Offset for absolute navbar */
+.hero-gradient {
+  background: linear-gradient(
+    -130deg,
+    #e6f3ff 0%,
+    #e6f3ff 60%,
+    #e4f8f6 60%,
+    #e4f8f6 80%,
+    #faefff 80%,
+    #faefff 100%
+  );
 }
 
-/* Background diagonal layout approximation */
-.hero-wrapper::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: -5%;
-  width: 55%;
-  height: 100%;
-  background-color: #8daea5; /* Teal section behind image */
-  transform: skewX(-15deg);
-  z-index: -1;
+.carousel-enter-active,
+.carousel-leave-active {
+  transition:
+    opacity 1.5s ease-in-out,
+    transform 1.5s ease-in-out;
 }
 
-.hero-wrapper::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: -5%;
-  width: 55%;
-  height: 50%;
-  background-color: #63938b; /* Darker teal top */
-  transform: skewX(-15deg);
-  z-index: -2;
+.carousel-enter-from {
+  opacity: 0;
+  transform: scale(1.05);
 }
 
-.hero-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 var(--spacing-2xl);
-  display: flex;
-  align-items: stretch;
-  justify-content: space-between;
-  width: 100%;
-  z-index: 10;
+.carousel-leave-to {
+  opacity: 0;
+  transform: scale(0.95);
 }
 
-.hero-content {
-  flex: 1;
-  max-width: 600px;
-  padding: var(--spacing-3xl) 0;
-  position: relative;
+.text-slide-enter-active,
+.text-slide-leave-active {
+  transition: opacity 0.5s ease, transform 0.5s ease;
 }
 
-.hero-title {
-  font-size: 3.5rem;
-  line-height: 1.1;
-  color: var(--color-primary);
-  margin-bottom: var(--spacing-md);
-  font-weight: 800;
-  text-transform: uppercase;
+.text-slide-enter-from {
+  opacity: 0;
+  transform: translateY(20px);
 }
 
-.text-gradient {
-  color: var(--color-accent); /* Make it plain bright blue as per image */
-}
-
-.hero-subtitle {
-  font-size: 1.1rem;
-  color: var(--color-text-secondary);
-  line-height: 1.6;
-  margin-bottom: var(--spacing-2xl);
-  max-width: 500px;
-}
-
-.hero-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xl);
-}
-
-.btn {
-  display: inline-block;
-  padding: 0.8rem 2.5rem;
-  border-radius: var(--radius-full);
-  font-weight: 600;
-  font-size: 1rem;
-  text-decoration: none;
-  transition: all 0.3s ease;
-}
-
-.btn-primary {
-  background-color: var(--color-accent);
-  color: white;
-  box-shadow: 0 4px 14px rgba(108, 124, 242, 0.4);
-}
-
-.btn-primary:hover {
-  background-color: var(--color-accent-hover);
-  transform: translateY(-2px);
-}
-
-.btn-secondary {
-  background-color: transparent;
-  color: var(--color-primary);
-}
-
-.btn-secondary:hover {
-  text-decoration: underline;
-}
-
-.hero-visual {
-  flex: 1;
-  position: relative;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-}
-
-.image-frame {
-  position: relative;
-  width: 120%;
-  height: 90%;
-  margin-right: -20%;
-  margin-bottom: -5%;
-  z-index: 5;
-}
-
-.hero-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  clip-path: polygon(15% 0, 100% 0, 100% 100%, 0% 100%);
-  border-radius: var(--radius-lg);
-  box-shadow: rgba(0,0,0,0.2) 0px 20px 40px;
-}
-
-/* Decorative elements */
-.floating-shape {
-  position: absolute;
-  background-color: var(--color-accent);
-  opacity: 0.8;
-}
-
-.square {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  bottom: 0;
-  left: 30%;
-  box-shadow: 4px 4px 0px rgba(108, 124, 242, 0.3);
-}
-
-.circle {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  border: 4px solid var(--color-accent);
-  background-color: transparent;
-  bottom: 20%;
-  right: 10%;
-}
-
-.bg-dot-grid {
-  position: absolute;
-  bottom: 10%;
-  left: 5%;
-  width: 100px;
-  height: 100px;
-  background-image: radial-gradient(#cbd5e1 2px, transparent 2px);
-  background-size: 15px 15px;
-  opacity: 0.6;
-}
-
-@media (max-width: 1024px) {
-  .hero-wrapper::before, .hero-wrapper::after {
-    display: none;
-  }
-  .hero-container {
-    flex-direction: column;
-    padding-top: var(--spacing-2xl);
-  }
-  .image-frame {
-    width: 100%;
-    margin-right: 0;
-    margin-top: var(--spacing-xl);
-  }
-  .hero-image {
-    clip-path: none;
-    border-radius: var(--radius-lg);
-  }
+.text-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
 }
 </style>

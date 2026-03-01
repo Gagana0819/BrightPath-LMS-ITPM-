@@ -1,18 +1,18 @@
 <script setup>
 import HeroSection from '../components/landing/HeroSection.vue'
-import SmartLibraryCarousel from '../components/landing/SmartLibraryCarousel.vue'
-import LiveKuppiSync from '../components/landing/LiveKuppiSync.vue'
-import LeaderboardWidget from '../components/landing/LeaderboardWidget.vue'
-import VerificationTrust from '../components/landing/VerificationTrust.vue'
+import DigitalLibraryPreview from '../components/landing/DigitalLibraryPreview.vue'
+import LiveKuppiPreview from '../components/landing/LiveKuppiPreview.vue'
+import VerificationWorks from '../components/landing/VerificationWorks.vue'
+import SmartNotificationsPreview from '../components/landing/SmartNotificationsPreview.vue'
 </script>
 
 <template>
-  <main class="home-view">
+  <main class="home-view bg-slate-50">
     <HeroSection />
-    <VerificationTrust />
-    <SmartLibraryCarousel />
-    <LiveKuppiSync />
-    <LeaderboardWidget />
+    <DigitalLibraryPreview />
+    <LiveKuppiPreview />
+    <VerificationWorks />
+    <SmartNotificationsPreview />
   </main>
 </template>
 
