@@ -2,33 +2,36 @@
 </script>
 
 <template>
-  <section class="hero">
+  <section class="hero-wrapper">
+    <!-- Decorative background elements -->
+    <div class="bg-shape-large text-gradient"></div>
+    <div class="bg-dot-grid"></div>
+    
     <div class="hero-container">
       <div class="hero-content">
-        <div class="badge glass-panel">
-          <span class="badge-dot"></span> Next-Gen Learning
-        </div>
-        <h1 class="hero-title">Your Academic Journey, <span class="text-gradient">Optimized</span></h1>
+        <h1 class="hero-title">
+          YOUR PARTNER<br/>
+          IN LEARNING FOR<br/>
+          <span class="text-gradient">COLLABORATIVE<br/>SUCCESS</span>
+        </h1>
         <p class="hero-subtitle">
-          Join BrightPath and experience the future of university collaboration. 
-          Share resources, join live sessions, and climb the leaderboard.
+          BrightPath: The centralized peer-to-peer LMS for University Students. Share, access, and rank resources for collaborative success.
         </p>
+        
         <div class="hero-actions">
-          <RouterLink to="/login" class="btn btn-primary">Start Learning</RouterLink>
-          <div class="trust-indicator">
-            <div class="avatars">
-              <span class="avatar">👨‍🎓</span>
-              <span class="avatar">👩‍🔬</span>
-              <span class="avatar">🧑‍💻</span>
-            </div>
-            <span class="trust-text">Join 1.2k+ Peers</span>
-          </div>
+          <RouterLink to="/login" class="btn btn-primary">BUY NOW</RouterLink>
+          <RouterLink to="/library" class="btn btn-secondary">View Demo</RouterLink>
         </div>
+        
+        <!-- Small decorative floating shapes -->
+        <div class="floating-shape square"></div>
+        <div class="floating-shape circle"></div>
       </div>
+      
       <div class="hero-visual">
-        <div class="image-container animate-float">
-          <div class="glow-effect"></div>
-          <img src="/hero_image.png" alt="3D Isometric University Book" class="hero-image" />
+        <div class="image-frame">
+          <div class="teal-accent-bg"></div>
+          <img src="/student_laptop.png" alt="University student using BrightPath LMS" class="hero-image" />
         </div>
       </div>
     </div>
@@ -36,175 +39,194 @@
 </template>
 
 <style scoped>
-.hero {
-  min-height: 85vh;
+.hero-wrapper {
+  position: relative;
+  min-height: 100vh;
   display: flex;
   align-items: center;
-  position: relative;
   overflow: hidden;
+  padding-top: 80px; /* Offset for absolute navbar */
+}
+
+/* Background diagonal layout approximation */
+.hero-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: -5%;
+  width: 55%;
+  height: 100%;
+  background-color: #8daea5; /* Teal section behind image */
+  transform: skewX(-15deg);
+  z-index: -1;
+}
+
+.hero-wrapper::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: -5%;
+  width: 55%;
+  height: 50%;
+  background-color: #63938b; /* Darker teal top */
+  transform: skewX(-15deg);
+  z-index: -2;
 }
 
 .hero-container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: var(--spacing-4xl) var(--spacing-xl);
+  padding: 0 var(--spacing-2xl);
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: space-between;
-  gap: var(--spacing-4xl);
+  width: 100%;
   z-index: 10;
 }
 
 .hero-content {
   flex: 1;
-  max-width: 650px;
-}
-
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  padding: 0.4rem 1rem;
-  border-radius: var(--radius-full);
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--color-success);
-  margin-bottom: var(--spacing-xl);
-}
-
-.badge-dot {
-  width: 8px;
-  height: 8px;
-  background-color: var(--color-success);
-  border-radius: 50%;
-  box-shadow: 0 0 10px var(--color-success);
+  max-width: 600px;
+  padding: var(--spacing-3xl) 0;
+  position: relative;
 }
 
 .hero-title {
-  font-size: 4.5rem;
+  font-size: 3.5rem;
   line-height: 1.1;
-  margin-bottom: var(--spacing-lg);
+  color: var(--color-primary);
+  margin-bottom: var(--spacing-md);
   font-weight: 800;
-  letter-spacing: -1px;
+  text-transform: uppercase;
+}
+
+.text-gradient {
+  color: var(--color-accent); /* Make it plain bright blue as per image */
 }
 
 .hero-subtitle {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   color: var(--color-text-secondary);
-  line-height: 1.7;
+  line-height: 1.6;
   margin-bottom: var(--spacing-2xl);
-  max-width: 550px;
+  max-width: 500px;
 }
 
 .hero-actions {
   display: flex;
   align-items: center;
-  gap: var(--spacing-2xl);
+  gap: var(--spacing-xl);
+}
+
+.btn {
+  display: inline-block;
+  padding: 0.8rem 2.5rem;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  font-size: 1rem;
+  text-decoration: none;
+  transition: all 0.3s ease;
 }
 
 .btn-primary {
-  display: inline-block;
   background-color: var(--color-accent);
   color: white;
-  padding: 1rem 2.5rem;
-  border-radius: var(--radius-full);
-  font-weight: 600;
-  font-size: 1.125rem;
-  text-decoration: none;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+  box-shadow: 0 4px 14px rgba(108, 124, 242, 0.4);
 }
 
 .btn-primary:hover {
   background-color: var(--color-accent-hover);
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(255, 107, 53, 0.5);
 }
 
-.trust-indicator {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
+.btn-secondary {
+  background-color: transparent;
+  color: var(--color-primary);
 }
 
-.avatars {
-  display: flex;
-}
-
-.avatar {
-  background: var(--color-primary-lighter);
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  border: 2px solid var(--color-bg-main);
-  margin-left: -10px;
-}
-
-.avatar:first-child {
-  margin-left: 0;
-}
-
-.trust-text {
-  color: var(--color-text-secondary);
-  font-size: 0.9rem;
-  font-weight: 500;
+.btn-secondary:hover {
+  text-decoration: underline;
 }
 
 .hero-visual {
   flex: 1;
   position: relative;
   display: flex;
+  align-items: flex-end;
   justify-content: center;
 }
 
-.image-container {
+.image-frame {
   position: relative;
-  width: 100%;
-  max-width: 600px;
-}
-
-.glow-effect {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 80%;
-  height: 80%;
-  background: radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, transparent 70%);
-  filter: blur(40px);
-  z-index: -1;
+  width: 120%;
+  height: 90%;
+  margin-right: -20%;
+  margin-bottom: -5%;
+  z-index: 5;
 }
 
 .hero-image {
   width: 100%;
-  height: auto;
-  object-fit: contain;
-  filter: drop-shadow(0 20px 40px rgba(0,0,0,0.5));
+  height: 100%;
+  object-fit: cover;
+  clip-path: polygon(15% 0, 100% 0, 100% 100%, 0% 100%);
+  border-radius: var(--radius-lg);
+  box-shadow: rgba(0,0,0,0.2) 0px 20px 40px;
+}
+
+/* Decorative elements */
+.floating-shape {
+  position: absolute;
+  background-color: var(--color-accent);
+  opacity: 0.8;
+}
+
+.square {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  bottom: 0;
+  left: 30%;
+  box-shadow: 4px 4px 0px rgba(108, 124, 242, 0.3);
+}
+
+.circle {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 4px solid var(--color-accent);
+  background-color: transparent;
+  bottom: 20%;
+  right: 10%;
+}
+
+.bg-dot-grid {
+  position: absolute;
+  bottom: 10%;
+  left: 5%;
+  width: 100px;
+  height: 100px;
+  background-image: radial-gradient(#cbd5e1 2px, transparent 2px);
+  background-size: 15px 15px;
+  opacity: 0.6;
 }
 
 @media (max-width: 1024px) {
+  .hero-wrapper::before, .hero-wrapper::after {
+    display: none;
+  }
   .hero-container {
     flex-direction: column;
-    text-align: center;
     padding-top: var(--spacing-2xl);
   }
-  
-  .hero-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  .image-frame {
+    width: 100%;
+    margin-right: 0;
+    margin-top: var(--spacing-xl);
   }
-  
-  .hero-title {
-    font-size: 3.5rem;
-  }
-  
-  .hero-actions {
-    flex-direction: column;
-    gap: var(--spacing-lg);
+  .hero-image {
+    clip-path: none;
+    border-radius: var(--radius-lg);
   }
 }
 </style>
