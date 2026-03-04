@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 
 const slides = [
   {
@@ -39,22 +39,76 @@ const slides = [
 const currentIndex = ref(0)
 let intervalId
 
+const displayedText = ref({
+  highlight1: '',
+  line1: '',
+  line2: '',
+  highlight2: '',
+  description: ''
+})
+
+const typingField = ref('')
+const typeVersion = ref(0)
+
+const startTyping = async () => {
+  const version = ++typeVersion.value
+  const slide = slides[currentIndex.value]
+  
+  displayedText.value = { highlight1: '', line1: '', line2: '', highlight2: '', description: '' }
+  
+  const typePart = async (key, text) => {
+    typingField.value = key
+    for (let i = 0; i <= text.length; i++) {
+      if (typeVersion.value !== version) return
+      displayedText.value[key] = text.substring(0, i)
+      await new Promise(r => setTimeout(r, 40)) // typing speed
+    }
+  }
+
+  await typePart('highlight1', slide.highlight1)
+  if (typeVersion.value !== version) return
+  await typePart('line1', slide.line1)
+  if (typeVersion.value !== version) return
+  await typePart('line2', slide.line2)
+  if (typeVersion.value !== version) return
+  await typePart('highlight2', slide.highlight2)
+  if (typeVersion.value !== version) return
+  
+  const descText = slide.description
+  typingField.value = 'description'
+  for (let i = 0; i <= descText.length; i++) {
+    if (typeVersion.value !== version) return
+    displayedText.value.description = descText.substring(0, i)
+    await new Promise(r => setTimeout(r, 15)) // faster for description
+  }
+  
+  if (typeVersion.value === version) {
+    typingField.value = 'done'
+  }
+}
+
 onMounted(() => {
+  startTyping()
   intervalId = setInterval(() => {
     currentIndex.value = (currentIndex.value + 1) % slides.length
-  }, 4000)
+  }, 7500)
 })
 
 onUnmounted(() => {
   if (intervalId) clearInterval(intervalId)
 })
+
+watch(currentIndex, () => {
+  startTyping()
+})
 </script>
 
 <template>
   <section class="relative min-h-screen flex items-center overflow-hidden pt-20 hero-gradient">
-    <!-- Background diagonal shapes -->
+    <!-- Background diagonal shapes  -->
+     <!-- #2C3347 / #22252C-->
     <div
-      class="absolute top-0 -right-[10%] w-[55%] h-[105%] bg-[#a1c4bd] -skew-x-[20deg] z-0 hidden lg:block shadow-inner"
+      class="absolute top-0 -right-[10%] w-[55%] h-[105%] bg-[#22252C] -skew-x-[20deg] z-0 hidden lg:block shadow-inner"
     ></div>
 
     <div
@@ -70,32 +124,36 @@ onUnmounted(() => {
           ></div>
         </div>
 
-        <transition name="text-slide" mode="out-in">
-          <div :key="currentIndex" class="w-full">
-            <h1
-              class="text-[3.5rem] lg:text-[4.5rem] leading-[1.2] text-[#333333] font-normal mb-10 relative z-10 tracking-tight"
-            >
-              <span class="text-[#5D6DFF] font-bold relative inline-block pb-2">
-                {{ slides[currentIndex].highlight1 }}
-                <span class="absolute bottom-0 left-0 w-[110%] h-[3px] bg-[#5D6DFF]"></span>
-              </span>
-              {{ slides[currentIndex].line1 }}<br />
-              {{ slides[currentIndex].line2 }}
-              <span class="text-[#5D6DFF] font-bold relative inline-block pb-2">
-                {{ slides[currentIndex].highlight2 }}
-                <span class="absolute bottom-0 left-0 w-full h-[3px] bg-[#5D6DFF]"></span>
-              </span>
-            </h1>
+        <div class="w-full relative min-h-[300px]">
+          <h1
+            class="text-[3.5rem] lg:text-[4.5rem] leading-[1.2] text-[#333333] font-normal mb-10 relative z-10 tracking-tight min-h-[160px]"
+          >
+            <span class="text-[#5D6DFF] font-bold relative inline-block pb-2">
+              {{ displayedText.highlight1 }}
+              <span v-show="displayedText.highlight1" class="absolute bottom-0 left-0 w-[110%] h-[3px] bg-[#5D6DFF]"></span>
+              <span v-if="typingField === 'highlight1'" class="typing-cursor">|</span>
+            </span>
+            {{ displayedText.line1 ? ' ' + displayedText.line1 : '' }}
+            <span v-if="typingField === 'line1'" class="typing-cursor">|</span>
+            <br v-if="displayedText.line1 || typingField === 'line2' || displayedText.line2" />
+            {{ displayedText.line2 }}
+            <span v-if="typingField === 'line2'" class="typing-cursor">|</span>
+            {{ displayedText.highlight2 || typingField === 'highlight2' ? ' ' : '' }}
+            <span class="text-[#5D6DFF] font-bold relative inline-block pb-2" v-show="displayedText.highlight2 || typingField === 'highlight2'">
+              {{ displayedText.highlight2 }}
+              <span v-show="displayedText.highlight2" class="absolute bottom-0 left-0 w-full h-[3px] bg-[#5D6DFF]"></span>
+              <span v-if="typingField === 'highlight2'" class="typing-cursor">|</span>
+            </span>
+          </h1>
 
-            <div class="border-l-[3px] border-[#5D6DFF] pl-6 mb-12 relative z-10">
-              <p
-                class="text-[1.15rem] lg:text-[1.25rem] text-[#333333] font-medium leading-relaxed max-w-[600px]"
-              >
-                {{ slides[currentIndex].description }}
-              </p>
-            </div>
+          <div class="border-l-[3px] border-[#5D6DFF] pl-6 mb-12 relative z-10 min-h-[100px]">
+            <p
+              class="text-[1.15rem] lg:text-[1.25rem] text-[#333333] font-medium leading-relaxed max-w-[600px]"
+            >
+              {{ displayedText.description }}<span v-if="typingField === 'description' || typingField === 'done'" class="typing-cursor">|</span>
+            </p>
           </div>
-        </transition>
+        </div>
 
         <!-- Floating shapes: Bottom Left -->
         <div class="absolute bottom-[2%] left-[25%] hidden md:block">
@@ -172,18 +230,17 @@ onUnmounted(() => {
   transform: scale(0.95);
 }
 
-.text-slide-enter-active,
-.text-slide-leave-active {
-  transition: opacity 0.5s ease, transform 0.5s ease;
+.typing-cursor {
+  display: inline-block;
+  width: 3px;
+  animation: blink 1s step-end infinite;
+  color: #5D6DFF;
+  margin-left: 2px;
+  vertical-align: text-bottom;
 }
 
-.text-slide-enter-from {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-.text-slide-leave-to {
-  opacity: 0;
-  transform: translateY(-20px);
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
 }
 </style>
