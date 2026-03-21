@@ -13,21 +13,20 @@
       <!-- Left Content -->
       <div class="flex-1 max-w-[600px] py-0 lg:py-16 relative flex flex-col justify-center">
         <h2
-          class="text-[3.5rem] lg:text-[4.5rem] leading-[1.2] text-[#333333] font-normal mb-10 tracking-tight"
+          class="text-[3.5rem] lg:text-[4.5rem] leading-[1.2] text-content font-normal mb-10 tracking-tight"
         >
-          Secure Access <br />
-          <span class="text-[#5D6DFF] font-bold relative inline-block pb-2">
-            How Verification Works
-            <span class="absolute bottom-0 left-0 w-full h-[3px] bg-[#5D6DFF]"></span>
+          Verified & Secure <br />
+          <span class="text-brand font-bold relative inline-block pb-2">
+            Student Ecosystem
+            <span class="absolute bottom-0 left-0 w-full h-[3px] bg-brand"></span>
           </span>
         </h2>
 
-        <div class="border-l-[3px] border-[#5D6DFF] pl-6 mb-12 relative z-10">
+        <div class="border-l-[3px] border-brand pl-6 mb-12 relative z-10">
           <p
-            class="text-[1.15rem] lg:text-[1.25rem] text-[#333333] font-medium leading-relaxed max-w-[500px]"
+            class="text-[1.15rem] lg:text-[1.25rem] text-content font-medium leading-relaxed max-w-[500px]"
           >
-            We maintain a high-trust environment by requiring authentic University ID or NIC
-            verification for all members. Collaboration is safer when everyone is verified.
+            We foster a trusted, spam-free learning environment. BrightPath requires strict University ID or NIC verification, ensuring you collaborate exclusively with authentic peers and educators.
           </p>
         </div>
 
@@ -35,15 +34,14 @@
           <!-- Step 1 -->
           <div class="flex items-start gap-5">
             <div
-              class="w-12 h-12 rounded-full bg-[#5D6DFF]/10 text-[#5D6DFF] font-black flex items-center justify-center shrink-0 border border-[#5D6DFF]/20 text-lg"
+              class="w-12 h-12 rounded-full bg-brand/10 text-brand font-black flex items-center justify-center shrink-0 border border-brand/20 text-lg"
             >
               1
             </div>
             <div class="pt-1">
-              <h3 class="font-bold text-[#333333] text-lg mb-1">Upload University ID</h3>
+              <h3 class="font-bold text-content text-lg mb-1">Submit Credentials</h3>
               <p class="text-slate-600 leading-relaxed">
-                Provide your official Student ID or NIC. Initiates our secure JWT-based
-                authentication protocol.
+                Upload your official University Student ID or National Identity Card (NIC) via our secure enrollment portal.
               </p>
             </div>
           </div>
@@ -51,15 +49,14 @@
           <!-- Step 2 -->
           <div class="flex items-start gap-5">
             <div
-              class="w-12 h-12 rounded-full bg-[#5D6DFF]/10 text-[#5D6DFF] font-black flex items-center justify-center shrink-0 border border-[#5D6DFF]/20 text-lg"
+              class="w-12 h-12 rounded-full bg-brand/10 text-brand font-black flex items-center justify-center shrink-0 border border-brand/20 text-lg"
             >
               2
             </div>
             <div class="pt-1">
-              <h3 class="font-bold text-[#333333] text-lg mb-1">System Verification</h3>
+              <h3 class="font-bold text-content text-lg mb-1">Automated Verification</h3>
               <p class="text-slate-600 leading-relaxed">
-                Our backend logic validates your identity against active university enrollment
-                criteria.
+                Our system securely cross-references your details to validate your active student or educator status.
               </p>
             </div>
           </div>
@@ -67,14 +64,14 @@
           <!-- Step 3 -->
           <div class="flex items-start gap-5">
             <div
-              class="w-12 h-12 rounded-full bg-[#5D6DFF]/10 text-[#5D6DFF] font-black flex items-center justify-center shrink-0 border border-[#5D6DFF]/20 text-lg"
+              class="w-12 h-12 rounded-full bg-brand/10 text-brand font-black flex items-center justify-center shrink-0 border border-brand/20 text-lg"
             >
               3
             </div>
             <div class="pt-1">
-              <h3 class="font-bold text-[#333333] text-lg mb-1">Access Personalized Dashboard</h3>
+              <h3 class="font-bold text-content text-lg mb-1">Unlock BrightPath</h3>
               <p class="text-slate-600 leading-relaxed">
-                Enter your hub for verified peer-to-peer collaboration, safe from unverified users.
+                Gain full access to the digital library, live sessions, and personalized dashboards in a trusted environment.
               </p>
             </div>
           </div>
@@ -83,7 +80,7 @@
         <div class="flex items-center relative z-10">
           <RouterLink
             to="/login"
-            class="inline-flex items-center justify-center px-8 py-3.5 rounded-lg font-bold text-[1.1rem] text-white bg-[#5D6DFF] hover:bg-[#4a58e6] transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5"
+            class="inline-flex items-center justify-center px-8 py-3.5 rounded-lg font-bold text-[1.1rem] text-white bg-accent hover:bg-accent-hover transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5"
           >
             Verify My Account
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" class="ml-2">
@@ -104,10 +101,10 @@
         <div
           class="relative w-full max-w-md aspect-[1.6] bg-gradient-to-br from-white to-slate-100 rounded-3xl overflow-hidden shadow-2xl border-4 border-white/20 p-8 z-0 transform hover:-rotate-2 transition-transform duration-500 group"
         >
-          <div class="absolute top-0 right-0 w-32 h-32 bg-[#5D6DFF]/10 rounded-bl-full -z-10"></div>
+          <div class="absolute top-0 right-0 w-32 h-32 bg-brand/10 rounded-bl-full -z-10"></div>
 
           <div class="flex justify-between items-start mb-8">
-            <div class="font-bold text-[#333333] text-xl tracking-tight">University ID</div>
+            <div class="font-bold text-content text-xl tracking-tight">University ID</div>
             <div
               class="px-3 py-1 bg-green-100 text-green-700 font-bold text-xs rounded-full flex items-center gap-1"
             >
@@ -138,7 +135,7 @@
 
         <!-- Background decorative blur -->
         <div
-          class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-[#5D6DFF] rounded-full mix-blend-multiply filter blur-[80px] opacity-20 -z-10"
+          class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-brand rounded-full mix-blend-multiply filter blur-[80px] opacity-20 -z-10"
         ></div>
       </div>
     </div>

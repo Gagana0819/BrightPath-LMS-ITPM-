@@ -61,7 +61,7 @@ const startTyping = async () => {
     for (let i = 0; i <= text.length; i++) {
       if (typeVersion.value !== version) return
       displayedText.value[key] = text.substring(0, i)
-      await new Promise(r => setTimeout(r, 40)) // typing speed
+      await new Promise(r => setTimeout(r, 130)) // typing speed
     }
   }
 
@@ -108,7 +108,7 @@ watch(currentIndex, () => {
     <!-- Background diagonal shapes  -->
      <!-- #2C3347 / #22252C-->
     <div
-      class="absolute top-0 -right-[10%] w-[55%] h-[105%] bg-[#22252C] -skew-x-[20deg] z-0 hidden lg:block shadow-inner"
+      class="absolute top-0 -right-[10%] w-[55%] h-[105%] bg-hero-bg-right -skew-x-[20deg] z-0 hidden lg:block shadow-inner"
     ></div>
 
     <div
@@ -118,19 +118,19 @@ watch(currentIndex, () => {
       <div class="flex-1 w-full max-w-[650px] py-10 lg:py-16 relative flex flex-col justify-center">
         <!-- Floating shapes: Top Right -->
         <div class="absolute -top-6 right-[15%] opacity-90 hidden md:block">
-          <div class="w-10 h-10 rounded-xl bg-[#d5e2fc] absolute top-2 right-2"></div>
+          <div class="w-10 h-10 rounded-xl bg-hero-bg-shape1 absolute top-2 right-2"></div>
           <div
-            class="w-10 h-10 rounded-xl border border-[#5D6DFF] bg-transparent absolute top-0 right-0"
+            class="w-10 h-10 rounded-xl border border-hero-highlight bg-transparent absolute top-0 right-0"
           ></div>
         </div>
 
         <div class="w-full relative min-h-[300px]">
           <h1
-            class="text-[3.5rem] lg:text-[4.5rem] leading-[1.2] text-[#333333] font-normal mb-10 relative z-10 tracking-tight min-h-[160px]"
+            class="text-[3.5rem] lg:text-[4.5rem] leading-[1.2] text-content font-normal mb-10 relative z-10 tracking-tight min-h-[160px]"
           >
-            <span class="text-[#5D6DFF] font-bold relative inline-block pb-2">
+            <span class="text-hero-highlight font-bold relative inline-block pb-2">
               {{ displayedText.highlight1 }}
-              <span v-show="displayedText.highlight1" class="absolute bottom-0 left-0 w-[110%] h-[3px] bg-[#5D6DFF]"></span>
+              <span v-show="displayedText.highlight1" class="absolute bottom-0 left-0 w-[110%] h-[3px] bg-hero-highlight"></span>
               <span v-if="typingField === 'highlight1'" class="typing-cursor">|</span>
             </span>
             {{ displayedText.line1 ? ' ' + displayedText.line1 : '' }}
@@ -139,16 +139,16 @@ watch(currentIndex, () => {
             {{ displayedText.line2 }}
             <span v-if="typingField === 'line2'" class="typing-cursor">|</span>
             {{ displayedText.highlight2 || typingField === 'highlight2' ? ' ' : '' }}
-            <span class="text-[#5D6DFF] font-bold relative inline-block pb-2" v-show="displayedText.highlight2 || typingField === 'highlight2'">
+            <span class="text-hero-highlight font-bold relative inline-block pb-2" v-show="displayedText.highlight2 || typingField === 'highlight2'">
               {{ displayedText.highlight2 }}
-              <span v-show="displayedText.highlight2" class="absolute bottom-0 left-0 w-full h-[3px] bg-[#5D6DFF]"></span>
+              <span v-show="displayedText.highlight2" class="absolute bottom-0 left-0 w-full h-[3px] bg-hero-highlight"></span>
               <span v-if="typingField === 'highlight2'" class="typing-cursor">|</span>
             </span>
           </h1>
 
-          <div class="border-l-[3px] border-[#5D6DFF] pl-6 mb-12 relative z-10 min-h-[100px]">
+          <div class="border-l-[3px] border-hero-highlight pl-6 mb-12 relative z-10 min-h-[100px]">
             <p
-              class="text-[1.15rem] lg:text-[1.25rem] text-[#333333] font-medium leading-relaxed max-w-[600px]"
+              class="text-[1.15rem] lg:text-[1.25rem] text-content font-medium leading-relaxed max-w-[600px]"
             >
               {{ displayedText.description }}<span v-if="typingField === 'description' || typingField === 'done'" class="typing-cursor">|</span>
             </p>
@@ -157,13 +157,13 @@ watch(currentIndex, () => {
 
         <!-- Floating shapes: Bottom Left -->
         <div class="absolute bottom-[2%] left-[25%] hidden md:block">
-          <div class="absolute w-10 h-10 bg-[#d5e2fc] rounded-xl -top-2 -right-2"></div>
-          <div class="absolute w-10 h-10 bg-[#5D6DFF] rounded-xl"></div>
+          <div class="absolute w-10 h-10 bg-hero-bg-shape1 rounded-xl -top-2 -right-2"></div>
+          <div class="absolute w-10 h-10 bg-hero-highlight rounded-xl"></div>
         </div>
 
         <!-- Floating shapes: Circle -->
         <div
-          class="absolute bottom-[20%] right-[5%] w-10 h-10 rounded-full border-[3px] border-[#5D6DFF] opacity-70 hidden md:block"
+          class="absolute bottom-[20%] right-[5%] w-10 h-10 rounded-full border-[3px] border-hero-highlight opacity-70 hidden md:block"
         ></div>
 
         <!-- Dot grid -->
@@ -204,12 +204,12 @@ watch(currentIndex, () => {
 .hero-gradient {
   background: linear-gradient(
     -130deg,
-    #e6f3ff 0%,
-    #e6f3ff 60%,
-    #e4f8f6 60%,
-    #e4f8f6 80%,
-    #faefff 80%,
-    #faefff 100%
+    theme('colors.hero.bg.left') 0%,
+    theme('colors.hero.bg.left') 60%,
+    theme('colors.hero.bg.pill') 60%,
+    theme('colors.hero.bg.pill') 80%,
+    theme('colors.hero.bg.shape2') 80%,
+    theme('colors.hero.bg.shape2') 100%
   );
 }
 
@@ -234,7 +234,7 @@ watch(currentIndex, () => {
   display: inline-block;
   width: 3px;
   animation: blink 1s step-end infinite;
-  color: #5D6DFF;
+  color: theme('colors.hero.highlight');
   margin-left: 2px;
   vertical-align: text-bottom;
 }

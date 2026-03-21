@@ -7,7 +7,7 @@
         <!-- Brand Info -->
         <div class="lg:col-span-2">
           <h3 class="flex items-center gap-2 text-2xl font-bold text-white tracking-tight mb-4">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" class="text-[#5D6DFF]">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" class="text-brand">
               <path
                 d="M4 19V5C4 3.89543 4.89543 3 6 3H19V19C19 20.1046 18.1046 21 17 21H6C4.89543 21 4 20.1046 4 19Z"
                 stroke="currentColor"
@@ -40,26 +40,26 @@
           <h4 class="font-bold text-lg mb-6 text-white">Quick Links</h4>
           <ul class="space-y-3 flex flex-col">
             <li>
-              <RouterLink to="/" class="text-slate-400 hover:text-[#5D6DFF] transition-colors"
+              <RouterLink to="/" class="text-slate-400 hover:text-brand transition-colors"
                 >Home</RouterLink
               >
             </li>
             <li>
               <RouterLink
                 to="/library"
-                class="text-slate-400 hover:text-[#5D6DFF] transition-colors"
+                class="text-slate-400 hover:text-brand transition-colors"
                 >Digital Library</RouterLink
               >
             </li>
             <li>
               <RouterLink
                 to="/dashboard"
-                class="text-slate-400 hover:text-[#5D6DFF] transition-colors"
+                class="text-slate-400 hover:text-brand transition-colors"
                 >Kuppi Sessions</RouterLink
               >
             </li>
             <li>
-              <RouterLink to="/login" class="text-slate-400 hover:text-[#5D6DFF] transition-colors"
+              <RouterLink to="/login" class="text-slate-400 hover:text-brand transition-colors"
                 >Login / Verification</RouterLink
               >
             </li>
@@ -71,15 +71,15 @@
           <h4 class="font-bold text-lg mb-6 text-white">Platform Stats</h4>
           <div class="flex flex-col gap-5">
             <div>
-              <span class="block text-2xl font-bold text-[#5D6DFF] leading-none mb-1">5k+</span>
+              <span class="block text-2xl font-bold text-brand leading-none mb-1">5k+</span>
               <span class="text-sm text-slate-400">Total Resources</span>
             </div>
             <div>
-              <span class="block text-2xl font-bold text-[#5D6DFF] leading-none mb-1">1.2k</span>
+              <span class="block text-2xl font-bold text-brand leading-none mb-1">1.2k</span>
               <span class="text-sm text-slate-400">Active Students</span>
             </div>
             <div>
-              <span class="block text-2xl font-bold text-[#5D6DFF] leading-none mb-1">50+</span>
+              <span class="block text-2xl font-bold text-brand leading-none mb-1">50+</span>
               <span class="text-sm text-slate-400">Verified Teachers</span>
             </div>
           </div>

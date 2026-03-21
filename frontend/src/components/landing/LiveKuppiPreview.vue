@@ -13,21 +13,20 @@
       <!-- Left Content -->
       <div class="flex-1 max-w-[600px] py-0 lg:py-16 relative flex flex-col justify-center">
         <h2
-          class="text-[3.5rem] lg:text-[4.5rem] leading-[1.2] text-[#333333] font-normal mb-10 tracking-tight"
+          class="text-[3.5rem] lg:text-[4.5rem] leading-[1.2] text-content font-normal mb-10 tracking-tight"
         >
           Live Kuppi &<br />
-          <span class="text-[#5D6DFF] font-bold relative inline-block pb-2">
+          <span class="text-brand font-bold relative inline-block pb-2">
             Virtual Classrooms
-            <span class="absolute bottom-0 left-0 w-full h-[3px] bg-[#5D6DFF]"></span>
+            <span class="absolute bottom-0 left-0 w-full h-[3px] bg-brand"></span>
           </span>
         </h2>
 
-        <div class="border-l-[3px] border-[#5D6DFF] pl-6 mb-12 relative z-10">
+        <div class="border-l-[3px] border-brand pl-6 mb-12 relative z-10">
           <p
-            class="text-[1.15rem] lg:text-[1.25rem] text-[#333333] font-medium leading-relaxed max-w-[500px]"
+            class="text-[1.15rem] lg:text-[1.25rem] text-content font-medium leading-relaxed max-w-[500px]"
           >
-            Sync your sessions automatically via our Google Classroom API integration. Connect with
-            top-tier educators through interactive 'Kuppi' sessions and discussion videos.
+            Experience interactive learning like never before. Join live 'Kuppi' sessions hosted by industry experts and top-performing peers. Seamlessly synced with your academic calendar.
           </p>
         </div>
 
@@ -42,8 +41,8 @@
               👨‍🏫
             </div>
             <div>
-              <h3 class="font-bold text-[#333333]">Prof. Perera</h3>
-              <p class="text-sm text-slate-500">SE Expert • 4.9⭐</p>
+              <h3 class="font-bold text-content">Prof. Kumara Perera</h3>
+              <p class="text-sm text-slate-500">Software Eng • 4.9⭐</p>
             </div>
           </div>
           <div
@@ -55,8 +54,8 @@
               👩‍💻
             </div>
             <div>
-              <h3 class="font-bold text-[#333333]">Dr. Silva</h3>
-              <p class="text-sm text-slate-500">DSA Pro • 5.0⭐</p>
+              <h3 class="font-bold text-content">Dr. Nimali Silva</h3>
+              <p class="text-sm text-slate-500">Algorithms • 5.0⭐</p>
             </div>
           </div>
         </div>
@@ -64,7 +63,7 @@
         <div class="flex items-center relative z-10">
           <RouterLink
             to="/dashboard"
-            class="inline-flex items-center justify-center px-8 py-3.5 rounded-lg font-bold text-[1.1rem] text-white bg-[#5D6DFF] hover:bg-[#4a58e6] transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5"
+            class="inline-flex items-center justify-center px-8 py-3.5 rounded-lg font-bold text-[1.1rem] text-white bg-accent hover:bg-accent-hover transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5"
           >
             View Live Schedule
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" class="ml-2">
@@ -88,11 +87,11 @@
         >
           <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-6">
             <div>
-              <h3 class="font-bold text-[#333333] text-lg">Upcoming Sessions</h3>
+              <h3 class="font-bold text-content text-lg">Upcoming Sessions</h3>
               <p class="text-sm text-slate-500">Synced via Google Classroom</p>
             </div>
             <div
-              class="w-10 h-10 bg-[#e0e7ff] rounded-xl flex items-center justify-center text-[#5D6DFF]"
+              class="w-10 h-10 bg-[#e0e7ff] rounded-xl flex items-center justify-center text-brand"
             >
               📅
             </div>
@@ -101,22 +100,22 @@
           <div class="space-y-4">
             <!-- Event 1 -->
             <div
-              class="bg-slate-50 rounded-xl p-4 border border-slate-100 border-l-4 border-l-[#5D6DFF]"
+              class="bg-base rounded-xl p-4 border border-slate-100 border-l-4 border-l-brand"
             >
               <div class="flex justify-between items-start mb-2">
-                <h4 class="font-bold text-[#333333]">Data Structures Kuppi</h4>
+                <h4 class="font-bold text-content">DSA Trees & Graphs Discussion</h4>
                 <span
-                  class="bg-red-100 text-red-600 text-xs font-bold px-2 py-1 rounded-full animate-pulse"
+                  class="bg-amber-100 text-amber-600 text-xs font-bold px-2 py-1 rounded-full animate-pulse"
                   >LIVE NOW</span
                 >
               </div>
               <div class="flex items-center gap-4 text-sm text-slate-500 mb-3">
                 <span class="flex items-center gap-1">🕒 10:00 AM</span>
-                <span class="flex items-center gap-1">👤 Dr. Silva</span>
+                <span class="flex items-center gap-1">👤 Dr. Nimali Silva</span>
               </div>
               <div class="flex gap-2">
                 <button
-                  class="flex-1 bg-[#5D6DFF] text-white font-bold text-sm py-2 rounded-lg hover:bg-[#4a58e6] transition-colors"
+                  class="flex-1 bg-brand text-white font-bold text-sm py-2 rounded-lg hover:bg-brand-hover transition-colors"
                 >
                   Join Meeting
                 </button>
@@ -125,17 +124,17 @@
 
             <!-- Event 2 -->
             <div
-              class="bg-slate-50 rounded-xl p-4 border border-slate-100 border-l-4 border-l-emerald-400"
+              class="bg-base rounded-xl p-4 border border-slate-100 border-l-4 border-l-emerald-400"
             >
               <div class="flex justify-between items-start mb-2">
-                <h4 class="font-bold text-[#333333]">ITPM Past Paper Discussion</h4>
+                <h4 class="font-bold text-content">ITPM Midterm Review Session</h4>
                 <span class="bg-slate-200 text-slate-600 text-xs font-bold px-2 py-1 rounded-full"
                   >TODAY</span
                 >
               </div>
               <div class="flex items-center gap-4 text-sm text-slate-500 mb-3">
                 <span class="flex items-center gap-1">🕒 2:00 PM</span>
-                <span class="flex items-center gap-1">👤 Prof. Perera</span>
+                <span class="flex items-center gap-1">👤 Prof. Kumara Perera</span>
               </div>
             </div>
           </div>
@@ -143,7 +142,7 @@
 
         <!-- Decorative Elements -->
         <div
-          class="absolute -right-10 -bottom-10 w-48 h-48 bg-[#5D6DFF] rounded-full mix-blend-multiply filter blur-[60px] opacity-20 z-0 animate-pulse"
+          class="absolute -right-10 -bottom-10 w-48 h-48 bg-brand rounded-full mix-blend-multiply filter blur-[60px] opacity-20 z-0 animate-pulse"
         ></div>
         <div
           class="absolute -left-10 -top-10 w-48 h-48 bg-rose-400 rounded-full mix-blend-multiply filter blur-[60px] opacity-10 z-0"

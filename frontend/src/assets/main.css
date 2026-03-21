@@ -4,7 +4,9 @@
 
 @layer base {
   body {
-    @apply bg-slate-50 text-slate-900 antialiased min-h-screen;
+    background-color: theme('colors.base');
+    color: theme('colors.content');
+    @apply antialiased min-h-screen;
     background-image:
       radial-gradient(circle at top right, rgba(93, 109, 255, 0.05) 0%, transparent 40%),
       radial-gradient(circle at bottom left, rgba(99, 102, 241, 0.05) 0%, transparent 40%);

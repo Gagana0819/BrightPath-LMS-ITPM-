@@ -15,14 +15,30 @@ const router = createRouter({
       component: () => import('../views/LoginView.vue'),
     },
     {
-      path: '/dashboard',
-      name: 'dashboard',
-      component: () => import('../views/DashboardView.vue'),
+      path: '/register',
+      name: 'register',
+      component: () => import('../views/RegisterView.vue'),
     },
     {
-      path: '/library',
-      name: 'library',
-      component: () => import('../views/LibraryView.vue'),
+      path: '/dashboard',
+      component: () => import('../components/layout/MainLayout.vue'),
+      children: [
+        {
+          path: '',
+          name: 'dashboard',
+          component: () => import('../views/DashboardView.vue'),
+        },
+        {
+          path: 'library',
+          name: 'library',
+          component: () => import('../views/LibraryView.vue'),
+        },
+        {
+          path: 'profile',
+          name: 'profile',
+          component: () => import('../views/ProfileView.vue'),
+        }
+      ]
     },
   ],
 })
