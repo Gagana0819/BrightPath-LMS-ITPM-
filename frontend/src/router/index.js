@@ -15,9 +15,9 @@ const router = createRouter({
       component: () => import('../views/LoginView.vue'),
     },
     {
-      path: '/register',
-      name: 'register',
-      component: () => import('../views/RegisterView.vue'),
+      path: '/dashboard',
+      name: 'dashboard',
+      component: () => import('../views/DashboardView.vue'),
     },
     {
       path: '/dashboard',
@@ -25,12 +25,12 @@ const router = createRouter({
       children: [
         {
           path: '',
-          name: 'dashboard',
+          name: 'dashboard_home',
           component: () => import('../views/DashboardView.vue'),
         },
         {
           path: 'library',
-          name: 'library',
+          name: 'dashboard_library',
           component: () => import('../views/LibraryView.vue'),
         },
         {
@@ -44,6 +44,11 @@ const router = createRouter({
           component: () => import('../views/ContentDashboard.vue'),
         }
       ]
+    },
+    {
+      path: '/library',
+      name: 'library',
+      component: () => import('../views/LibraryView.vue'),
     },
   ],
 })
