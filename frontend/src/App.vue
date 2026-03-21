@@ -1,13 +1,17 @@
 <script setup>
-import { RouterView } from 'vue-router'
+import { RouterView, useRoute } from 'vue-router'
+import { computed } from 'vue'
 import AppNavbar from './components/layout/AppNavbar.vue'
 import InteractiveFooter from './components/layout/InteractiveFooter.vue'
+
+const route = useRoute()
+const isDashboard = computed(() => route.path.startsWith('/dashboard'))
 </script>
 
 <template>
-  <AppNavbar />
+  <AppNavbar v-if="!isDashboard" />
   <RouterView />
-  <InteractiveFooter />
+  <InteractiveFooter v-if="!isDashboard" />
 </template>
 
 <style scoped>
