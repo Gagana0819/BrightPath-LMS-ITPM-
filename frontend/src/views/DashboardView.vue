@@ -30,13 +30,13 @@ const suggestedCourses = computed(() => {
   <div class="animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12 font-sans bg-[#F4F7F9] min-h-screen px-4 md:px-8 py-8">
     
     <!-- 1. Personalized Welcome Header & Peer Tutor Badge -->
-    <div class="mb-8 bg-white p-6 md:p-8 rounded-[24px] shadow-sm border border-slate-200">
+    <div class="mb-8 bg-white p-6 md:p-8 rounded-[24px] shadow-sm border-2 border-slate-200">
       <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 class="text-3xl font-extrabold text-[#2C3E50] tracking-tight mb-2">
             Welcome, {{ fullName }}! 👋
           </h1>
-          <p class="text-[16px] text-[#4B5563] font-medium flex items-center gap-2">
+          <p class="text-[16px] text-[#1F2937] font-medium flex items-center gap-2">
             — <span class="text-[#4A90E2] bg-[#EFF6FF] px-3 py-1 rounded-full text-sm font-bold">{{ academicStream }} Student</span>
           </p>
         </div>
@@ -70,14 +70,14 @@ const suggestedCourses = computed(() => {
           
           <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
             <!-- Module Card 1 -->
-            <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:shadow-md transition-shadow relative overflow-hidden group">
+            <div class="bg-white rounded-2xl p-5 border-2 border-slate-200 shadow-[0_2px_10px_rgba(0,0,0,0.04)] hover:shadow-lg hover:border-[#4A90E2]/40 transition-all duration-300 relative overflow-hidden group">
               <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">💻</div>
               <h3 class="font-bold text-[#2C3E50] text-[16px] mb-1">Information Technology Project</h3>
-              <p class="text-[13px] text-[#6B7280] mb-5">IT3040 • 4 Credits</p>
+              <p class="text-[13px] text-[#374151] mb-5">IT3040 • 4 Credits</p>
               
               <!-- Progress Bar -->
               <div>
-                <div class="flex justify-between text-[12px] font-bold text-[#4B5563] mb-2">
+                <div class="flex justify-between text-[12px] font-bold text-[#1F2937] mb-2">
                   <span>Progress</span>
                   <span class="text-[#4A90E2]">75% Completed</span>
                 </div>
@@ -88,16 +88,16 @@ const suggestedCourses = computed(() => {
             </div>
 
             <!-- Module Card 2 -->
-            <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:shadow-md transition-shadow relative overflow-hidden group">
+            <div class="bg-white rounded-2xl p-5 border-2 border-slate-200 shadow-[0_2px_10px_rgba(0,0,0,0.04)] hover:shadow-lg hover:border-[#A8E6CF]/50 transition-all duration-300 relative overflow-hidden group">
               <div class="w-12 h-12 bg-emerald-50 text-[#A8E6CF] rounded-2xl flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">📱</div>
               <h3 class="font-bold text-[#2C3E50] text-[16px] mb-1">Mobile Application Dev</h3>
-              <p class="text-[13px] text-[#6B7280] mb-5">IT3030 • 3 Credits</p>
+              <p class="text-[13px] text-[#374151] mb-5">IT3030 • 3 Credits</p>
               
               <!-- Progress Bar -->
               <div>
-                <div class="flex justify-between text-[12px] font-bold text-[#4B5563] mb-2">
+                <div class="flex justify-between text-[12px] font-bold text-[#1F2937] mb-2">
                   <span>Progress</span>
-                  <span class="text-[#A8E6CF]">40% Completed</span>
+                  <span class="text-[#2D8B6F]">40% Completed</span>
                 </div>
                 <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
                   <div class="bg-[#A8E6CF] h-2.5 rounded-full w-[40%] transition-all duration-1000"></div>
@@ -108,25 +108,30 @@ const suggestedCourses = computed(() => {
         </div>
 
         <!-- 3. Core Innovation: "Suggested for You" (Stream-Based) -->
-        <div class="bg-gradient-to-br from-[#2C3E50B] to-[#0F172A] rounded-3xl p-8 relative overflow-hidden border border-slate-700/50 shadow-xl">
-          <div class="absolute -right-20 -top-20 w-64 h-64 bg-blue-500/20 blur-3xl rounded-full pointer-events-none"></div>
+        <div class="bg-gradient-to-br from-[#2C3E50] to-[#1a252f] rounded-3xl p-8 relative overflow-hidden border border-slate-700/50 shadow-xl">
+          <div class="absolute -right-20 -top-20 w-64 h-64 bg-[#4A90E2]/25 blur-3xl rounded-full pointer-events-none"></div>
+          <div class="absolute -left-10 -bottom-10 w-48 h-48 bg-[#A8E6CF]/15 blur-3xl rounded-full pointer-events-none"></div>
           
           <div class="flex items-center gap-3 mb-6 relative z-10">
-            <div class="p-2 bg-white/10 rounded-xl backdrop-blur-sm border border-white/10">✨</div>
+            <div class="p-2.5 bg-white/10 rounded-xl backdrop-blur-sm border border-white/10 text-xl">✨</div>
             <div>
-              <h2 class="text-xl font-bold text-white tracking-tight">Suggested for You</h2>
-              <p class="text-slate-400 text-sm mt-1">AI-curated modules based on your <strong>{{ academicStream }}</strong> stream</p>
+              <h2 class="text-xl font-extrabold text-white tracking-tight">Suggested for You</h2>
+              <p class="text-slate-300 text-sm font-semibold mt-1">AI-curated modules based on your <strong class="text-[#4A90E2]">{{ academicStream }}</strong> stream</p>
             </div>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4 relative z-10">
             <div v-for="course in suggestedCourses" :key="course.id" 
-                 class="bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl p-5 backdrop-blur-md transition-all cursor-pointer group">
-              <div :class="[course.color, 'w-10 h-10 rounded-xl flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform shadow-sm']">
+                 class="bg-white/[0.08] hover:bg-white/[0.15] border border-white/10 hover:border-[#4A90E2]/40 rounded-2xl p-5 backdrop-blur-md transition-all duration-300 cursor-pointer group hover:-translate-y-1 hover:shadow-[0_8px_25px_rgba(74,144,226,0.15)]">
+              <div :class="[course.color, 'w-11 h-11 rounded-xl flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform duration-300 shadow-sm border border-white/10']">
                 {{ course.icon }}
               </div>
-              <h3 class="font-bold text-white text-[15px] mb-2">{{ course.title }}</h3>
-              <p class="text-slate-400 text-[12px] leading-relaxed">{{ course.desc }}</p>
+              <h3 class="font-extrabold text-white text-[16px] mb-2 tracking-tight">{{ course.title }}</h3>
+              <p class="text-slate-300 text-[13px] leading-relaxed font-medium">{{ course.desc }}</p>
+              <button class="mt-4 text-[#4A90E2] text-[12px] font-bold hover:text-white transition-colors flex items-center gap-1">
+                Learn More
+                <svg class="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
+              </button>
             </div>
           </div>
         </div>
@@ -137,16 +142,16 @@ const suggestedCourses = computed(() => {
       <div class="lg:col-span-4 space-y-8 flex flex-col">
         
         <!-- 6. Academic Year Summary -->
-        <div class="bg-white rounded-[24px] p-6 border border-slate-200 shadow-sm relative overflow-hidden">
+        <div class="bg-white rounded-[24px] p-6 border-2 border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden">
           <div class="absolute top-0 left-0 w-1.5 h-full bg-[#4A90E2]"></div>
           <h3 class="font-bold text-[#2C3E50] text-[16px] mb-1">Academic Status</h3>
-          <p class="text-[13px] text-[#6B7280] mb-5">{{ academicYear }} Summary</p>
+          <p class="text-[13px] text-[#374151] mb-5">{{ academicYear }} Summary</p>
           
           <div class="flex items-center justify-between bg-slate-50 p-4 rounded-xl mb-3">
             <div class="flex items-center gap-3">
               <div class="text-xl">📚</div>
               <div>
-                <p class="text-[12px] font-medium text-[#6B7280]">Compulsory Modules</p>
+                <p class="text-[12px] font-medium text-[#374151]">Compulsory Modules</p>
                 <p class="font-bold text-[#2C3E50]">5 / 6 Registered</p>
               </div>
             </div>
@@ -156,7 +161,7 @@ const suggestedCourses = computed(() => {
             <div class="flex items-center gap-3">
               <div class="text-xl">🎓</div>
               <div>
-                <p class="text-[12px] font-medium text-[#6B7280]">Total Credits</p>
+                <p class="text-[12px] font-medium text-[#374151]">Total Credits</p>
                 <p class="font-bold text-[#2C3E50]">15 Credits Secured</p>
               </div>
             </div>
@@ -164,7 +169,7 @@ const suggestedCourses = computed(() => {
         </div>
 
         <!-- 4. Upcoming Deadlines & Tasks -->
-        <div class="bg-white rounded-[24px] p-6 border border-slate-200 shadow-sm flex-1">
+        <div class="bg-white rounded-[24px] p-6 border-2 border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 flex-1">
           <h3 class="font-bold text-[#2C3E50] text-[16px] mb-5 flex items-center gap-2">
             <svg class="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             Urgent Deadlines
@@ -178,7 +183,7 @@ const suggestedCourses = computed(() => {
               </div>
               <div>
                 <h4 class="font-bold text-[#2C3E50] text-[14px]">PAF Assignment Submission</h4>
-                <p class="text-[12px] text-[#6B7280] mt-1">IT3040 Project • Due at 11:59 PM</p>
+                <p class="text-[12px] text-[#374151] mt-1">IT3040 Project • Due at 11:59 PM</p>
               </div>
             </div>
 
@@ -189,14 +194,14 @@ const suggestedCourses = computed(() => {
               </div>
               <div>
                 <h4 class="font-bold text-[#2C3E50] text-[14px]">React Component Quiz</h4>
-                <p class="text-[12px] text-[#6B7280] mt-1">IT3030 Mobile App • Due at 10:00 AM</p>
+                <p class="text-[12px] text-[#374151] mt-1">IT3030 Mobile App • Due at 10:00 AM</p>
               </div>
             </div>
           </div>
         </div>
 
         <!-- 7. Notification Panel -->
-        <div class="bg-white rounded-[24px] p-6 border border-slate-200 shadow-sm">
+        <div class="bg-white rounded-[24px] p-6 border-2 border-slate-200 shadow-sm hover:shadow-md transition-all duration-300">
           <h3 class="font-bold text-[#2C3E50] text-[16px] mb-5 flex items-center gap-2">
             <svg class="w-5 h-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
             Recent Alerts

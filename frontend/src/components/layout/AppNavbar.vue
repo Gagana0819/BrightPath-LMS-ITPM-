@@ -1,4 +1,18 @@
 <script setup>
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
+const isLoggedIn = ref(!!localStorage.getItem('access_token'))
+
+const updateAuthState = () => {
+  isLoggedIn.value = !!localStorage.getItem('access_token')
+}
+
+onMounted(updateAuthState)
+watch(() => route.path, updateAuthState)
+
+const logoTarget = computed(() => isLoggedIn.value ? '/dashboard' : '/')
 </script>
 
 <template>
@@ -7,7 +21,7 @@
       
       <!-- Brand -->
       <div class="brand z-20 flex-shrink-0">
-        <RouterLink to="/" class="flex items-center gap-2 text-[1.4rem] font-bold text-brand tracking-tight">
+        <RouterLink :to="logoTarget" class="flex items-center gap-2 text-[1.4rem] font-bold text-brand tracking-tight">
           BRIGHTPATH
         </RouterLink>
       </div>
@@ -22,12 +36,20 @@
 
       <!-- Action Buttons -->
       <div class="hidden md:flex z-20 items-center gap-6 flex-shrink-0">
-        <RouterLink to="/login" class="font-semibold text-[0.95rem] text-slate-700 hover:text-brand transition-colors">
-          Log In
-        </RouterLink>
-        <RouterLink to="/register" class="inline-flex items-center justify-center px-6 py-2.5 rounded text-[0.95rem] font-bold text-white bg-brand hover:bg-brand-hover transition-all shadow-sm flex-shrink-0">
-          Join for Free
-        </RouterLink>
+        <template v-if="!isLoggedIn">
+          <RouterLink to="/login" class="font-semibold text-[0.95rem] text-slate-700 hover:text-brand transition-colors">
+            Log In
+          </RouterLink>
+          <RouterLink to="/register" class="inline-flex items-center justify-center px-6 py-2.5 rounded text-[0.95rem] font-bold text-white bg-brand hover:bg-brand-hover transition-all shadow-sm flex-shrink-0">
+            Join for Free
+          </RouterLink>
+        </template>
+        <template v-else>
+          <RouterLink to="/dashboard" class="inline-flex items-center justify-center px-6 py-2.5 rounded text-[0.95rem] font-bold text-white bg-brand hover:bg-brand-hover transition-all shadow-sm flex-shrink-0 gap-2">
+            Go to Dashboard 
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
+          </RouterLink>
+        </template>
       </div>
       
     </div>
