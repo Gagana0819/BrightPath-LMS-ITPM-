@@ -12,25 +12,31 @@ const router = createRouter({
     {
       path: '/login',
       name: 'login',
-      component: () => import('../views/LoginView.vue'),
+      component: () => import('../views/Login.vue'),
     },
     {
-      path: '/dashboard',
-      name: 'dashboard',
-      component: () => import('../views/DashboardView.vue'),
+      path: '/register',
+      name: 'register',
+      component: () => import('../views/RegisterView.vue'),
+    },
+    {
+      path: '/forgot-password',
+      name: 'forgot-password',
+      component: () => import('../views/ForgotPassword.vue'),
     },
     {
       path: '/dashboard',
       component: () => import('../components/layout/MainLayout.vue'),
+      meta: { requiresAuth: true },
       children: [
         {
           path: '',
-          name: 'dashboard_home',
+          name: 'dashboard',
           component: () => import('../views/DashboardView.vue'),
         },
         {
           path: 'library',
-          name: 'dashboard_library',
+          name: 'library',
           component: () => import('../views/LibraryView.vue'),
         },
         {
@@ -42,15 +48,39 @@ const router = createRouter({
           path: 'kuppi',
           name: 'kuppi',
           component: () => import('../views/ContentDashboard.vue'),
+        },
+        {
+          path: 'upload',
+          name: 'upload-course',
+          component: () => import('../views/ContentDashboard.vue'), // Placeholder
+        },
+        {
+          path: 'grades',
+          name: 'my-grades',
+          component: () => import('../views/ContentDashboard.vue'), // Placeholder
         }
       ]
     },
-    {
-      path: '/library',
-      name: 'library',
-      component: () => import('../views/LibraryView.vue'),
-    },
   ],
 })
+
+// Navigation Guard
+router.beforeEach((to, from, next) => {
+  const isAuthenticated = !!localStorage.getItem('access_token');
+  
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    if (!isAuthenticated) {
+      // Redirect to login if not authenticated
+      next({ name: 'login' });
+    } else {
+      next();
+    }
+  } else if ((to.name === 'login' || to.name === 'register') && isAuthenticated) {
+    // Redirect to dashboard if already authenticated
+    next({ name: 'dashboard' });
+  } else {
+    next();
+  }
+});
 
 export default router

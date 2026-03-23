@@ -1,7 +1,11 @@
 <script setup></script>
 
 <template>
+<<<<<<< HEAD
   <section class="relative min-h-screen flex items-center overflow-hidden py-24 bg-base px-20">
+=======
+  <section class="relative min-h-screen flex items-center overflow-hidden py-24 bg-base">
+>>>>>>> 61542dc3466c944a72cf4825924e0c241bfa5b9c
     <!-- Background diagonal layout applied to wrapper -->
     <div
       class="absolute top-0 -left-[5%] w-[55%] h-full bg-[#6366F1]/5 -skew-x-[15deg] -z-10 hidden lg:block"
