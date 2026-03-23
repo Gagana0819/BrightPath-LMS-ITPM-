@@ -1,7 +1,7 @@
 <script setup></script>
 
 <template>
-  <section class="relative py-24 bg-[#97C4C4] overflow-hidden">
+  <section class="relative py-24 bg-[#97C4C4] overflow-hidden px-20">
     <div class="max-w-[1600px] mx-auto px-4 lg:px-6 w-full z-10">
       <!-- Top Content & Filter -->
       <div class="flex flex-col lg:flex-row justify-between items-end mb-16 gap-8">
