@@ -15,6 +15,11 @@ const router = createRouter({
       component: () => import('../views/DigitalLibraryView.vue'),
     },
     {
+      path: '/sessions',
+      name: 'public-sessions',
+      component: () => import('../views/KuppiSessionsPublic.vue'),
+    },
+    {
       path: '/login',
       name: 'login',
       component: () => import('../views/Login.vue'),

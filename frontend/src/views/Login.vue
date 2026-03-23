@@ -44,7 +44,9 @@ const handleLogin = async () => {
       localStorage.setItem('user_role', response.data.role)
       localStorage.setItem('full_name', response.data.full_name)
       
-      router.push('/dashboard')
+      // Redirect to the intended page (e.g. kuppi dashboard) or default dashboard
+      const redirectPath = router.currentRoute.value.query.redirect || '/dashboard'
+      router.push(redirectPath)
     }
   } catch (err) {
     if (err.response && err.response.data) {
