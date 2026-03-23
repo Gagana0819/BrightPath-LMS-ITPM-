@@ -41,7 +41,7 @@ const handleLogout = () => {
 </script>
 
 <template>
-  <aside class="w-64 bg-[#0F172A] text-white flex-col h-full shadow-lg z-20 flex transition-all duration-300">
+  <aside class="w-64 bg-[#2C3E50] text-white flex-col h-full shadow-lg z-20 flex transition-all duration-300">
     
     <!-- Brand Header -->
     <div class="h-[80px] flex items-center px-6 border-b border-white/10">

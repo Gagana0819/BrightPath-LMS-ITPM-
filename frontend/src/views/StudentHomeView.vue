@@ -29,13 +29,13 @@ const resources = [
 </script>
 
 <template>
-  <div class="animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12 font-sans bg-[#F8FAFC] min-h-screen px-4 md:px-8 py-8">
+  <div class="animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12 font-sans bg-[#F4F7F9] min-h-screen px-4 md:px-8 py-8">
     
     <!-- Header -->
     <div class="mb-8">
-      <h1 class="text-3xl font-extrabold text-[#111827] tracking-tight mb-2">Academic Hub</h1>
+      <h1 class="text-3xl font-extrabold text-[#2C3E50] tracking-tight mb-2">Academic Hub</h1>
       <p class="text-[16px] text-[#4B5563] font-medium">
-        Discover courses, resources, and peers in <span class="text-[#2563EB] font-bold">{{ academicStream }}</span>.
+        Discover courses, resources, and peers in <span class="text-[#4A90E2] font-bold">{{ academicStream }}</span>.
       </p>
     </div>
 
@@ -48,23 +48,23 @@ const resources = [
         <!-- Courses to Follow -->
         <div class="bg-white rounded-[24px] p-6 border border-slate-200 shadow-sm">
           <div class="flex items-center justify-between mb-5">
-            <h2 class="text-[18px] font-bold text-[#111827] flex items-center gap-2">
+            <h2 class="text-[18px] font-bold text-[#2C3E50] flex items-center gap-2">
               <span class="text-2xl">📚</span> Courses You Can Follow
             </h2>
-            <button class="text-[#2563EB] text-sm font-bold hover:underline">Browse All</button>
+            <button class="text-[#4A90E2] text-sm font-bold hover:underline">Browse All</button>
           </div>
           
           <div class="space-y-4">
-            <div v-for="course in availableCourses" :key="course.id" class="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-slate-50 border border-slate-100 rounded-2xl hover:border-[#2563EB]/30 transition-colors group cursor-pointer">
+            <div v-for="course in availableCourses" :key="course.id" class="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-slate-50 border border-slate-100 rounded-2xl hover:border-[#4A90E2]/30 transition-colors group cursor-pointer">
               <div>
                 <div class="flex items-center gap-2 mb-1">
                   <span class="bg-indigo-100 text-indigo-700 text-[11px] font-bold px-2 py-0.5 rounded-md">{{ course.code }}</span>
                   <span class="bg-slate-200 text-slate-700 text-[11px] font-bold px-2 py-0.5 rounded-md">{{ course.type }}</span>
                 </div>
-                <h3 class="font-bold text-[#1f2432] text-[15px] group-hover:text-[#2563EB] transition-colors">{{ course.title }}</h3>
+                <h3 class="font-bold text-[#2C3E50] text-[15px] group-hover:text-[#4A90E2] transition-colors">{{ course.title }}</h3>
                 <p class="text-[12px] text-slate-500 mt-1">{{ course.credit }} Credits • ⭐ {{ course.rating }} ({{ course.students }} Students)</p>
               </div>
-              <button class="mt-3 sm:mt-0 bg-white border border-[#2563EB] text-[#2563EB] hover:bg-[#2563EB] hover:text-white font-bold py-2 px-5 rounded-xl text-[13px] transition-colors shadow-sm w-full sm:w-auto">
+              <button class="mt-3 sm:mt-0 bg-white border border-[#4A90E2] text-[#4A90E2] hover:bg-[#4A90E2] hover:text-white font-bold py-2 px-5 rounded-xl text-[13px] transition-colors shadow-sm w-full sm:w-auto">
                 Enroll
               </button>
             </div>
@@ -73,7 +73,7 @@ const resources = [
 
         <!-- Lecturers in My Stream -->
         <div class="bg-white rounded-[24px] p-6 border border-slate-200 shadow-sm">
-          <h2 class="text-[18px] font-bold text-[#111827] flex items-center gap-2 mb-5">
+          <h2 class="text-[18px] font-bold text-[#2C3E50] flex items-center gap-2 mb-5">
             <span class="text-2xl">👨‍🏫</span> Lecturers in Your Stream
           </h2>
           
@@ -84,9 +84,9 @@ const resources = [
                 {{ lecturer.avatar }}
               </div>
               <div>
-                <h3 class="font-bold text-[#1f2432] text-[14px] leading-tight mb-1">{{ lecturer.name }}</h3>
+                <h3 class="font-bold text-[#2C3E50] text-[14px] leading-tight mb-1">{{ lecturer.name }}</h3>
                 <p class="text-[11px] text-slate-500 leading-tight">{{ lecturer.title }}</p>
-                <button class="mt-2 text-[#2563EB] text-[12px] font-bold hover:underline">Message</button>
+                <button class="mt-2 text-[#4A90E2] text-[12px] font-bold hover:underline">Message</button>
               </div>
             </div>
           </div>
@@ -121,7 +121,7 @@ const resources = [
 
         <!-- Resources to Refer -->
         <div class="bg-white rounded-[24px] p-6 border border-slate-200 shadow-sm">
-          <h2 class="text-[18px] font-bold text-[#111827] flex items-center gap-2 mb-5">
+          <h2 class="text-[18px] font-bold text-[#2C3E50] flex items-center gap-2 mb-5">
             <span class="text-2xl">📁</span> Recommended Materials
           </h2>
           
@@ -132,16 +132,16 @@ const resources = [
                   {{ res.type }}
                 </div>
                 <div>
-                  <h4 class="font-bold text-[#1f2432] text-[13px] leading-tight">{{ res.title }}</h4>
+                  <h4 class="font-bold text-[#2C3E50] text-[13px] leading-tight">{{ res.title }}</h4>
                   <p class="text-[11px] text-slate-400 mt-0.5">{{ res.size }}</p>
                 </div>
               </div>
-              <button class="text-[#2563EB] hover:bg-blue-50 p-2 rounded-lg transition-colors">
+              <button class="text-[#4A90E2] hover:bg-blue-50 p-2 rounded-lg transition-colors">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
               </button>
             </div>
           </div>
-          <button class="w-full mt-4 text-[#2563EB] text-[13px] font-bold hover:underline text-center">Open Digital Library</button>
+          <button class="w-full mt-4 text-[#4A90E2] text-[13px] font-bold hover:underline text-center">Open Digital Library</button>
         </div>
 
       </div>
