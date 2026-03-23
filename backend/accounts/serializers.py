@@ -10,6 +10,8 @@ class UserSerializer(serializers.ModelSerializer):
     full_name = serializers.CharField(required=True)
     email = serializers.EmailField(required=True)
     role = serializers.CharField(required=True)
+    id_photo = serializers.FileField(required=False, allow_null=True)
+    verification_doc = serializers.FileField(required=False, allow_null=True)
 
     class Meta:
         model = User
