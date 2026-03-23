@@ -28,9 +28,10 @@ const navItems = computed(() => {
 })
 
 const isActive = (path) => {
-  if (path === '/dashboard' && route.path === '/dashboard') return true
-  if (path !== '/dashboard' && route.path.startsWith(path)) return true
-  return false
+  // Exact match for Home and Overview to prevent false highlights
+  if (path === '/' || path === '/dashboard') return route.path === path
+  // Prefix match for all other paths (e.g. /dashboard/kuppi, /dashboard/library)
+  return route.path.startsWith(path)
 }
 
 const handleLogout = () => {
