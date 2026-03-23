@@ -60,11 +60,7 @@ onUnmounted(() => {
           </svg>
           <span class="absolute top-1.5 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
         </button>
-<<<<<<< HEAD
-        <RouterLink to="/login" class="inline-flex items-center justify-center px-8 py-2.5 rounded-full font-bold text-[1.1rem] text-white bg-hero-highlight hover:opacity-90 transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5">
-=======
         <RouterLink to="/login" class="inline-flex items-center justify-center px-8 py-2.5 rounded-full font-bold tracking-wider uppercase text-[1.1rem] text-white bg-hero-highlight hover:opacity-90 transition-all duration-200 shadow-md hover:shadow-lg hover:scale-105">
->>>>>>> 61542dc3466c944a72cf4825924e0c241bfa5b9c
           LOGIN
         </RouterLink>
       </div>

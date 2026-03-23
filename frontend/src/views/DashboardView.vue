@@ -1,20 +1,3 @@
-<<<<<<< HEAD
-<script setup></script>
-
-<template>
-  <div class="page-container">
-    <h1>Student Dashboard</h1>
-    <p>Dashboard content goes here.</p>
-  </div>
-</template>
-
-<style scoped>
-.page-container {
-  padding: var(--spacing-4xl) var(--spacing-xl);
-  text-align: center;
-}
-</style>
-=======
 <script setup>
 import { ref } from 'vue'
 import RecommendedGrid from '../components/automation/RecommendedGrid.vue'
@@ -70,4 +53,3 @@ const closeFeedback = () => {
 
   </div>
 </template>
->>>>>>> 61542dc3466c944a72cf4825924e0c241bfa5b9c
