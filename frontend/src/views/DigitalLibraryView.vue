@@ -1,5 +1,4 @@
 <script setup>
-import AppNavbar from '../components/layout/AppNavbar.vue'
 import { ref, computed } from 'vue'
 
 // Search & filter state
@@ -103,8 +102,6 @@ const getTypeColor = (type) => {
 
 <template>
   <div class="digital-library-page bg-[#F4F7F9] min-h-screen">
-    <AppNavbar />
-
     <main class="pt-[90px] pb-16">
       <div class="max-w-[1600px] mx-auto px-6 lg:px-10">
 
