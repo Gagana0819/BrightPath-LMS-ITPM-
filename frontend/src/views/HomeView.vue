@@ -7,7 +7,7 @@ import SmartNotificationsPreview from '../components/landing/SmartNotificationsP
 </script>
 
 <template>
-  <main class="home-view bg-base">
+  <main class="home-view bg-base ">
     <HeroSection />
     <DigitalLibraryPreview />
     <LiveKuppiPreview />
