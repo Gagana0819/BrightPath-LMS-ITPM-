@@ -1,18 +1,14 @@
 <script setup>
 import HeroSection from '../components/landing/HeroSection.vue'
-import DigitalLibraryPreview from '../components/landing/DigitalLibraryPreview.vue'
-import LiveKuppiPreview from '../components/landing/LiveKuppiPreview.vue'
-import VerificationWorks from '../components/landing/VerificationWorks.vue'
-import SmartNotificationsPreview from '../components/landing/SmartNotificationsPreview.vue'
+import TrendingResources from '../components/landing/TrendingResources.vue'
+import ModernFeatures from '../components/landing/ModernFeatures.vue'
 </script>
 
 <template>
   <main class="home-view bg-base ">
     <HeroSection />
-    <DigitalLibraryPreview />
-    <LiveKuppiPreview />
-    <VerificationWorks />
-    <SmartNotificationsPreview />
+    <TrendingResources />
+    <ModernFeatures />
   </main>
 </template>
 

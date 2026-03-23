@@ -8,7 +8,7 @@
       <!-- Brand -->
       <div class="brand z-20 flex-shrink-0">
         <RouterLink to="/" class="flex items-center gap-2 text-[1.4rem] font-bold text-brand tracking-tight">
-          The Academic Curator
+          BRIGHTPATH
         </RouterLink>
       </div>
 

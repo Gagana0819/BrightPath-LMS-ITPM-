@@ -5,15 +5,26 @@ import { RouterLink } from 'vue-router'
 <template>
   <footer class="bg-white border-t border-slate-200">
     <!-- CTA Banner -->
-    <div class="bg-gradient-to-r from-brand to-[#6BAAEE] py-16 px-4">
-      <div class="max-w-[1200px] mx-auto text-center text-white">
-        <h2 class="text-[2.2rem] font-bold mb-4">Ready to join the community?</h2>
-        <p class="text-white/90 text-lg mb-8 max-w-[600px] mx-auto">
-          Sign up today and get instant access to thousands of resources, real-time sessions, and peer support.
-        </p>
-        <RouterLink to="/register" class="inline-flex items-center justify-center px-8 py-3.5 rounded-md font-bold text-[1.1rem] text-brand bg-white hover:bg-slate-50 transition-all shadow-md">
-          Get Started Now
-        </RouterLink>
+    <div class="bg-slate-50 py-16 px-4">
+      <div class="max-w-[1000px] mx-auto text-center text-white bg-blue-600 rounded-3xl py-16 px-6 relative overflow-hidden shadow-xl">
+        <!-- Background decorative elements -->
+        <div class="absolute top-0 right-0 w-64 h-64 bg-blue-500 rounded-full mix-blend-multiply filter blur-2xl opacity-70 translate-x-1/2 -translate-y-1/2"></div>
+        <div class="absolute bottom-0 left-0 w-64 h-64 bg-blue-700 rounded-full mix-blend-multiply filter blur-2xl opacity-70 -translate-x-1/2 translate-y-1/2"></div>
+
+        <div class="relative z-10">
+          <h2 class="text-[2.2rem] font-bold mb-4">Ready to join the community?</h2>
+          <p class="text-white/90 text-lg mb-8 max-w-[600px] mx-auto">
+            Sign up today using your University Student ID to get instant access to thousands of resources shared by your peers.
+          </p>
+          <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <RouterLink to="/register" class="inline-flex items-center justify-center px-8 py-3.5 rounded-lg font-bold text-[1.05rem] text-blue-600 bg-white hover:bg-blue-50 transition-colors shadow-sm min-w-[160px]">
+              Join for Free
+            </RouterLink>
+            <RouterLink to="/about" class="inline-flex items-center justify-center px-8 py-3.5 rounded-lg font-bold text-[1.05rem] text-white border-2 border-white/30 hover:bg-white/10 transition-colors min-w-[160px]">
+              Learn More
+            </RouterLink>
+          </div>
+        </div>
       </div>
     </div>
 
