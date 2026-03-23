@@ -1,78 +1,113 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 
 const user = ref({
-  firstName: 'Kasun',
-  lastName: 'Silva',
-  email: 'kasun.s@university.edu',
-  studentId: 'SE/2026/045',
+  firstName: 'Student',
+  lastName: '',
+  email: 'student@university.edu',
+  studentId: '',
   verified: true
+})
+
+onMounted(() => {
+  const token = localStorage.getItem('access_token')
+  if (token) {
+    const fName = localStorage.getItem('first_name')
+    const lName = localStorage.getItem('last_name')
+    const fullName = localStorage.getItem('full_name')
+
+    if (fullName) {
+      const parts = fullName.split(' ')
+      user.value.firstName = parts[0]
+      user.value.lastName = parts.slice(1).join(' ')
+    } else if (fName && lName) {
+      user.value.firstName = fName
+      user.value.lastName = lName
+    }
+    
+    const email = localStorage.getItem('email') || localStorage.getItem('username')
+    if (email) user.value.email = email
+    
+    const studentId = localStorage.getItem('student_id')
+    if (studentId) user.value.studentId = studentId
+  }
 })
 </script>
 
 <template>
-  <div class="w-full max-w-4xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+  <div class="w-full max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 font-sans">
     
     <!-- Header -->
-    <div>
-      <h1 class="text-3xl font-bold tracking-tight text-content mb-2">Profile Settings</h1>
-      <p class="text-slate-500">Manage your identity verified status and personal details.</p>
+    <div class="border-b border-slate-200 pb-5">
+      <h1 class="text-3xl font-extrabold tracking-tight text-[#2C3E50] mb-2">Profile Settings</h1>
+      <p class="text-slate-500 text-[0.95rem]">Manage your identity verified status and personal details.</p>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
       
       <!-- Left Column: Avatar & Status -->
-      <div class="lg:col-span-1 space-y-6">
-        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col items-center text-center">
-          <div class="relative mb-4">
-            <img 
-              src="https://api.dicebear.com/7.x/notionists/svg?seed=Kasun&backgroundColor=e4f8f6" 
-              alt="Profile Avatar" 
-              class="w-32 h-32 rounded-full border-4 border-white shadow-md object-cover"
-            />
-            <button class="absolute bottom-0 right-2 bg-hero-highlight text-white p-2 rounded-full shadow-md hover:bg-blue-700 transition">
+      <div class="md:col-span-1 space-y-6">
+        <div class="bg-[#F4F7F9] rounded-3xl p-8 shadow-sm border border-slate-200/60 flex flex-col items-center text-center relative overflow-hidden group">
+          <!-- Decorative Background element -->
+          <div class="absolute -top-10 -right-10 w-32 h-32 bg-[#4A90E2]/10 rounded-full blur-2xl"></div>
+
+          <div class="relative mb-5 z-10">
+            <div class="w-32 h-32 rounded-full border-4 border-white shadow-xl flex items-center justify-center bg-gradient-to-br from-[#4A90E2] to-[#2C3E50] text-white text-4xl font-black tracking-widest overflow-hidden">
+               {{ user.firstName.charAt(0) }}{{ user.lastName.charAt(0) }}
+            </div>
+            <button class="absolute bottom-1 right-1 bg-[#4A90E2] text-white p-2.5 rounded-full shadow-lg hover:bg-[#3A7BC8] hover:scale-105 transition-all">
               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
               </svg>
             </button>
           </div>
-          <h2 class="text-xl font-bold text-content">{{ user.firstName }} {{ user.lastName }}</h2>
-          <p class="text-sm text-slate-500 mb-4">{{ user.studentId }}</p>
+          <h2 class="text-xl font-extrabold text-[#2C3E50] z-10 uppercase tracking-tight">{{ user.firstName }} <br /> {{ user.lastName }}</h2>
+          <p class="text-sm font-semibold text-[#4A90E2] mb-5 z-10">{{ user.studentId }}</p>
           
-          <div v-if="user.verified" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-700 rounded-full font-medium text-sm border border-green-200">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <div v-if="user.verified" class="inline-flex items-center gap-1.5 px-4 py-2 bg-[#A8E6CF]/20 text-[#2C3E50] rounded-full font-bold text-xs uppercase tracking-widest border border-[#A8E6CF] shadow-sm z-10">
+            <svg class="w-4 h-4 text-[#2C3E50]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            ID Verified
+            Verified Identity
           </div>
         </div>
       </div>
 
       <!-- Right Column: Settings Form -->
-      <div class="lg:col-span-2">
-        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-          <h3 class="text-lg font-bold text-content mb-6">Personal Information</h3>
+      <div class="md:col-span-2">
+        <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100 relative overflow-hidden">
           
-          <div class="space-y-5">
-            <div class="grid grid-cols-2 gap-5">
-              <div class="space-y-1.5">
-                <label class="text-sm font-medium text-slate-700">First Name</label>
-                <input v-model="user.firstName" type="text" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-hero-highlight/20 focus:outline-none" />
+          <h3 class="text-xl font-extrabold text-[#2C3E50] mb-8 flex items-center gap-3">
+            <span class="w-8 h-8 rounded-lg bg-[#F4F7F9] flex items-center justify-center text-[#4A90E2]">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+            </span>
+            Personal Information
+          </h3>
+          
+          <div class="space-y-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div class="space-y-2">
+                <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">First Name</label>
+                <input v-model="user.firstName" type="text" class="w-full px-5 py-3.5 bg-[#F4F7F9] text-[#2C3E50] border-2 border-transparent hover:border-slate-200 rounded-2xl focus:bg-white focus:border-[#4A90E2] focus:ring-4 focus:ring-[#4A90E2]/10 outline-none transition-all font-semibold" />
               </div>
-              <div class="space-y-1.5">
-                <label class="text-sm font-medium text-slate-700">Last Name</label>
-                <input v-model="user.lastName" type="text" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-hero-highlight/20 focus:outline-none" />
+              <div class="space-y-2">
+                <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Last Name</label>
+                <input v-model="user.lastName" type="text" class="w-full px-5 py-3.5 bg-[#F4F7F9] text-[#2C3E50] border-2 border-transparent hover:border-slate-200 rounded-2xl focus:bg-white focus:border-[#4A90E2] focus:ring-4 focus:ring-[#4A90E2]/10 outline-none transition-all font-semibold" />
               </div>
             </div>
 
-            <div class="space-y-1.5">
-              <label class="text-sm font-medium text-slate-700">University Email Address</label>
-              <input v-model="user.email" type="email" disabled class="w-full px-4 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-slate-500 cursor-not-allowed" />
-              <p class="text-xs text-slate-400 mt-1">Contact admin to change your primary academic email.</p>
+            <div class="space-y-2">
+              <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">University Email Address</label>
+              <input v-model="user.email" type="email" disabled class="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-400 font-medium cursor-not-allowed" />
+              <p class="text-[11px] font-bold text-[#A8E6CF] mt-2 tracking-wide uppercase flex items-center gap-1">
+                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                Contact admin to change your primary Academic Email.
+              </p>
             </div>
 
-            <div class="pt-4 flex justify-end">
-              <button class="px-6 py-2.5 bg-hero-highlight text-white rounded-xl font-bold tracking-wide hover:opacity-90 transition-all shadow-sm">
+            <div class="pt-6 mt-6 border-t border-slate-100 flex justify-end">
+              <button class="px-8 py-3.5 bg-[#4A90E2] hover:bg-[#3A7BC8] hover:shadow-lg hover:-translate-y-0.5 active:scale-[0.98] text-white rounded-2xl font-bold tracking-wide transition-all uppercase text-sm flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
                 Save Changes
               </button>
             </div>

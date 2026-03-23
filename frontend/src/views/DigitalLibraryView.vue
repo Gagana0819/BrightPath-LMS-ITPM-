@@ -101,18 +101,39 @@ const getTypeColor = (type) => {
 </script>
 
 <template>
-  <div class="digital-library-page bg-[#F4F7F9] min-h-screen">
-    <main class="pt-[90px] pb-16">
-      <div class="max-w-[1600px] mx-auto px-6 lg:px-10">
+  <div class="digital-library-page bg-[#F4F7F9] min-h-screen relative overflow-hidden">
+    <main class="pt-[90px] pb-16 relative">
+      <!-- Global Decorative Backgrounds -->
+      <div class="absolute inset-0 w-full h-full z-0 opacity-30 fixed pointer-events-none">
+        <img src="/hero BG.png" class="w-full h-full object-cover" />
+      </div>
+      <div class="absolute top-0 right-0 w-[80%] max-w-[800px] z-0 opacity-40 mix-blend-multiply pointer-events-none -translate-y-1/4 translate-x-1/4 fixed">
+        <img src="/BG asset.png" class="w-full h-auto" />
+      </div>
 
-        <!-- Page Header -->
-        <div class="mb-10">
-          <h1 class="text-[2.8rem] lg:text-[3.5rem] leading-tight text-[#2C3E50] font-bold tracking-tight mb-4">
-            Digital <span class="text-[#4A90E2]">Library</span>
-          </h1>
-          <p class="text-lg text-[#2C3E50]/60 max-w-[600px]">
-            Search, discover, and download peer-reviewed resources. Earn points and climb the ranks.
-          </p>
+      <div class="relative z-10 max-w-[1600px] mx-auto px-6 lg:px-10">
+
+        <!-- Attractive Hero Banner -->
+        <div class="relative bg-slate-900 text-white py-16 lg:py-24 px-8 lg:px-12 mb-12 overflow-hidden shadow-2xl rounded-3xl border border-slate-700/50 animate-fade-in-down">
+          <div class="absolute inset-0 w-full h-full z-0 opacity-40 mix-blend-overlay">
+            <img src="/hero BG.png" class="w-full h-full object-cover" />
+          </div>
+          <div class="absolute top-1/2 right-0 -translate-y-1/2 translate-x-1/4 w-[700px] z-0 opacity-60 mix-blend-screen pointer-events-none">
+            <img src="/BG asset.png" class="w-full h-auto" />
+          </div>
+          <div class="absolute -left-20 -bottom-20 w-96 h-96 bg-[#4A90E2]/30 blur-3xl rounded-full z-0"></div>
+
+          <div class="relative z-10">
+            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-[11px] font-bold uppercase tracking-widest w-max mb-6">
+              Resource Hub
+            </div>
+            <h1 class="text-[3rem] lg:text-[4.5rem] leading-[1.1] font-extrabold tracking-tight mb-4">
+              Digital <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-sky-300">Library</span>
+            </h1>
+            <p class="text-lg lg:text-xl text-slate-300 max-w-[600px] leading-relaxed">
+              Search, discover, and download peer-reviewed resources. Earn points and climb the ranks by contributing to the community.
+            </p>
+          </div>
         </div>
 
         <div class="flex flex-col lg:flex-row gap-8">
@@ -121,7 +142,7 @@ const getTypeColor = (type) => {
           <div class="flex-1 space-y-6">
 
             <!-- Compact Search Bar -->
-            <div class="bg-white rounded-2xl p-4 shadow-sm border border-[#4A90E2]/10">
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-[#4A90E2]/10 animate-fade-in-up delay-100">
               <div class="flex items-center gap-3">
                 <!-- Search Input -->
                 <div class="relative flex-1">
@@ -267,8 +288,8 @@ const getTypeColor = (type) => {
               </Transition>
             </Teleport>
 
-            <!-- Document Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+            <!-- Document Grid with Transition -->
+            <transition-group name="list" tag="div" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 animate-fade-in-up delay-200 relative">
               <div
                 v-for="doc in filteredDocuments"
                 :key="doc.id"
@@ -334,7 +355,7 @@ const getTypeColor = (type) => {
                   </div>
                 </div>
               </div>
-            </div>
+            </transition-group>
 
             <!-- Empty State -->
             <div v-if="filteredDocuments.length === 0" class="bg-white rounded-2xl p-12 text-center border border-[#4A90E2]/10">
@@ -345,7 +366,7 @@ const getTypeColor = (type) => {
           </div>
 
           <!-- Right Sidebar: Gamified Points Wallet -->
-          <aside class="w-full lg:w-[360px] shrink-0 space-y-6">
+          <aside class="w-full lg:w-[360px] shrink-0 space-y-6 animate-fade-in-left delay-300">
 
             <!-- Points Wallet Card -->
             <div class="bg-gradient-to-br from-[#2C3E50] to-[#1a2636] rounded-2xl p-6 text-white shadow-xl relative overflow-hidden group border border-[#4A90E2]/20">
@@ -477,6 +498,54 @@ const getTypeColor = (type) => {
 <style scoped>
 .digital-library-page {
   width: 100%;
+}
+
+/* Page Load Animations */
+@keyframes fadeInDown {
+  0% { opacity: 0; transform: translateY(-30px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeInUp {
+  0% { opacity: 0; transform: translateY(30px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeInLeft {
+  0% { opacity: 0; transform: translateX(30px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+.animate-fade-in-down {
+  animation: fadeInDown 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.animate-fade-in-up {
+  opacity: 0;
+  animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.animate-fade-in-left {
+  opacity: 0;
+  animation: fadeInLeft 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+
+/* Grid Transition Group */
+.list-move, /* apply transition to moving elements */
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateY(30px) scale(0.95);
+}
+
+/* ensure leaving items are taken out of layout flow so that moving
+   animations can be calculated correctly. */
+.list-leave-active {
+  position: absolute;
 }
 </style>
 

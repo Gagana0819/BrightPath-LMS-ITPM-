@@ -45,7 +45,7 @@ const handleLogout = () => {
     
     <!-- Brand Header -->
     <div class="h-[80px] flex items-center px-6 border-b border-white/10">
-      <RouterLink to="/dashboard" class="flex items-center gap-2 text-[22px] font-extrabold tracking-tight hover:opacity-80 transition-opacity cursor-pointer">
+      <RouterLink to="/" class="flex items-center gap-2 text-[22px] font-extrabold tracking-tight hover:opacity-80 transition-opacity cursor-pointer">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" class="text-hero-highlight drop-shadow-md">
           <path d="M4 19V5C4 3.89543 4.89543 3 6 3H19V19C19 20.1046 18.1046 21 17 21H6C4.89543 21 4 20.1046 4 19Z" stroke="currentColor" stroke-width="2"/>
           <path d="M4 15L15 3" stroke="currentColor" stroke-width="2"/>
