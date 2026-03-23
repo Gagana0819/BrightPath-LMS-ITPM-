@@ -387,11 +387,7 @@ const handleRegister = async () => {
     console.log('DEBUG: FormData prepared. Sending request...')
     
     // Exact endpoint as requested: http://127.0.0.1:8000/api/accounts/register/
-    const response = await api.post('http://127.0.0.1:8000/api/accounts/register/', formDataPayload, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    })
+    const response = await api.post('http://127.0.0.1:8000/api/accounts/register/', formDataPayload)
     
     console.log('DEBUG: API Response Status:', response.status)
     console.log('DEBUG: API Response Data:', response.data)

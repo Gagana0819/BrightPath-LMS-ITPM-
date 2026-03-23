@@ -27,6 +27,11 @@ class UserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Full name should only contain letters and spaces.")
         return value
 
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("This email is already registered.")
+        return value
+
     def validate_nic_number(self, value):
         nic_regex = r"^([0-9]{9}[vVxX]|[0-9]{12})$"
         if not re.match(nic_regex, value):

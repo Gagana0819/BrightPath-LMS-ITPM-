@@ -11,7 +11,8 @@ const api = axios.create({
 api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('access_token');
-        if (token) {
+        const isAuthRoute = config.url.includes('/login') || config.url.includes('/register');
+        if (token && !isAuthRoute) {
             config.headers.Authorization = `Bearer ${token}`;
         }
         return config;

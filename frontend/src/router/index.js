@@ -35,6 +35,11 @@ const router = createRouter({
           component: () => import('../views/DashboardView.vue'),
         },
         {
+          path: 'home',
+          name: 'student-home',
+          component: () => import('../views/StudentHomeView.vue'),
+        },
+        {
           path: 'library',
           name: 'library',
           component: () => import('../views/LibraryView.vue'),
@@ -47,7 +52,7 @@ const router = createRouter({
         {
           path: 'kuppi',
           name: 'kuppi',
-          component: () => import('../views/ContentDashboard.vue'),
+          component: () => import('../views/KuppiDashboardView.vue'),
         },
         {
           path: 'upload',
@@ -75,9 +80,6 @@ router.beforeEach((to, from, next) => {
     } else {
       next();
     }
-  } else if ((to.name === 'login' || to.name === 'register') && isAuthenticated) {
-    // Redirect to dashboard if already authenticated
-    next({ name: 'dashboard' });
   } else {
     next();
   }

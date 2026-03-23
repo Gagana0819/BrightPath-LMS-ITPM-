@@ -21,8 +21,13 @@ class RegisterView(APIView):
         
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            try:
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
+                return Response({"system_error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         print(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
