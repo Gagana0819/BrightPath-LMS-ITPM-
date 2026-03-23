@@ -1,8 +1,9 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 
 const router = useRouter()
+const route = useRoute()
 const isLoggedIn = ref(false)
 const showNotifications = ref(false)
 
@@ -18,7 +19,7 @@ const demoNotifications = [
   { id: 3, title: 'Points Earned!', text: 'You received +50 BP for your upload.', time: '2h ago', unread: false },
 ]
 
-onMounted(() => {
+const updateAuthState = () => {
   const token = localStorage.getItem('access_token')
   isLoggedIn.value = !!token
   
@@ -39,13 +40,20 @@ onMounted(() => {
       userInitials.value = `${fName.charAt(0)}${lName.charAt(0)}`.toUpperCase()
     }
   }
+}
 
+onMounted(() => {
+  updateAuthState()
   document.addEventListener('click', closeDropdowns)
 })
+
+watch(() => route.path, updateAuthState)
 
 onUnmounted(() => {
   document.removeEventListener('click', closeDropdowns)
 })
+
+const logoTarget = computed(() => isLoggedIn.value ? '/dashboard' : '/')
 
 const toggleNotifications = (e) => {
   e.stopPropagation()
@@ -67,7 +75,7 @@ const navigateToProfile = () => {
       
       <!-- Brand -->
       <div class="brand z-20 flex-shrink-0">
-        <RouterLink to="/" class="flex items-center gap-2 text-[1.4rem] font-bold text-brand tracking-tight">
+        <RouterLink :to="logoTarget" class="flex items-center gap-2 text-[1.4rem] font-bold text-brand tracking-tight">
           BRIGHTPATH
         </RouterLink>
       </div>
@@ -82,7 +90,6 @@ const navigateToProfile = () => {
 
       <!-- Action Buttons / User Menu -->
       <div class="hidden md:flex z-20 items-center gap-6 flex-shrink-0">
-        
         <template v-if="!isLoggedIn">
           <RouterLink to="/login" class="font-semibold text-[0.95rem] text-[#2C3E50] hover:text-[#4A90E2] transition-colors">
             Log In
