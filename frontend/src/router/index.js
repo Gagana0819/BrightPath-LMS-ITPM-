@@ -90,19 +90,16 @@ const router = createRouter({
 })
 
 // Navigation Guard
-router.beforeEach((to, from, next) => {
+router.beforeEach((to) => {
   const isAuthenticated = !!localStorage.getItem('access_token');
   
   if (to.matched.some(record => record.meta.requiresAuth)) {
     if (!isAuthenticated) {
       // Redirect to login if not authenticated
-      next({ name: 'login' });
-    } else {
-      next();
+      return { name: 'login' };
     }
-  } else {
-    next();
   }
+  return true;
 });
 
 export default router
