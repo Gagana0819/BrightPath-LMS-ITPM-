@@ -2,9 +2,14 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
 export const useContentStore = defineStore('content', () => {
-  const resources = ref([])
+  const resources = ref([
+    { id: 1, title: 'Introduction to Vue 3', description: 'Basics of Composition API', category: 'videos', url: 'https://example.com/video1.mp4' },
+    { id: 2, title: 'Chapter 1 Notes', description: 'Key points from chapter 1', category: 'notes', url: 'https://example.com/notes1.pdf' },
+    { id: 3, title: '2022 Past Paper', description: 'Final exam 2022', category: 'past_papers', url: 'https://example.com/pastpaper.pdf' }
+  ])
   const liveSessions = ref([])
   const isLoading = ref(false)
+  const isSyncing = ref(false)
   const error = ref(null)
 
   // Fetch resources based on category (videos, notes, past_papers)
@@ -12,17 +17,9 @@ export const useContentStore = defineStore('content', () => {
     isLoading.value = true
     error.value = null
     try {
-      // TODO: Replace with actual backend API call
-      // const response = await fetch(`/api/resources?category=${category}`)
-      // resources.value = await response.json()
-      
       // Mock data for UI development
       setTimeout(() => {
-        resources.value = [
-          { id: 1, title: 'Introduction to Vue 3', description: 'Basics of Composition API', category: 'videos', url: 'https://example.com/video1.mp4' },
-          { id: 2, title: 'Chapter 1 Notes', description: 'Key points from chapter 1', category: 'notes', url: 'https://example.com/notes1.pdf' },
-          { id: 3, title: '2022 Past Paper', description: 'Final exam 2022', category: 'past_papers', url: 'https://example.com/pastpaper.pdf' }
-        ].filter(r => r.category === category)
+        // In a real app, this would be an API call
         isLoading.value = false
       }, 500)
     } catch (err) {
@@ -36,21 +33,44 @@ export const useContentStore = defineStore('content', () => {
     isLoading.value = true
     error.value = null
     try {
-      // TODO: Replace with actual upload API call (e.g., Multipart Form Data)
-      console.log('Uploading resource:', resourceData, file)
-      setTimeout(() => {
-        const newResource = {
-          id: Date.now(),
-          ...resourceData,
-          url: URL.createObjectURL(file)
-        }
-        resources.value.push(newResource)
-        isLoading.value = false
-      }, 1000)
+      // Simulate real delay for "Premium" feel
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          const newResource = {
+            id: Date.now(),
+            ...resourceData,
+            url: file ? URL.createObjectURL(file) : 'https://example.com/placeholder.pdf'
+          }
+          resources.value.unshift(newResource)
+          isLoading.value = false
+          resolve(newResource)
+        }, 1500)
+      })
     } catch (err) {
       error.value = err.message
       isLoading.value = false
     }
+  }
+
+  // Delete a resource
+  const deleteResource = async (id) => {
+    isLoading.value = true
+    setTimeout(() => {
+      resources.value = resources.value.filter(r => r.id !== id)
+      isLoading.value = false
+    }, 500)
+  }
+
+  // Update a resource
+  const updateResource = async (id, updatedData) => {
+    isLoading.value = true
+    setTimeout(() => {
+      const index = resources.value.findIndex(r => r.id === id)
+      if (index !== -1) {
+        resources.value[index] = { ...resources.value[index], ...updatedData }
+      }
+      isLoading.value = false
+    }, 500)
   }
 
   // Fetch live sessions
@@ -58,7 +78,6 @@ export const useContentStore = defineStore('content', () => {
     isLoading.value = true
     error.value = null
     try {
-      // TODO: Replace with actual backend API call
       setTimeout(() => {
         liveSessions.value = [
           { id: 1, title: 'Advanced Vue Concepts', scheduled_time: new Date(Date.now() + 86400000).toISOString(), join_link: 'https://meet.google.com/abc-xyz' },
@@ -74,18 +93,20 @@ export const useContentStore = defineStore('content', () => {
 
   // Sync with Google Classroom
   const syncWithGoogleClassroom = async () => {
-    isLoading.value = true
+    isSyncing.value = true
     error.value = null
     try {
-      // TODO: Replace with actual trigger for backend sync API
       console.log('Syncing with Google Classroom...')
-      setTimeout(() => {
-        alert('Successfully synced with Google Classroom!')
-        fetchLiveSessions() // Refresh sessions after sync
-      }, 1500)
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          fetchLiveSessions() // Refresh
+          isSyncing.value = false
+          resolve(true)
+        }, 2000)
+      })
     } catch (err) {
       error.value = err.message
-      isLoading.value = false
+      isSyncing.value = false
     }
   }
 
@@ -93,9 +114,12 @@ export const useContentStore = defineStore('content', () => {
     resources,
     liveSessions,
     isLoading,
+    isSyncing,
     error,
     fetchResources,
     uploadResource,
+    deleteResource,
+    updateResource,
     fetchLiveSessions,
     syncWithGoogleClassroom
   }

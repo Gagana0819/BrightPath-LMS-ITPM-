@@ -9,17 +9,27 @@ from .serializers import UserSerializer
 
 User = get_user_model()
 
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
-    parser_classes = [MultiPartParser, FormParser]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def post(self, request):
         print("DEBUG: Registration attempt started")
-        print(request.data)
         
-        serializer = UserSerializer(data=request.data)
+        # Clone data to modify it
+        data = request.data.copy()
+        
+        # Sanitize file fields: if empty dict or empty string, remove them 
+        # so DRF handles them as None/optional.
+        for field in ['id_photo', 'verification_doc']:
+            if field in data and (data[field] == {} or data[field] == ''):
+                data.pop(field)
+
+        print(data)
+        
+        serializer = UserSerializer(data=data)
         if serializer.is_valid():
             try:
                 serializer.save()

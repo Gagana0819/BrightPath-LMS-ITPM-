@@ -68,15 +68,17 @@ const router = createRouter({
           path: 'kuppi',
           name: 'kuppi',
           component: () => import('../views/KuppiDashboardView.vue'),
+          children: [
+            {
+              path: 'play/:id',
+              name: 'kuppi-play',
+              component: () => import('../views/KuppiDashboardView.vue'), // Self or child component
+            }
+          ]
         },
         {
           path: 'upload',
           name: 'upload-course',
-          component: () => import('../views/ContentDashboard.vue'), // Placeholder
-        },
-        {
-          path: 'grades',
-          name: 'my-grades',
           component: () => import('../views/ContentDashboard.vue'), // Placeholder
         },
         {
@@ -90,19 +92,16 @@ const router = createRouter({
 })
 
 // Navigation Guard
-router.beforeEach((to, from, next) => {
+router.beforeEach((to) => {
   const isAuthenticated = !!localStorage.getItem('access_token');
   
   if (to.matched.some(record => record.meta.requiresAuth)) {
     if (!isAuthenticated) {
       // Redirect to login if not authenticated
-      next({ name: 'login' });
-    } else {
-      next();
+      return { name: 'login' };
     }
-  } else {
-    next();
   }
+  return true;
 });
 
 export default router
