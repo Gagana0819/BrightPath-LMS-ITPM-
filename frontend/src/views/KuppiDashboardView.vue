@@ -14,13 +14,13 @@ const tutorRating = 4.8
 const activeSessionsList = ref([
   { 
     id: 1, 
-    title: 'Object Oriented Programming - Past Papers', 
+    title: 'Object Oriented Programming — Past Papers', 
     date: 'Oct 25', 
     time: '6:00 PM', 
     students: 45, 
     link: 'https://meet.google.com/abc-xyz',
-    videoUrl: 'https://www.youtube.com/embed/ScMzIvxBSi4',
-    rawYoutube: 'https://www.youtube.com/watch?v=ScMzIvxBSi4'
+    videoUrl: 'https://www.youtube.com/embed/GoXwIVyNvX0',
+    rawYoutube: 'https://www.youtube.com/watch?v=GoXwIVyNvX0'
   },
   { 
     id: 2, 
@@ -29,8 +29,48 @@ const activeSessionsList = ref([
     time: '4:00 PM', 
     students: 32, 
     link: 'https://meet.google.com/def-uvw',
-    videoUrl: 'https://www.youtube.com/embed/668nUCeBHyY',
-    rawYoutube: 'https://www.youtube.com/watch?v=668nUCeBHyY'
+    videoUrl: 'https://www.youtube.com/embed/HubezKbFL78',
+    rawYoutube: 'https://www.youtube.com/watch?v=HubezKbFL78'
+  },
+  { 
+    id: 3, 
+    title: 'React Context API Deep Dive', 
+    date: 'Oct 28', 
+    time: '5:30 PM', 
+    students: 28, 
+    link: 'https://meet.google.com/ghi-jkl',
+    videoUrl: 'https://www.youtube.com/embed/5LrDIWkK_Bc',
+    rawYoutube: 'https://www.youtube.com/watch?v=5LrDIWkK_Bc'
+  },
+  { 
+    id: 4, 
+    title: 'Network Security Fundamentals', 
+    date: 'Oct 30', 
+    time: '7:00 PM', 
+    students: 19, 
+    link: 'https://meet.google.com/mno-pqr',
+    videoUrl: 'https://www.youtube.com/embed/nzj7Wg4DAbs',
+    rawYoutube: 'https://www.youtube.com/watch?v=nzj7Wg4DAbs'
+  },
+  { 
+    id: 5, 
+    title: 'Spring Boot Microservices', 
+    date: 'Nov 01', 
+    time: '6:00 PM', 
+    students: 55, 
+    link: 'https://meet.google.com/stu-vwx',
+    videoUrl: 'https://www.youtube.com/embed/M9S_ZfN0p0M',
+    rawYoutube: 'https://www.youtube.com/watch?v=M9S_ZfN0p0M'
+  },
+  { 
+    id: 6, 
+    title: 'Machine Learning with Python', 
+    date: 'Nov 03', 
+    time: '4:30 PM', 
+    students: 38, 
+    link: 'https://meet.google.com/yz-abc',
+    videoUrl: 'https://www.youtube.com/embed/GwIo3gDZCVQ',
+    rawYoutube: 'https://www.youtube.com/watch?v=GwIo3gDZCVQ'
   }
 ])
 
@@ -75,7 +115,7 @@ const openEditModal = (session) => {
 }
 
 const submitSession = () => {
-  if (!newSession.value.title || !newSession.value.date) return
+  if (!validateForm()) return
   
   if (isEditing.value) {
     // Update existing session
@@ -101,6 +141,7 @@ const submitSession = () => {
   isNewSessionModalOpen.value = false
   isEditing.value = false
   editingId.value = null
+  formErrors.value = {}
 }
 
 // Video Player logic
@@ -111,11 +152,23 @@ const isPlayerOpen = ref(false)
 const currentVideoTitle = ref('')
 
 const openPlayer = (id) => {
-  const session = activeSessionsList.value.find(s => s.id == id) || activeSessionsList.value[0]
-  currentVideoTitle.value = session.title
-  selectedVideoUrl.value = session.videoUrl
-  selectedVideoRawUrl.value = session.rawYoutube
-  selectedVideoId.value = id
+  // 1. Try to find a local session by ID
+  let session = activeSessionsList.value.find(s => s.id == id)
+  
+  if (session) {
+    currentVideoTitle.value = session.title
+    selectedVideoUrl.value = session.videoUrl
+    selectedVideoRawUrl.value = session.rawYoutube
+    selectedVideoId.value = id
+  } else {
+    // 2. If no local session, it might be a direct YouTube ID (e.g. from recommendations)
+    // For demo purposes, we'll check if it looks like a YouTube ID or fallback to the first session
+    currentVideoTitle.value = "Kuppi Recording"
+    selectedVideoUrl.value = `https://www.youtube.com/embed/${id}`
+    selectedVideoRawUrl.value = `https://www.youtube.com/watch?v=${id}`
+    selectedVideoId.value = id
+  }
+  
   isPlayerOpen.value = true
 }
 
@@ -151,9 +204,27 @@ watch(() => route.params.id, (newId) => {
 })
 
 const pendingRequestsList = ref([
-  { id: 1, student: 'Malithi Perera', topic: 'Help with React Context API', votes: 12 },
-  { id: 2, student: 'Kamal Silva', topic: 'SQL Joins & Group By', votes: 8 }
+  { id: 1, student: 'Malithi Perera', topic: 'Advanced Java OOP: Design Patterns in Practice', votes: 24, time: '10m ago' },
+  { id: 2, student: 'Kamal Silva', topic: 'SQL Indexing & Query Optimization Deep Dive', votes: 18, time: '1h ago' },
+  { id: 3, student: 'Amaya Siri', topic: 'Scaling Spring Boot Microservices with AWS', votes: 15, time: '2h ago' },
+  { id: 4, student: 'Sunil J.', topic: 'React Context API vs Redux: When to use what?', votes: 12, time: '3h ago' }
 ])
+
+const dismissedRequestsList = ref([
+  { id: 99, student: 'John D.', topic: 'Introduction to Python Flask', votes: 5, time: 'Yesterday' }
+])
+const isHistoryModalOpen = ref(false)
+
+const scheduleFromRequest = (req) => {
+  newSession.value = {
+    title: req.topic,
+    date: '',
+    time: '',
+    link: ''
+  }
+  isEditing.value = false
+  isNewSessionModalOpen.value = true
+}
 
 const handleVote = (id) => {
   const req = pendingRequestsList.value.find(r => r.id === id)
@@ -161,8 +232,62 @@ const handleVote = (id) => {
 }
 
 const dismissRequest = (id) => {
-  pendingRequestsList.value = pendingRequestsList.value.filter(r => r.id !== id)
+  const req = pendingRequestsList.value.find(r => r.id === id)
+  if (req) {
+     dismissedRequestsList.value.unshift(req)
+     pendingRequestsList.value = pendingRequestsList.value.filter(r => r.id !== id)
+  }
 }
+
+const restoreRequest = (id) => {
+  const req = dismissedRequestsList.value.find(r => r.id === id)
+  if (req) {
+     pendingRequestsList.value.push(req)
+     dismissedRequestsList.value = dismissedRequestsList.value.filter(r => r.id !== id)
+  }
+}
+
+// Form Validation
+const formErrors = ref({})
+const validateForm = () => {
+  const errors = {}
+  
+  // Title: Min 5 chars
+  if (!newSession.value.title || newSession.value.title.trim().length < 5) {
+    errors.title = "Title must be at least 5 characters"
+  }
+  
+  // Date: Format like 'Oct 30' or 'Nov 02'
+  const dateRegex = /^[A-Za-z]{3}\s\d{1,2}$/
+  if (!newSession.value.date) {
+    errors.date = "Date is required"
+  } else if (!dateRegex.test(newSession.value.date)) {
+    errors.date = "Use format like 'Oct 30'"
+  }
+  
+  // Time: Format like '5:30 PM' or '10:00 AM'
+  const timeRegex = /^(0?[1-9]|1[0-2]):[0-5][0-9]\s(AM|PM)$/i
+  if (!newSession.value.time) {
+    errors.time = "Time is required"
+  } else if (!timeRegex.test(newSession.value.time.trim())) {
+    errors.time = "Use format like '5:30 PM'"
+  }
+  
+  // Link: Must be a valid Meet url
+  const meetRegex = /^https:\/\/meet\.google\.com\/[a-z]{3}-[a-z]{4}-[a-z]{3}$/
+  if (newSession.value.link && !meetRegex.test(newSession.value.link.trim())) {
+    errors.link = "Must be a valid Google Meet link"
+  }
+  
+  formErrors.value = errors
+  return Object.keys(errors).length === 0
+}
+
+watch(newSession, () => {
+  if (Object.keys(formErrors.value).length > 0) {
+    validateForm()
+  }
+}, { deep: true })
 </script>
 
 <template>
@@ -360,8 +485,11 @@ const dismissRequest = (id) => {
               </div>
               <p class="text-[13px] font-bold text-slate-800 mb-4 line-height-relaxed">{{ req.topic }}</p>
               <div class="flex gap-2">
-                <button @click="handleVote(req.id)" class="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-600 text-[11px] font-extrabold py-2 rounded-xl transition-colors">Upvote</button>
-                <button @click="dismissRequest(req.id)" class="px-3 bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-400 text-[11px] font-bold py-2 rounded-xl transition-all italic">Dismiss</button>
+                <button @click="scheduleFromRequest(req)" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-extrabold py-2 rounded-xl transition-all shadow-md shadow-blue-100 active:scale-95">Schedule Session</button>
+                <div class="flex gap-1 flex-1">
+                  <button @click="handleVote(req.id)" class="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-600 text-[11px] font-extrabold py-2 rounded-xl transition-colors">Upvote</button>
+                  <button @click="dismissRequest(req.id)" class="px-3 bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-400 text-[11px] font-bold py-2 rounded-xl transition-all italic">Dismiss</button>
+                </div>
               </div>
             </div>
           </div>
@@ -370,7 +498,7 @@ const dismissRequest = (id) => {
             <p class="text-slate-400 text-[12px] font-medium italic">Queue clear. Great job!</p>
           </div>
 
-          <button class="w-full mt-6 py-3 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 text-[11px] font-bold hover:border-blue-300 hover:text-blue-500 transition-all">
+          <button @click="isHistoryModalOpen = true" class="w-full mt-6 py-3 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 text-[11px] font-bold hover:border-blue-300 hover:text-blue-500 transition-all">
              View History
           </button>
         </div>
@@ -480,26 +608,30 @@ const dismissRequest = (id) => {
         <form @submit.prevent="submitSession" class="p-8 space-y-6">
           <div class="space-y-2">
             <label class="text-[13px] font-bold text-slate-700 ml-1 uppercase tracking-wider">Session Title</label>
-            <input v-model="newSession.title" type="text" placeholder="e.g. Advanced Algorithm Analysis" class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all font-medium text-slate-800" required />
+            <input v-model="newSession.title" type="text" placeholder="e.g. Advanced Algorithm Analysis" :class="['w-full px-5 py-4 bg-slate-50 border rounded-2xl outline-none transition-all font-medium text-slate-800', formErrors.title ? 'border-red-400 focus:ring-red-50' : 'border-slate-200 focus:ring-blue-100 focus:border-blue-500']" required />
+            <p v-if="formErrors.title" class="text-[11px] text-red-500 font-bold ml-1">{{ formErrors.title }}</p>
           </div>
 
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-2">
               <label class="text-[13px] font-bold text-slate-700 ml-1 uppercase tracking-wider">Date</label>
-              <input v-model="newSession.date" type="text" placeholder="Oct 30" class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all font-medium text-slate-800" required />
+              <input v-model="newSession.date" type="text" placeholder="Oct 30" :class="['w-full px-5 py-4 bg-slate-50 border rounded-2xl outline-none transition-all font-medium text-slate-800', formErrors.date ? 'border-red-400 focus:ring-red-50' : 'border-slate-200 focus:ring-blue-100 focus:border-blue-500']" required />
+              <p v-if="formErrors.date" class="text-[11px] text-red-500 font-bold ml-1">{{ formErrors.date }}</p>
             </div>
             <div class="space-y-2">
               <label class="text-[13px] font-bold text-slate-700 ml-1 uppercase tracking-wider">Time</label>
-              <input v-model="newSession.time" type="text" placeholder="5:30 PM" class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all font-medium text-slate-800" required />
+              <input v-model="newSession.time" type="text" placeholder="5:30 PM" :class="['w-full px-5 py-4 bg-slate-50 border rounded-2xl outline-none transition-all font-medium text-slate-800', formErrors.time ? 'border-red-400 focus:ring-red-50' : 'border-slate-200 focus:ring-blue-100 focus:border-blue-500']" required />
+              <p v-if="formErrors.time" class="text-[11px] text-red-500 font-bold ml-1">{{ formErrors.time }}</p>
             </div>
           </div>
 
           <div class="space-y-2">
             <label class="text-[13px] font-bold text-slate-700 ml-1 uppercase tracking-wider">Interactive Meet Link</label>
-            <input v-model="newSession.link" type="url" placeholder="https://meet.google.com/..." class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all font-medium text-slate-800" />
+            <input v-model="newSession.link" type="url" placeholder="https://meet.google.com/..." :class="['w-full px-5 py-4 bg-slate-50 border rounded-2xl outline-none transition-all font-medium text-slate-800', formErrors.link ? 'border-red-400 focus:ring-red-50' : 'border-slate-200 focus:ring-blue-100 focus:border-blue-500']" />
+            <p v-if="formErrors.link" class="text-[11px] text-red-500 font-bold ml-1">{{ formErrors.link }}</p>
           </div>
 
-          <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-5 rounded-[22px] shadow-xl shadow-blue-200 transition-all hover:-translate-y-1 active:scale-[0.98] mt-4 flex items-center justify-center gap-3">
+          <button type="submit" :class="['w-full font-extrabold py-5 rounded-[22px] shadow-xl transition-all hover:-translate-y-1 active:scale-[0.98] mt-4 flex items-center justify-center gap-3', Object.keys(formErrors).length > 0 ? 'bg-slate-400 text-slate-100' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-200']">
              <svg v-if="!isEditing" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
              <svg v-else class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
              {{ isEditing ? 'Update Session Details' : 'Launch Session Listing' }}
@@ -513,5 +645,30 @@ const dismissRequest = (id) => {
       v-if="isUploadModalOpen" 
       @close="isUploadModalOpen = false" 
     />
+
+    <!-- Request History Modal -->
+    <div v-if="isHistoryModalOpen" class="fixed inset-0 z-[120] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+      <div class="bg-white w-full max-w-md rounded-[32px] shadow-2xl overflow-hidden border border-slate-100 flex flex-col max-h-[80vh] animate-in zoom-in-95 duration-300">
+        <div class="p-6 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+          <h3 class="text-[#1E293B] font-extrabold text-lg">Request History</h3>
+          <button @click="isHistoryModalOpen = false" class="w-8 h-8 rounded-lg bg-white text-slate-400 hover:text-slate-600 flex items-center justify-center shadow-sm border border-slate-100 transition-colors">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+        <div class="p-6 overflow-y-auto space-y-4 bg-slate-50/30">
+          <div v-for="req in dismissedRequestsList" :key="req.id" class="p-4 bg-white rounded-2xl border border-slate-100 shadow-sm opacity-80 group hover:opacity-100 transition-opacity">
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{{ req.time }}</span>
+              <button @click="restoreRequest(req.id)" class="text-[10px] font-bold text-blue-600 hover:underline">Restore</button>
+            </div>
+            <p class="text-[13px] font-bold text-slate-800">{{ req.topic }}</p>
+            <p class="text-[11px] text-slate-500 mt-1">Requested by {{ req.student }}</p>
+          </div>
+          <div v-if="dismissedRequestsList.length === 0" class="text-center py-10">
+            <p class="text-slate-400 text-sm font-medium italic">Archive is currently empty.</p>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
