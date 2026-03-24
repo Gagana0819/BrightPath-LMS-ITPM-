@@ -7,12 +7,12 @@ const canScrollLeft = ref(false)
 const canScrollRight = ref(true)
 
 const recommendedResources = ref([
-  { id: 'r1', title: 'ITPM 2025 Final Exam Past Paper with Model Answers', type: 'Past Paper', module: 'IT Project Management', uploader: 'Kasun Silva', tag: 'Most Downloaded', gradient: 'from-red-500 to-orange-400' },
-  { id: 'r2', title: 'OOP Design Patterns — Complete Short Notes', type: 'Short Note', module: 'Object-Oriented Programming', uploader: 'Dr. Amanda', tag: 'Top Rated', gradient: 'from-[#4A90E2] to-sky-400' },
-  { id: 'r3', title: 'Database Normalization Cheat Sheet (1NF–BCNF)', type: 'Short Note', module: 'Database Systems', uploader: 'Sanduni M.', tag: 'Trending', gradient: 'from-violet-500 to-purple-400' },
-  { id: 'r4', title: 'Data Structures — 2024 Midterm Past Paper', type: 'Past Paper', module: 'Data Structures', uploader: 'Nuwan P.', tag: 'New', gradient: 'from-emerald-500 to-teal-400' },
-  { id: 'r5', title: 'Machine Learning Key Concepts Summary', type: 'Short Note', module: 'Machine Learning', uploader: 'Dr. Fernando', tag: 'AI Trending', gradient: 'from-amber-500 to-yellow-400' },
-  { id: 'r6', title: 'Cloud Computing — AWS Services Past Paper 2024', type: 'Past Paper', module: 'Cloud Computing', uploader: 'Prof. Kumara', tag: 'Popular', gradient: 'from-cyan-500 to-blue-400' },
+  { id: 'r1', title: 'ITPM 2025 Final Exam Past Paper with Model Answers', type: 'Past Paper', module: 'IT Project Management', uploader: 'Kasun Silva', tag: 'Most Downloaded', image: '/itpm_thumbnail.png' },
+  { id: 'r2', title: 'OOP Design Patterns — Complete Short Notes', type: 'Short Note', module: 'Object-Oriented Programming', uploader: 'Dr. Amanda', tag: 'Top Rated', image: '/oop_thumbnail.png' },
+  { id: 'r3', title: 'Database Normalization Cheat Sheet (1NF–BCNF)', type: 'Short Note', module: 'Database Systems', uploader: 'Sanduni M.', tag: 'Trending', image: '/database_thumbnail.png' },
+  { id: 'r4', title: 'Data Structures — 2024 Midterm Past Paper', type: 'Past Paper', module: 'Data Structures', uploader: 'Nuwan P.', tag: 'New', image: '/data_structures_thumbnail.png' },
+  { id: 'r5', title: 'Machine Learning Key Concepts Summary', type: 'Short Note', module: 'Machine Learning', uploader: 'Dr. Fernando', tag: 'AI Trending', image: '/ml_thumbnail.png' },
+  { id: 'r6', title: 'Cloud Computing — AWS Services Past Paper 2024', type: 'Past Paper', module: 'Cloud Computing', uploader: 'Prof. Kumara', tag: 'Popular', image: '/cloud_thumbnail.png' },
 ])
 
 const updateRecScroll = () => {
@@ -168,14 +168,8 @@ const getTypeColor = (type) => {
         <div class="mb-10 animate-fade-in-up delay-100">
           <div class="flex items-center justify-between mb-6">
             <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#4A90E2] to-[#A8E6CF] flex items-center justify-center shadow-md">
-                <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                </svg>
-              </div>
               <div>
-                <h2 class="text-xl font-extrabold text-[#2C3E50] tracking-tight">BrightPath Recommend for You</h2>
-                <p class="text-xs text-slate-400 font-medium">Personalized based on your academic stream and activity</p>
+                <h2 class="text-xl font-extrabold text-[#2C3E50] tracking-tight pl-4">BrightPath Recommend for You</h2>
               </div>
             </div>
             <div class="flex items-center gap-2">
@@ -196,7 +190,7 @@ const getTypeColor = (type) => {
             >
               <!-- Thumbnail -->
               <div class="relative h-[150px] overflow-hidden">
-                <div :class="'absolute inset-0 bg-gradient-to-br ' + rec.gradient + ' opacity-90'"></div>
+                <img :src="rec.image" class="absolute inset-0 w-full h-full object-cover opacity-90" />
                 <div class="absolute inset-0 flex items-center justify-center">
                   <div v-if="rec.type === 'Past Paper'" class="w-16 h-20 bg-white/20 backdrop-blur-sm rounded-lg border border-white/30 flex flex-col items-center justify-center gap-1">
                     <svg class="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>

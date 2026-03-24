@@ -46,7 +46,7 @@ onUnmounted(() => {
       
       <!-- Left Text Content -->
       <div class="w-full lg:w-1/2 flex flex-col justify-center relative z-20 mb-12 lg:mb-0">
-        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-100 text-blue-700 text-xs font-black uppercase tracking-widest w-max mb-8 shadow-sm">
+        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-100 text-blue-700 text-xs font-black uppercase tracking-widest w-max mb-4 shadow-sm">
           UNIVERSITY NETWORK
         </div>
          
@@ -61,13 +61,10 @@ onUnmounted(() => {
           </transition>
         </div>
          
-        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 mt-6">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 pt-8">
           <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-8 rounded-lg transition-all shadow-md hover:shadow-lg flex items-center gap-2 w-full sm:w-auto justify-center">
             Join for Free
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          </button>
-          <button class="bg-white border-2 border-blue-100 text-blue-600 hover:border-blue-600 hover:bg-blue-50 font-bold py-3.5 px-8 rounded-lg transition-colors w-full sm:w-auto justify-center">
-            Browse Resources
           </button>
         </div>
          
