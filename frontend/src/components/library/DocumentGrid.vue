@@ -1,14 +1,23 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+
+const props = defineProps({
+  searchQuery: {
+    type: String,
+    default: ''
+  }
+})
 
 const documents = ref([
-  { id: 1, title: 'Object-Oriented Programming Notes', uploader: 'Dr. Amanda', rank: 'Gold', score: 98, type: 'PDF', image: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80' },
-  { id: 2, title: 'Database Systems SQL Joins', uploader: 'Kasun S.', rank: 'Silver', score: 85, type: 'DOCX', image: 'https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80' },
-  { id: 3, title: 'ITPM Midterm Review 2026', uploader: 'Prof. Wijesekera', rank: 'Gold', score: 95, type: 'PDF', image: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80' },
-  { id: 4, title: 'Data Structures Tree Algorithms', uploader: 'Nuwan S.', rank: 'Bronze', score: 65, type: 'PDF', image: 'https://images.unsplash.com/photo-1517842645767-c639042777db?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80' },
-  { id: 5, title: 'UI/UX Design Wireframes', uploader: 'Sanduni S.', rank: 'Gold', score: 92, type: 'FIG', image: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80' },
-  { id: 6, title: 'Machine Learning Basics', uploader: 'Dr. Fernando', rank: 'Silver', score: 78, type: 'PDF', image: 'https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80' }
+  { id: 1, title: 'Object-Oriented Programming Notes', uploader: 'Dr. Amanda', rank: 'Gold', score: 98, type: 'PDF', image: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80', date: '2026-03-24T10:00:00Z' },
+  { id: 2, title: 'Database Systems SQL Joins', uploader: 'Kasun S.', rank: 'Silver', score: 85, type: 'DOCX', image: 'https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80', date: '2026-03-23T15:30:00Z' },
+  { id: 3, title: 'ITPM Midterm Review 2026', uploader: 'Prof. Wijesekera', rank: 'Gold', score: 95, type: 'PDF', image: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80', date: '2026-03-22T09:15:00Z' },
+  { id: 4, title: 'Data Structures Tree Algorithms', uploader: 'Nuwan S.', rank: 'Bronze', score: 65, type: 'PDF', image: 'https://images.unsplash.com/photo-1517842645767-c639042777db?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80', date: '2026-03-21T18:45:00Z' },
+  { id: 5, title: 'UI/UX Design Wireframes', uploader: 'Sanduni S.', rank: 'Gold', score: 92, type: 'PDF', image: '/assets/ui_ux_wireframes.png', date: '2026-03-20T14:20:00Z' },
+  { id: 6, title: 'Machine Learning Basics', uploader: 'Dr. Fernando', rank: 'Silver', score: 78, type: 'PDF', image: 'https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80', date: '2026-03-19T11:05:00Z' }
 ])
+
+const sortBy = ref('rating') // default to highest rated
 
 const getRankColor = (rank) => {
   if (rank === 'Gold') return 'text-[#FFB800] bg-[#FFB800]/10 border-[#FFB800]'
@@ -16,6 +25,28 @@ const getRankColor = (rank) => {
   if (rank === 'Bronze') return 'text-amber-700 bg-amber-50 border-amber-200'
   return 'text-slate-500 bg-slate-100 border-slate-200'
 }
+
+const filteredDocuments = computed(() => {
+  const q = props.searchQuery.toLowerCase().trim()
+  let result = documents.value
+
+  if (q) {
+    result = result.filter(doc =>
+      doc.title.toLowerCase().includes(q) ||
+      doc.uploader.toLowerCase().includes(q) ||
+      doc.type.toLowerCase().includes(q)
+    )
+  }
+
+  // Sorting logic
+  if (sortBy.value === 'rating') {
+    result.sort((a, b) => b.score - a.score)
+  } else if (sortBy.value === 'recent') {
+    result.sort((a, b) => new Date(b.date) - new Date(a.date))
+  }
+
+  return result
+})
 </script>
 
 <template>
@@ -23,10 +54,13 @@ const getRankColor = (rank) => {
     <div class="flex items-center justify-between">
       <h2 class="text-2xl font-bold text-content">Community Resources</h2>
       <div class="flex gap-2">
-        <select class="bg-white border border-slate-200 text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-hero-highlight/20 font-medium">
-          <option>Highest Rated (Gold)</option>
-          <option>Most Recent</option>
-          <option>My Department</option>
+        <select 
+          v-model="sortBy"
+          class="bg-white border border-slate-200 text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-hero-highlight/20 font-medium cursor-pointer"
+        >
+          <option value="rating">Highest Rated (Gold)</option>
+          <option value="recent">Most Recent</option>
+          <option value="dept">My Department</option>
         </select>
       </div>
     </div>
@@ -35,7 +69,7 @@ const getRankColor = (rank) => {
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       
       <div 
-        v-for="doc in documents" 
+        v-for="doc in filteredDocuments" 
         :key="doc.id"
         class="bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer flex flex-col"
       >

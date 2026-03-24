@@ -1,7 +1,10 @@
 <script setup>
+import { ref } from 'vue'
 import DocumentGrid from '../components/library/DocumentGrid.vue'
 import PointsWallet from '../components/library/PointsWallet.vue'
 import UploadResourceForm from '../components/content/UploadResourceForm.vue'
+
+const searchQuery = ref('')
 </script>
 
 <template>
@@ -15,7 +18,7 @@ import UploadResourceForm from '../components/content/UploadResourceForm.vue'
           <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
-          <input type="text" placeholder="Search digital library by title, module, or tags..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-12 pr-4 py-3 outline-none focus:border-hero-highlight focus:ring-2 focus:ring-hero-highlight/20 transition-all font-medium" />
+          <input v-model="searchQuery" type="text" placeholder="Search digital library by title, module, or tags..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-12 pr-4 py-3 outline-none focus:border-hero-highlight focus:ring-2 focus:ring-hero-highlight/20 transition-all font-medium" />
         </div>
         <button class="w-full md:w-auto px-8 py-3 bg-hero-highlight text-white rounded-xl font-bold shadow-md hover:-translate-y-0.5 transition-all">
           Search
@@ -23,7 +26,7 @@ import UploadResourceForm from '../components/content/UploadResourceForm.vue'
       </div>
 
       <!-- Member 03: The Library Grid -->
-      <DocumentGrid />
+      <DocumentGrid :searchQuery="searchQuery" />
     </div>
 
     <!-- Right Sidebar Modules -->

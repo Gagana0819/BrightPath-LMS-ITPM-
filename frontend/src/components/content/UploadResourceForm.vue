@@ -22,7 +22,7 @@ const toggleSync = () => {
       <div class="space-y-4">
         <div class="space-y-1.5">
           <label class="text-sm font-semibold text-slate-700">Resource Title</label>
-          <input type="text" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-hero-highlight/20 focus:border-hero-highlight transition-all outline-none" placeholder="e.g. Node.js Express Cheat Sheet" />
+          <input type="text" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-hero-highlight/20 focus:border-hero-highlight transition-all outline-none" placeholder="e.g. ITPM Lecture Notes - Chapter 5" />
         </div>
         
         <div class="grid md:grid-cols-2 gap-4">

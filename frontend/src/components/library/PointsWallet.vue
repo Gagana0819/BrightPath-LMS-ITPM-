@@ -1,8 +1,9 @@
 <script setup>
+import { RouterLink } from 'vue-router'
 </script>
 
 <template>
-  <div class="bg-gradient-to-br from-[#1E293B] to-[#0F172A] rounded-2xl p-6 text-white shadow-xl relative overflow-hidden group border border-[#334155]">
+  <div class="bg-gradient-to-br from-[#1E293B] to-[#0F172A] rounded-2xl p-6 text-white shadow-xl relative overflow-hidden group border border-[#334155] hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
     
     <!-- Decorative background elements -->
     <div class="absolute -top-12 -right-12 w-40 h-40 bg-hero-highlight/20 rounded-full blur-2xl group-hover:bg-hero-highlight/30 transition-colors duration-500"></div>
@@ -45,9 +46,15 @@
         <p class="text-xs text-slate-400 text-right">150 BP to Platinum</p>
       </div>
 
-      <button class="w-full py-3 bg-white text-content rounded-xl font-bold hover:bg-slate-100 transition-colors text-sm shadow-[0_0_15px_rgba(255,255,255,0.1)] hover:shadow-[0_0_20px_rgba(255,255,255,0.2)]">
-        Redeem Rewards
-      </button>
+      <RouterLink 
+        to="/dashboard/wallet"
+        class="w-full py-3.5 bg-white text-content rounded-xl font-black hover:bg-slate-50 transition-all duration-300 text-xs shadow-[0_5px_15px_rgba(0,0,0,0.1)] hover:shadow-[0_10px_25px_rgba(255,255,255,0.15)] hover:-translate-y-1 hover:scale-[1.03] active:scale-95 flex items-center justify-center gap-2 group uppercase tracking-widest"
+      >
+        <span>Redeem Rewards</span>
+        <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path d="M14 5l7 7m0 0l-7 7m7-7H3" />
+        </svg>
+      </RouterLink>
     </div>
   </div>
 </template>
