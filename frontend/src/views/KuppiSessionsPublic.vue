@@ -33,12 +33,12 @@ const scrollVid = (dir) => {
 }
 
 const upcomingSessions = [
-  { id: 1, title: 'Object Oriented Programming — Past Papers', tutor: 'Kasun Bandara', year: 'Year 4', date: 'Oct 25, 2026', time: '6:00 PM', students: 45, stream: 'Information Technology', tags: ['OOP', 'Past Papers', 'Exam Prep'] },
-  { id: 2, title: 'Database Optimization Techniques', tutor: 'Nimesha Perera', year: 'Year 3', date: 'Oct 27, 2026', time: '4:00 PM', students: 32, stream: 'Software Engineering', tags: ['SQL', 'Indexing', 'Performance'] },
-  { id: 3, title: 'React Context API Deep Dive', tutor: 'Malithi Fernando', year: 'Year 3', date: 'Oct 28, 2026', time: '5:30 PM', students: 28, stream: 'Information Technology', tags: ['React', 'Hooks', 'Frontend'] },
-  { id: 4, title: 'Network Security Fundamentals', tutor: 'Tharindu Silva', year: 'Year 4', date: 'Oct 30, 2026', time: '7:00 PM', students: 19, stream: 'Cyber Security', tags: ['Firewalls', 'VPN', 'Encryption'] },
-  { id: 5, title: 'Spring Boot Microservices', tutor: 'Sandun Dimantha', year: 'Year 3', date: 'Nov 01, 2026', time: '6:00 PM', students: 55, stream: 'Software Engineering', tags: ['Java', 'Spring', 'REST API'] },
-  { id: 6, title: 'Machine Learning with Python', tutor: 'Amaya Jayasinghe', year: 'Year 4', date: 'Nov 03, 2026', time: '4:30 PM', students: 38, stream: 'Data Science', tags: ['ML', 'Pandas', 'Scikit-Learn'] },
+  { id: 1, title: 'Object Oriented Programming — Past Papers', tutor: 'Kasun Bandara', year: 'Year 4', date: 'Oct 25, 2026', time: '6:00 PM', students: '45k', stream: 'Information Technology', tags: ['OOP', 'Past Papers', 'Coding', 'Java'], thumbnail: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=800&auto=format&fit=crop', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Kasun' },
+  { id: 2, title: 'Database Optimization Techniques', tutor: 'Nimesha Perera', year: 'Year 3', date: 'Oct 27, 2026', time: '4:00 PM', students: '32k', stream: 'Software Engineering', tags: ['SQL', 'Performance', 'Database', 'Indexing'], thumbnail: '/database-ai-thumbnail.png', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Nimesha' },
+  { id: 3, title: 'React Context API Deep Dive', tutor: 'Malithi Fernando', year: 'Year 3', date: 'Oct 28, 2026', time: '5:30 PM', students: '28k', stream: 'Information Technology', tags: ['React', 'Hooks', 'WebDev', 'Frontend'], thumbnail: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?q=80&w=800&auto=format&fit=crop', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Malithi' },
+  { id: 4, title: 'Network Security Fundamentals', tutor: 'Tharindu Silva', year: 'Year 4', date: 'Oct 30, 2026', time: '7:00 PM', students: '19k', stream: 'Cyber Security', tags: ['Network', 'Security', 'Cyber', 'Privacy'], thumbnail: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=800&auto=format&fit=crop', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Tharindu' },
+  { id: 5, title: 'Spring Boot Microservices', tutor: 'Sandun Dimantha', year: 'Year 3', date: 'Nov 01, 2026', time: '6:00 PM', students: '55k', stream: 'Software Engineering', tags: ['Java', 'Spring', 'Microservices', 'Backend'], thumbnail: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=800&auto=format&fit=crop', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sandun' },
+  { id: 6, title: 'Machine Learning with Python', tutor: 'Amaya Jayasinghe', year: 'Year 4', date: 'Nov 03, 2026', time: '4:30 PM', students: '38k', stream: 'Data Science', tags: ['ML', 'Python', 'AI', 'DataScience'], thumbnail: '/ml-ai-thumbnail.png', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Amaya' },
 ]
 
 const selectedFilter = ref('All')
@@ -250,59 +250,78 @@ const joinSession = (session) => {
         </button>
       </div>
 
-      <!-- Sessions Grid -->
-      <transition-group name="list" tag="div" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in-up delay-200 relative">
+      <transition-group name="list" tag="div" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-10 animate-fade-in-up delay-200 relative">
         <div 
           v-for="(session, index) in filteredSessions" 
           :key="session.id"
-          class="session-card bg-white rounded-[20px] p-6 border border-slate-200/80 shadow-sm hover:shadow-xl transition-all duration-300 group cursor-pointer relative overflow-hidden fade-up"
+          class="video-card flex flex-col cursor-pointer group fade-up"
           :style="{ animationDelay: (0.3 + index * 0.08) + 's' }"
           @click="joinSession(session)"
         >
-          <!-- Hover Gradient Glow -->
-          <div class="absolute inset-0 bg-gradient-to-br from-[#4A90E2]/0 to-[#A8E6CF]/0 group-hover:from-[#4A90E2]/[0.03] group-hover:to-[#A8E6CF]/[0.05] transition-all duration-500 pointer-events-none rounded-[20px]"></div>
-          
-          <!-- Stream Badge -->
-          <div class="flex items-center justify-between mb-4 relative z-10">
-            <span class="bg-[#4A90E2]/10 text-[#4A90E2] text-[11px] font-bold px-2.5 py-1 rounded-lg border border-[#4A90E2]/10">{{ session.stream }}</span>
-            <div class="flex items-center gap-1.5 text-[12px] text-slate-500 font-medium">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-              {{ session.students }} joined
+          <!-- Thumbnail Container -->
+          <div class="relative aspect-video rounded-xl overflow-hidden mb-3 shadow-sm group-hover:shadow-md transition-shadow duration-300 bg-slate-200">
+            <img 
+              :src="session.thumbnail" 
+              :alt="session.title" 
+              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              @error="(e) => e.target.src = 'https://picsum.photos/seed/error/800/450'"
+            />
+            
+            <!-- Play Button Overlay -->
+            <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+              <div class="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center shadow-lg transform scale-90 group-hover:scale-100 transition-transform duration-300">
+                <svg class="w-6 h-6 text-[#4A90E2] ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg>
+              </div>
+            </div>
+
+            <!-- Badges -->
+            <div class="absolute inset-0 p-2 flex flex-col justify-between pointer-events-none">
+              <div class="flex justify-start">
+                <span class="bg-[#4A90E2] text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm opacity-90">
+                  {{ session.stream }}
+                </span>
+              </div>
+              <div class="flex justify-end">
+                <span class="bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow uppercase tracking-tighter">
+                  Live
+                </span>
+              </div>
             </div>
           </div>
           
-          <!-- Title -->
-          <h3 class="font-bold text-[#2C3E50] text-[16px] leading-tight mb-3 group-hover:text-[#4A90E2] transition-colors duration-300 relative z-10">{{ session.title }}</h3>
-          
-          <!-- Tutor Info -->
-          <div class="flex items-center gap-3 mb-4 relative z-10">
-            <div class="w-9 h-9 rounded-full bg-gradient-to-br from-[#4A90E2]/20 to-indigo-100 flex items-center justify-center text-[#4A90E2] font-bold text-[11px] border border-[#4A90E2]/20 shrink-0 group-hover:scale-110 transition-transform duration-300">
-              {{ session.tutor.split(' ').map(n => n[0]).join('') }}
+          <!-- Content Section -->
+          <div class="flex gap-3 px-1">
+            <!-- Tutor Avatar -->
+            <div class="shrink-0 pt-0.5">
+              <div class="w-9 h-9 rounded-full overflow-hidden border border-slate-100 shadow-sm group-hover:border-[#4A90E2]/30 transition-colors duration-300">
+                <img :src="session.avatar" class="w-full h-full object-cover" />
+              </div>
             </div>
-            <div>
-              <p class="text-[13px] font-bold text-[#2C3E50]">{{ session.tutor }}</p>
-              <p class="text-[11px] text-slate-400">{{ session.year }} Student</p>
+
+            <!-- Info -->
+            <div class="flex flex-col min-w-0">
+              <h3 class="font-bold text-[#2C3E50] text-[15px] leading-snug mb-1 line-clamp-2 transition-colors duration-300 group-hover:text-[#4A90E2]">
+                {{ session.title }}
+              </h3>
+              
+              <div class="flex flex-col gap-0.5">
+                <p class="text-[13px] text-slate-500 font-medium hover:text-[#2C3E50] transition-colors truncate">
+                  {{ session.tutor }}
+                </p>
+                <div class="flex items-center text-[12px] text-slate-400 font-medium">
+                  <span>{{ session.students }} views</span>
+                  <span class="mx-1">•</span>
+                  <span>{{ session.date }}</span>
+                </div>
+              </div>
+
+              <!-- Tags (YouTube style subtle) -->
+              <div class="flex flex-wrap gap-1 mt-2">
+                <span v-for="tag in session.tags" :key="tag" class="text-[11px] text-[#4A90E2] font-semibold hover:underline">
+                  #{{ tag }}
+                </span>
+              </div>
             </div>
-          </div>
-          
-          <!-- Tags -->
-          <div class="flex flex-wrap gap-1.5 mb-4 relative z-10">
-            <span v-for="tag in session.tags" :key="tag" class="bg-slate-50 text-slate-600 text-[10px] font-bold px-2.5 py-1 rounded-lg border border-slate-100 flex items-center gap-1">
-              <span class="w-1.5 h-1.5 rounded-full bg-[#4A90E2]/40"></span>
-              {{ tag }}
-            </span>
-          </div>
-          
-          <!-- Date & Join -->
-          <div class="flex items-center justify-between pt-4 border-t border-slate-100 relative z-10">
-            <div class="flex items-center gap-2 text-[12px] text-slate-500 font-medium">
-              <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-              {{ session.date }} • {{ session.time }}
-            </div>
-            <button class="join-btn bg-[#4A90E2] hover:bg-[#3a7bc8] text-white text-[12px] font-bold py-2 px-5 rounded-xl transition-all duration-300 shadow-sm hover:shadow-[0_4px_14px_rgba(74,144,226,0.4)] flex items-center gap-1.5">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path></svg>
-              Join
-            </button>
           </div>
         </div>
       </transition-group>
@@ -420,57 +439,21 @@ const joinSession = (session) => {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Session Card Effects */
-.session-card {
-  transform: translateY(0);
-  will-change: transform, box-shadow;
-}
-.session-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(74, 144, 226, 0.25);
-}
-
-/* Search Input Focus Effect */
-.search-input:focus {
-  box-shadow: 0 4px 20px rgba(74, 144, 226, 0.12);
-  background: rgba(255,255,255, 0.95);
-}
-
-/* Filter Pill Active Micro-animation */
-.filter-pill {
-  will-change: transform;
-}
-.filter-pill:active {
-  transform: scale(0.96);
-}
-
-/* Join Button Pulse on Hover */
-.join-btn:hover {
-  animation: subtlePulse 1.5s ease-in-out infinite;
-}
-@keyframes subtlePulse {
-  0%, 100% { box-shadow: 0 4px 14px rgba(74,144,226,0.4); }
-  50% { box-shadow: 0 4px 20px rgba(74,144,226,0.6); }
-}
-
-/* CTA Banner Shimmer */
-.cta-banner {
-  background-size: 200% 100%;
-  animation: shimmer 6s ease-in-out infinite;
-}
-@keyframes shimmer {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-}
-
-/* Stat Card Hover */
-.stat-card {
+/* Video Card Effects */
+.video-card {
   transition: all 0.3s ease;
 }
-.stat-card:hover {
-  transform: translateY(-2px);
-  border-color: rgba(255,255,255,0.2);
-  background: rgba(255,255,255,0.15);
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Hero Section Refinement */
+.orb-1 {
+  background: radial-gradient(circle, rgba(74,144,226,0.15) 0%, transparent 70%);
 }
 
 /* Hide scrollbar for recommendation carousel */
