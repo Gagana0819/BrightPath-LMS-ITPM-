@@ -78,6 +78,11 @@ const router = createRouter({
           path: 'grades',
           name: 'my-grades',
           component: () => import('../views/ContentDashboard.vue'), // Placeholder
+        },
+        {
+          path: 'wallet',
+          name: 'wallet',
+          component: () => import('../views/WalletView.vue'),
         }
       ]
     },

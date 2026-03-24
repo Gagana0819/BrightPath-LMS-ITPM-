@@ -10,14 +10,21 @@ const showNotifications = ref(false)
 // User state
 const userName = ref('IT23685116 PRABHATH L A K G')
 const userInitials = ref('IP')
-const notificationCount = ref(211)
 
 // Demo notifications
-const demoNotifications = [
+const demoNotifications = ref([
+  { id: 4, title: 'Start kuppi session', text: 'Dr. Samitha start new kuppi session.', time: '20min ago', unread: true },
   { id: 1, title: 'Session Reminder', text: 'Your OOP Kuppi starts in 30 mins.', time: '10m ago', unread: true },
   { id: 2, title: 'New Resource Uploaded', text: 'Dr. Amanda added new lecture notes.', time: '1h ago', unread: true },
   { id: 3, title: 'Points Earned!', text: 'You received +50 BP for your upload.', time: '2h ago', unread: false },
-]
+])
+
+// Only show unread notifications
+const unreadNotifications = computed(() => {
+  return demoNotifications.value.filter(n => n.unread)
+})
+
+const notificationCount = computed(() => unreadNotifications.value.length)
 
 const updateAuthState = () => {
   const token = localStorage.getItem('access_token')
@@ -133,12 +140,11 @@ const navigateToProfile = () => {
                   </div>
                   <div class="max-h-[320px] overflow-y-auto">
                     <div 
-                      v-for="notif in demoNotifications" 
+                      v-for="notif in unreadNotifications" 
                       :key="notif.id"
-                      class="p-4 border-b border-slate-100 transition-colors cursor-pointer flex gap-3"
-                      :class="notif.unread ? 'bg-[#F4F7F9]/60 hover:bg-[#F4F7F9]' : 'hover:bg-slate-50'"
+                      class="p-4 border-b border-slate-100 transition-colors cursor-pointer flex gap-3 bg-[#F4F7F9]/60 hover:bg-[#F4F7F9]"
                     >
-                      <div class="w-2 h-2 rounded-full mt-1.5 shrink-0 transition-colors" :class="notif.unread ? 'bg-[#4A90E2]' : 'bg-transparent'"></div>
+                      <div class="w-2 h-2 rounded-full mt-1.5 shrink-0 transition-colors bg-[#4A90E2]"></div>
                       <div>
                         <p class="text-sm font-semibold text-[#2C3E50] leading-tight mb-1">{{ notif.title }}</p>
                         <p class="text-xs text-[#2C3E50]/70 mb-1.5">{{ notif.text }}</p>
