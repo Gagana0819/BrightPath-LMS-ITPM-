@@ -2,6 +2,7 @@
 import { computed, ref, onMounted, watch } from 'vue'
 import { useContentStore } from '../stores/contentStore'
 import { useRoute, useRouter } from 'vue-router'
+import ResourceUploadModal from '../components/ResourceUploadModal.vue'
 
 const contentStore = useContentStore()
 const route = useRoute()
@@ -10,7 +11,7 @@ const router = useRouter()
 const tutorName = computed(() => localStorage.getItem('full_name') || 'Sandun Dimantha')
 const tutorRating = 4.8 
 
-const activeSessions = [
+const activeSessionsList = ref([
   { 
     id: 1, 
     title: 'Object Oriented Programming - Past Papers', 
@@ -31,7 +32,76 @@ const activeSessions = [
     videoUrl: 'https://www.youtube.com/embed/668nUCeBHyY',
     rawYoutube: 'https://www.youtube.com/watch?v=668nUCeBHyY'
   }
-]
+])
+
+const searchQuery = ref('')
+const filteredSessions = computed(() => {
+  if (!searchQuery.value) return activeSessionsList.value
+  const q = searchQuery.value.toLowerCase()
+  return activeSessionsList.value.filter(s => s.title.toLowerCase().includes(q))
+})
+
+const isUploadModalOpen = ref(false)
+const isNewSessionModalOpen = ref(false)
+const isEditing = ref(false)
+const editingId = ref(null)
+
+const newSession = ref({
+  title: '',
+  date: '',
+  time: '',
+  link: '',
+  group: 'Information Technology'
+})
+
+const openNewSessionModal = () => {
+  isEditing.value = false
+  editingId.value = null
+  newSession.value = { title: '', date: '', time: '', link: '', group: 'Information Technology' }
+  isNewSessionModalOpen.value = true
+}
+
+const openEditModal = (session) => {
+  isEditing.value = true
+  editingId.value = session.id
+  newSession.value = { 
+    title: session.title, 
+    date: session.date, 
+    time: session.time, 
+    link: session.link || '', 
+    group: session.group || 'Information Technology' 
+  }
+  isNewSessionModalOpen.value = true
+}
+
+const submitSession = () => {
+  if (!newSession.value.title || !newSession.value.date) return
+  
+  if (isEditing.value) {
+    // Update existing session
+    const index = activeSessionsList.value.findIndex(s => s.id === editingId.value)
+    if (index !== -1) {
+      activeSessionsList.value[index] = {
+        ...activeSessionsList.value[index],
+        ...newSession.value
+      }
+    }
+  } else {
+    // Create new session
+    activeSessionsList.value.unshift({
+      id: Date.now(),
+      ...newSession.value,
+      students: 0,
+      videoUrl: '',
+      rawYoutube: ''
+    })
+  }
+  
+  // Close and reset
+  isNewSessionModalOpen.value = false
+  isEditing.value = false
+  editingId.value = null
+}
 
 // Video Player logic
 const selectedVideoId = ref(null)
@@ -41,7 +111,7 @@ const isPlayerOpen = ref(false)
 const currentVideoTitle = ref('')
 
 const openPlayer = (id) => {
-  const session = activeSessions.find(s => s.id == id) || activeSessions[0]
+  const session = activeSessionsList.value.find(s => s.id == id) || activeSessionsList.value[0]
   currentVideoTitle.value = session.title
   selectedVideoUrl.value = session.videoUrl
   selectedVideoRawUrl.value = session.rawYoutube
@@ -80,16 +150,19 @@ watch(() => route.params.id, (newId) => {
   }
 })
 
-const pendingRequests = [
+const pendingRequestsList = ref([
   { id: 1, student: 'Malithi Perera', topic: 'Help with React Context API', votes: 12 },
   { id: 2, student: 'Kamal Silva', topic: 'SQL Joins & Group By', votes: 8 }
-]
+])
 
-const recentAttendees = [
-  { id: 1, name: 'Sunil Shantha', present: true },
-  { id: 2, name: 'Ama Fernando', present: true },
-  { id: 3, name: 'Pasindu Kumara', present: false }
-]
+const handleVote = (id) => {
+  const req = pendingRequestsList.value.find(r => r.id === id)
+  if (req) req.votes++
+}
+
+const dismissRequest = (id) => {
+  pendingRequestsList.value = pendingRequestsList.value.filter(r => r.id !== id)
+}
 </script>
 
 <template>
@@ -154,14 +227,29 @@ const recentAttendees = [
               <span class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-xl shadow-sm">🎙️</span> 
               Active "Kuppi" Sessions
             </h2>
-            <button class="bg-blue-600 hover:bg-blue-700 text-white text-[13px] font-bold py-3 px-6 rounded-2xl shadow-lg shadow-blue-100 transition-all flex items-center gap-2 hover:-translate-y-0.5 active:translate-y-0">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
-              New Session
-            </button>
+            <div class="flex items-center gap-4">
+              <!-- Inline Search Bar -->
+              <div class="hidden md:flex items-center bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus-within:ring-2 focus-within:ring-blue-100 focus-within:border-blue-400 transition-all w-64">
+                <svg class="w-4 h-4 text-slate-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                <input v-model="searchQuery" type="text" placeholder="Search sessions..." class="bg-transparent border-none outline-none text-[13px] text-[#1E293B] placeholder:text-slate-400 w-full font-medium" />
+              </div>
+              
+              <button @click="openNewSessionModal" class="bg-blue-600 hover:bg-blue-700 text-white text-[13px] font-bold py-3 px-6 rounded-2xl shadow-lg shadow-blue-100 transition-all flex items-center gap-2 hover:-translate-y-0.5 active:translate-y-0">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+                New Session
+              </button>
+            </div>
           </div>
           
           <div class="space-y-4">
-            <div v-for="session in activeSessions" :key="session.id" class="flex flex-col sm:flex-row justify-between p-6 bg-white border border-slate-100 rounded-[24px] hover:border-blue-400 hover:shadow-md transition-all group">
+            <!-- Empty State -->
+            <div v-if="filteredSessions.length === 0" class="py-12 text-center bg-slate-50/50 rounded-3xl border border-dashed border-slate-200">
+              <div class="text-4xl mb-3 opacity-40">🔍</div>
+              <p class="text-slate-400 font-bold text-sm">No sessions found matching "{{ searchQuery }}"</p>
+              <button @click="searchQuery = ''" class="mt-3 text-blue-600 font-extrabold text-xs hover:underline">Clear Search</button>
+            </div>
+
+            <div v-for="session in filteredSessions" :key="session.id" class="flex flex-col sm:flex-row justify-between p-6 bg-white border border-slate-100 rounded-[24px] hover:border-blue-400 hover:shadow-md transition-all group">
               <div class="flex items-start gap-4">
                  <div class="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-xl group-hover:bg-blue-50 transition-colors">👨‍💻</div>
                  <div>
@@ -176,7 +264,7 @@ const recentAttendees = [
                 </div>
               </div>
               <div class="mt-4 sm:mt-0 flex gap-2 sm:self-center">
-                <button class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold py-2.5 px-5 rounded-xl text-[13px] transition-all">
+                <button @click="openEditModal(session)" class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold py-2.5 px-5 rounded-xl text-[13px] transition-all">
                   Edit
                 </button>
                 <button @click="openPlayer(session.id)" class="bg-[#4A90E2] hover:bg-blue-600 text-white font-bold py-2.5 px-6 rounded-xl text-[13px] transition-all shadow-md flex items-center gap-2">
@@ -199,7 +287,7 @@ const recentAttendees = [
               <h2 class="text-[22px] font-extrabold mb-2">Resource Upload Center</h2>
               <p class="text-blue-100 text-sm opacity-80 max-w-sm">Securely upload lecture notes and past papers to <span class="text-white font-bold">AWS S3 Cloud</span> for your students.</p>
             </div>
-            <button class="bg-white text-slate-900 hover:bg-blue-50 px-8 py-4 rounded-[20px] font-extrabold text-[15px] shadow-lg transition-all active:scale-95 flex items-center gap-2 whitespace-nowrap">
+            <button @click="isUploadModalOpen = true" class="bg-white text-slate-900 hover:bg-blue-50 px-8 py-4 rounded-[20px] font-extrabold text-[15px] shadow-lg transition-all active:scale-95 flex items-center gap-2 whitespace-nowrap">
               <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
               Quick Upload
             </button>
@@ -245,6 +333,46 @@ const recentAttendees = [
                Launch Google Calendar
             </a>
           </div>
+        </div>
+
+        <!-- Student Topic Requests -->
+        <div class="bg-white rounded-[32px] p-8 border border-slate-200 shadow-sm relative overflow-hidden">
+          <div class="absolute -right-4 -top-4 w-16 h-16 bg-blue-500/5 blur-xl rounded-full"></div>
+          <h3 class="font-extrabold text-[#1E293B] text-[18px] mb-6 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+               <span class="w-8 h-8 bg-orange-50 rounded-lg flex items-center justify-center text-orange-600 text-sm">💡</span>
+               Topic Request Queue
+            </div>
+            <span class="text-[10px] bg-slate-100 text-slate-500 px-2 py-1 rounded-md font-bold uppercase tracking-wider">Priority</span>
+          </h3>
+
+          <div v-if="pendingRequestsList.length > 0" class="space-y-4">
+            <div v-for="req in pendingRequestsList" :key="req.id" class="p-5 rounded-[20px] bg-slate-50/50 border border-slate-100 hover:border-blue-200 hover:bg-white transition-all group">
+              <div class="flex justify-between items-start mb-3">
+                <div class="flex items-center gap-2">
+                  <img :src="'https://api.dicebear.com/7.x/notionists/svg?seed=' + req.student" class="w-6 h-6 rounded-full bg-blue-100" />
+                  <span class="text-[12px] font-bold text-slate-700">{{ req.student }}</span>
+                </div>
+                <div class="flex items-center gap-1.5 text-blue-600">
+                  <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 10.133a1.992 1.992 0 00-.8.2z" /></svg>
+                  <span class="text-[12px] font-black">{{ req.votes }}</span>
+                </div>
+              </div>
+              <p class="text-[13px] font-bold text-slate-800 mb-4 line-height-relaxed">{{ req.topic }}</p>
+              <div class="flex gap-2">
+                <button @click="handleVote(req.id)" class="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-600 text-[11px] font-extrabold py-2 rounded-xl transition-colors">Upvote</button>
+                <button @click="dismissRequest(req.id)" class="px-3 bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-400 text-[11px] font-bold py-2 rounded-xl transition-all italic">Dismiss</button>
+              </div>
+            </div>
+          </div>
+          <div v-else class="text-center py-8">
+            <div class="text-3xl mb-2 grayscale opacity-50">✨</div>
+            <p class="text-slate-400 text-[12px] font-medium italic">Queue clear. Great job!</p>
+          </div>
+
+          <button class="w-full mt-6 py-3 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 text-[11px] font-bold hover:border-blue-300 hover:text-blue-500 transition-all">
+             View History
+          </button>
         </div>
 
         <!-- Attendance & Stats Group -->
@@ -335,5 +463,55 @@ const recentAttendees = [
         </div>
       </div>
     </div>
+
+    <!-- New Session Modal -->
+    <div v-if="isNewSessionModalOpen" class="fixed inset-0 z-[110] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+      <div class="bg-white w-full max-w-lg rounded-[32px] shadow-2xl overflow-hidden border border-slate-100 flex flex-col animate-in zoom-in-95 duration-300">
+        <div class="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+          <div>
+            <h3 class="text-[#1E293B] font-extrabold text-2xl tracking-tight">{{ isEditing ? 'Edit Session' : 'Create New Session' }}</h3>
+            <p class="text-slate-500 text-sm font-medium mt-1">{{ isEditing ? 'Update your session details below.' : 'Schedule a new live peer-tutoring session.' }}</p>
+          </div>
+          <button @click="isNewSessionModalOpen = false" class="w-10 h-10 rounded-xl bg-white text-slate-400 hover:text-slate-600 flex items-center justify-center shadow-sm border border-slate-100 transition-colors">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+
+        <form @submit.prevent="submitSession" class="p-8 space-y-6">
+          <div class="space-y-2">
+            <label class="text-[13px] font-bold text-slate-700 ml-1 uppercase tracking-wider">Session Title</label>
+            <input v-model="newSession.title" type="text" placeholder="e.g. Advanced Algorithm Analysis" class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all font-medium text-slate-800" required />
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-2">
+              <label class="text-[13px] font-bold text-slate-700 ml-1 uppercase tracking-wider">Date</label>
+              <input v-model="newSession.date" type="text" placeholder="Oct 30" class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all font-medium text-slate-800" required />
+            </div>
+            <div class="space-y-2">
+              <label class="text-[13px] font-bold text-slate-700 ml-1 uppercase tracking-wider">Time</label>
+              <input v-model="newSession.time" type="text" placeholder="5:30 PM" class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all font-medium text-slate-800" required />
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <label class="text-[13px] font-bold text-slate-700 ml-1 uppercase tracking-wider">Interactive Meet Link</label>
+            <input v-model="newSession.link" type="url" placeholder="https://meet.google.com/..." class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all font-medium text-slate-800" />
+          </div>
+
+          <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-5 rounded-[22px] shadow-xl shadow-blue-200 transition-all hover:-translate-y-1 active:scale-[0.98] mt-4 flex items-center justify-center gap-3">
+             <svg v-if="!isEditing" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
+             <svg v-else class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
+             {{ isEditing ? 'Update Session Details' : 'Launch Session Listing' }}
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Quick Upload Modal -->
+    <ResourceUploadModal 
+      v-if="isUploadModalOpen" 
+      @close="isUploadModalOpen = false" 
+    />
   </div>
 </template>
