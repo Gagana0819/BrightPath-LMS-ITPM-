@@ -51,8 +51,8 @@ const filteredDocuments = computed(() => {
 
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
-      <h2 class="text-2xl font-bold text-content">Community Resources</h2>
+    <div class="flex items-center justify-between w-full">
+      <h2 class="text-3xl font-extrabold text-content pl-16">Community Resources</h2>
       <div class="flex gap-2">
         <select 
           v-model="sortBy"
@@ -66,12 +66,12 @@ const filteredDocuments = computed(() => {
     </div>
 
     <!-- Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <div class="flex flex-wrap justify-center gap-6">
       
       <div 
         v-for="doc in filteredDocuments" 
         :key="doc.id"
-        class="bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer flex flex-col"
+        class="bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer flex flex-col w-[calc(25%-18px)] min-w-[220px]"
       >
         <!-- Thumbnail Cover -->
         <div class="relative h-[160px] bg-slate-100 overflow-hidden shrink-0">

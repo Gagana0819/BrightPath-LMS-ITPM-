@@ -372,11 +372,11 @@ const getTypeColor = (type) => {
             </Teleport>
 
             <!-- Document Grid with Transition -->
-            <transition-group name="list" tag="div" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 animate-fade-in-up delay-200 relative">
+            <transition-group name="list" tag="div" class="flex flex-wrap justify-center gap-6 animate-fade-in-up delay-200 relative">
               <div
                 v-for="doc in filteredDocuments"
                 :key="doc.id"
-                class="bg-white rounded-2xl overflow-hidden border border-[#4A90E2]/10 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer flex flex-col"
+                class="bg-white rounded-2xl overflow-hidden border border-[#4A90E2]/10 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer flex flex-col w-[calc(33.333%-16px)] min-w-[280px]"
               >
                 <!-- Card Header with Type Badge -->
                 <div class="p-5 pb-0">
