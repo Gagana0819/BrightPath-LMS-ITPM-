@@ -10,12 +10,12 @@ const vidCanScrollLeft = ref(false)
 const vidCanScrollRight = ref(true)
 
 const recommendedVideos = ref([
-  { id: 'v1', title: 'OOP Past Paper Walkthrough — 2024 Final', tutor: 'Kasun Bandara', duration: '1h 20min', views: '2.3k', tag: 'Most Watched', gradient: 'from-[#4A90E2] to-indigo-500' },
-  { id: 'v2', title: 'SQL Joins & Subqueries — Exam Revision', tutor: 'Nimesha Perera', duration: '45min', views: '1.8k', tag: 'Top Rated', gradient: 'from-emerald-500 to-teal-500' },
-  { id: 'v3', title: 'React Hooks Deep Dive — Live Coding', tutor: 'Malithi Fernando', duration: '1h 05min', views: '1.5k', tag: 'Trending', gradient: 'from-violet-500 to-purple-500' },
-  { id: 'v4', title: 'Network Security — Firewall Config Demo', tutor: 'Tharindu Silva', duration: '55min', views: '980', tag: 'New', gradient: 'from-red-500 to-rose-500' },
-  { id: 'v5', title: 'Spring Boot Microservices Architecture', tutor: 'Sandun Dimantha', duration: '1h 30min', views: '3.1k', tag: 'Popular', gradient: 'from-amber-500 to-orange-500' },
-  { id: 'v6', title: 'Machine Learning — Neural Networks Intro', tutor: 'Amaya Jayasinghe', duration: '1h 10min', views: '2.0k', tag: 'AI Trending', gradient: 'from-cyan-500 to-sky-500' },
+  { id: 'v1', title: 'OOP Past Paper Walkthrough — 2024 Final', tutor: 'Kasun Bandara', duration: '1h 20min', views: '2.3k', tag: 'Most Watched', image: '/5a108056-a070-44ee-a123-1afd489077e0.jpg' },
+  { id: 'v2', title: 'SQL Joins & Subqueries — Exam Revision', tutor: 'Nimesha Perera', duration: '45min', views: '1.8k', tag: 'Top Rated', image: '/de563836-04cc-4c46-bf78-228261acdef0_1024.jpeg' },
+  { id: 'v3', title: 'React Hooks Deep Dive — Live Coding', tutor: 'Malithi Fernando', duration: '1h 05min', views: '1.5k', tag: 'Trending', image: '/flat-design-minimal-technology-youtube-thumbnail_23-2149150484.avif' },
+  { id: 'v4', title: 'Network Security — Firewall Config Demo', tutor: 'Tharindu Silva', duration: '55min', views: '980', tag: 'New', image: '/HCF_UvPWUAAJXQH.jpg' },
+  { id: 'v5', title: 'Spring Boot Microservices Architecture', tutor: 'Sandun Dimantha', duration: '1h 30min', views: '3.1k', tag: 'Popular', image: '/hqdefault.jpg' },
+  { id: 'v6', title: 'Machine Learning — Neural Networks Intro', tutor: 'Amaya Jayasinghe', duration: '1h 10min', views: '2.0k', tag: 'AI Trending', image: '/modern-digital-coding-youtube-thumbnail-design-template-349557863df9c89a05c2c54b82d1d74b_screen.jpg' },
 ])
 
 const updateVidScroll = () => {
@@ -184,7 +184,7 @@ const joinSession = (session) => {
           >
             <!-- Video Thumbnail -->
             <div class="relative h-[160px] overflow-hidden">
-              <div :class="'absolute inset-0 bg-gradient-to-br ' + vid.gradient + ' opacity-90'"></div>
+              <img :src="vid.image" class="absolute inset-0 w-full h-full object-cover opacity-90" />
               <!-- Play button overlay -->
               <div class="absolute inset-0 flex items-center justify-center">
                 <div class="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm border-2 border-white/40 flex items-center justify-center group-hover:scale-110 group-hover:bg-white/30 transition-all duration-300 shadow-lg">

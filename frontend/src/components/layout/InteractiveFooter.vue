@@ -10,7 +10,7 @@ import { RouterLink } from 'vue-router'
         
         <!-- Brand Section -->
         <div>
-          <h3 class="font-bold text-2xl text-brand mb-4">The Academic Curator</h3>
+          <h3 class="font-bold text-2xl text-brand mb-4">BrightPath</h3>
           <p class="text-slate-500 font-medium leading-relaxed mb-6">
             The comprehensive web-based LMS designed exclusively for university students. Master your curriculum with a curated community of experts and peers.
           </p>
