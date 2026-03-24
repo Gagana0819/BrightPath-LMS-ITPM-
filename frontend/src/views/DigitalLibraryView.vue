@@ -322,13 +322,13 @@ const getTypeColor = (type) => {
                     <!-- Module Filter Section -->
                     <div>
                       <label class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 block">Module</label>
-                      <div class="flex flex-wrap gap-2">
+                      <div class="flex flex-col gap-2">
                         <button
                           v-for="m in modules"
                           :key="m"
                           @click="selectedModule = m"
-                          class="px-3.5 py-2 rounded-xl text-sm font-semibold transition-all border"
-                          :class="selectedModule === m ? 'bg-[#4A90E2] text-white border-[#4A90E2] shadow-md' : 'bg-[#F4F7F9] text-[#2C3E50] border-slate-200 hover:border-[#4A90E2]/40'"
+                          class="px-4 py-3 rounded-xl text-sm font-semibold transition-all border text-left"
+                          :class="selectedModule === m ? 'bg-[#4A90E2] text-white border-[#4A90E2] shadow-md' : 'bg-[#F4F7F9] text-[#2C3E50] border-slate-200 hover:border-[#4A90E2]/40 bg-white hover:bg-slate-50'"
                         >
                           {{ m === 'All' ? '🗂 All Modules' : m }}
                         </button>
