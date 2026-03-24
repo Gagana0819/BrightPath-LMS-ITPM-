@@ -1,5 +1,33 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+
+// Recommendation carousel
+const recScrollRef = ref(null)
+const canScrollLeft = ref(false)
+const canScrollRight = ref(true)
+
+const recommendedResources = ref([
+  { id: 'r1', title: 'ITPM 2025 Final Exam Past Paper with Model Answers', type: 'Past Paper', module: 'IT Project Management', uploader: 'Kasun Silva', tag: 'Most Downloaded', gradient: 'from-red-500 to-orange-400' },
+  { id: 'r2', title: 'OOP Design Patterns — Complete Short Notes', type: 'Short Note', module: 'Object-Oriented Programming', uploader: 'Dr. Amanda', tag: 'Top Rated', gradient: 'from-[#4A90E2] to-sky-400' },
+  { id: 'r3', title: 'Database Normalization Cheat Sheet (1NF–BCNF)', type: 'Short Note', module: 'Database Systems', uploader: 'Sanduni M.', tag: 'Trending', gradient: 'from-violet-500 to-purple-400' },
+  { id: 'r4', title: 'Data Structures — 2024 Midterm Past Paper', type: 'Past Paper', module: 'Data Structures', uploader: 'Nuwan P.', tag: 'New', gradient: 'from-emerald-500 to-teal-400' },
+  { id: 'r5', title: 'Machine Learning Key Concepts Summary', type: 'Short Note', module: 'Machine Learning', uploader: 'Dr. Fernando', tag: 'AI Trending', gradient: 'from-amber-500 to-yellow-400' },
+  { id: 'r6', title: 'Cloud Computing — AWS Services Past Paper 2024', type: 'Past Paper', module: 'Cloud Computing', uploader: 'Prof. Kumara', tag: 'Popular', gradient: 'from-cyan-500 to-blue-400' },
+])
+
+const updateRecScroll = () => {
+  const el = recScrollRef.value
+  if (!el) return
+  canScrollLeft.value = el.scrollLeft > 10
+  canScrollRight.value = el.scrollLeft < el.scrollWidth - el.clientWidth - 10
+}
+
+const scrollRec = (dir) => {
+  const el = recScrollRef.value
+  if (!el) return
+  el.scrollBy({ left: dir === 'left' ? -320 : 320, behavior: 'smooth' })
+  setTimeout(updateRecScroll, 350)
+}
 
 // Search & filter state
 const searchQuery = ref('')
@@ -133,6 +161,67 @@ const getTypeColor = (type) => {
             <p class="text-lg lg:text-xl text-slate-300 max-w-[600px] leading-relaxed">
               Search, discover, and download peer-reviewed resources. Earn points and climb the ranks by contributing to the community.
             </p>
+          </div>
+        </div>
+
+        <!-- BrightPath Recommend for You -->
+        <div class="mb-10 animate-fade-in-up delay-100">
+          <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#4A90E2] to-[#A8E6CF] flex items-center justify-center shadow-md">
+                <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
+              </div>
+              <div>
+                <h2 class="text-xl font-extrabold text-[#2C3E50] tracking-tight">BrightPath Recommend for You</h2>
+                <p class="text-xs text-slate-400 font-medium">Personalized based on your academic stream and activity</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button @click="scrollRec('left')" :disabled="!canScrollLeft" class="w-9 h-9 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-400 hover:text-[#4A90E2] hover:border-[#4A90E2] transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-sm">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
+              </button>
+              <button @click="scrollRec('right')" :disabled="!canScrollRight" class="w-9 h-9 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-400 hover:text-[#4A90E2] hover:border-[#4A90E2] transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-sm">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
+              </button>
+            </div>
+          </div>
+
+          <div ref="recScrollRef" @scroll="updateRecScroll" class="flex gap-5 overflow-x-auto pb-4 scroll-smooth rec-scroll-hide">
+            <div
+              v-for="rec in recommendedResources"
+              :key="rec.id"
+              class="min-w-[280px] max-w-[280px] bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer group overflow-hidden flex flex-col shrink-0"
+            >
+              <!-- Thumbnail -->
+              <div class="relative h-[150px] overflow-hidden">
+                <div :class="'absolute inset-0 bg-gradient-to-br ' + rec.gradient + ' opacity-90'"></div>
+                <div class="absolute inset-0 flex items-center justify-center">
+                  <div v-if="rec.type === 'Past Paper'" class="w-16 h-20 bg-white/20 backdrop-blur-sm rounded-lg border border-white/30 flex flex-col items-center justify-center gap-1">
+                    <svg class="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
+                    <span class="text-[9px] text-white font-bold uppercase">PDF</span>
+                  </div>
+                  <div v-else class="w-16 h-20 bg-white/20 backdrop-blur-sm rounded-lg border border-white/30 flex flex-col items-center justify-center gap-1">
+                    <svg class="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" /></svg>
+                    <span class="text-[9px] text-white font-bold uppercase">Notes</span>
+                  </div>
+                </div>
+                <!-- Tag badge -->
+                <span class="absolute top-3 left-3 bg-black/30 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-lg border border-white/10">{{ rec.tag }}</span>
+                <!-- Type badge -->
+                <span class="absolute bottom-3 right-3 text-white text-[10px] font-extrabold px-2.5 py-1 rounded-lg" :class="rec.type === 'Past Paper' ? 'bg-red-500/80 backdrop-blur-sm' : 'bg-[#4A90E2]/80 backdrop-blur-sm'">{{ rec.type }}</span>
+              </div>
+              <!-- Content -->
+              <div class="p-4 flex flex-col flex-1">
+                <p class="text-[11px] text-slate-400 font-bold uppercase tracking-wider mb-1.5">{{ rec.module }}</p>
+                <h4 class="text-[14px] font-bold text-[#2C3E50] leading-snug mb-3 line-clamp-2 group-hover:text-[#4A90E2] transition-colors">{{ rec.title }}</h4>
+                <div class="mt-auto flex items-center gap-2">
+                  <div class="w-6 h-6 rounded-full bg-[#4A90E2]/10 flex items-center justify-center text-[#4A90E2] text-[9px] font-bold">{{ rec.uploader.split(' ').map(n => n[0]).join('').substring(0, 2) }}</div>
+                  <span class="text-xs text-slate-500 font-medium">{{ rec.uploader }}</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -423,6 +512,10 @@ const getTypeColor = (type) => {
 .list-leave-active {
   position: absolute;
 }
+
+/* Hide scrollbar for recommendation carousel */
+.rec-scroll-hide::-webkit-scrollbar { display: none; }
+.rec-scroll-hide { -ms-overflow-style: none; scrollbar-width: none; }
 </style>
 
 <style>

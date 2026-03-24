@@ -1,8 +1,36 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
+
+// Recommendation carousel
+const vidScrollRef = ref(null)
+const vidCanScrollLeft = ref(false)
+const vidCanScrollRight = ref(true)
+
+const recommendedVideos = ref([
+  { id: 'v1', title: 'OOP Past Paper Walkthrough — 2024 Final', tutor: 'Kasun Bandara', duration: '1h 20min', views: '2.3k', tag: 'Most Watched', gradient: 'from-[#4A90E2] to-indigo-500' },
+  { id: 'v2', title: 'SQL Joins & Subqueries — Exam Revision', tutor: 'Nimesha Perera', duration: '45min', views: '1.8k', tag: 'Top Rated', gradient: 'from-emerald-500 to-teal-500' },
+  { id: 'v3', title: 'React Hooks Deep Dive — Live Coding', tutor: 'Malithi Fernando', duration: '1h 05min', views: '1.5k', tag: 'Trending', gradient: 'from-violet-500 to-purple-500' },
+  { id: 'v4', title: 'Network Security — Firewall Config Demo', tutor: 'Tharindu Silva', duration: '55min', views: '980', tag: 'New', gradient: 'from-red-500 to-rose-500' },
+  { id: 'v5', title: 'Spring Boot Microservices Architecture', tutor: 'Sandun Dimantha', duration: '1h 30min', views: '3.1k', tag: 'Popular', gradient: 'from-amber-500 to-orange-500' },
+  { id: 'v6', title: 'Machine Learning — Neural Networks Intro', tutor: 'Amaya Jayasinghe', duration: '1h 10min', views: '2.0k', tag: 'AI Trending', gradient: 'from-cyan-500 to-sky-500' },
+])
+
+const updateVidScroll = () => {
+  const el = vidScrollRef.value
+  if (!el) return
+  vidCanScrollLeft.value = el.scrollLeft > 10
+  vidCanScrollRight.value = el.scrollLeft < el.scrollWidth - el.clientWidth - 10
+}
+
+const scrollVid = (dir) => {
+  const el = vidScrollRef.value
+  if (!el) return
+  el.scrollBy({ left: dir === 'left' ? -320 : 320, behavior: 'smooth' })
+  setTimeout(updateVidScroll, 350)
+}
 
 const upcomingSessions = [
   { id: 1, title: 'Object Oriented Programming — Past Papers', tutor: 'Kasun Bandara', year: 'Year 4', date: 'Oct 25, 2026', time: '6:00 PM', students: 45, stream: 'Information Technology', tags: ['OOP', 'Past Papers', 'Exam Prep'] },
@@ -118,6 +146,73 @@ const joinSession = (session) => {
               <div class="stat-card bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl p-5 text-center min-w-[120px] shadow-lg hidden sm:block">
                 <p class="text-4xl font-extrabold text-[#4A90E2]">217</p>
                 <p class="text-slate-300 text-[13px] font-medium mt-1">Students Joined</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BrightPath Recommend for You -->
+      <div class="max-w-[1200px] mx-auto px-4 mb-10 animate-fade-in-up delay-100">
+        <div class="flex items-center justify-between mb-6">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#4A90E2] to-[#A8E6CF] flex items-center justify-center shadow-md">
+              <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>
+            </div>
+            <div>
+              <h2 class="text-xl font-extrabold text-[#2C3E50] tracking-tight">BrightPath Recommend for You</h2>
+              <p class="text-xs text-slate-400 font-medium">Personalized session recommendations based on your interests</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button @click="scrollVid('left')" :disabled="!vidCanScrollLeft" class="w-9 h-9 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-400 hover:text-[#4A90E2] hover:border-[#4A90E2] transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-sm">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
+            </button>
+            <button @click="scrollVid('right')" :disabled="!vidCanScrollRight" class="w-9 h-9 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-400 hover:text-[#4A90E2] hover:border-[#4A90E2] transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-sm">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
+            </button>
+          </div>
+        </div>
+
+        <div ref="vidScrollRef" @scroll="updateVidScroll" class="flex gap-5 overflow-x-auto pb-4 scroll-smooth vid-scroll-hide">
+          <div
+            v-for="vid in recommendedVideos"
+            :key="vid.id"
+            class="min-w-[280px] max-w-[280px] bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer group overflow-hidden flex flex-col shrink-0"
+          >
+            <!-- Video Thumbnail -->
+            <div class="relative h-[160px] overflow-hidden">
+              <div :class="'absolute inset-0 bg-gradient-to-br ' + vid.gradient + ' opacity-90'"></div>
+              <!-- Play button overlay -->
+              <div class="absolute inset-0 flex items-center justify-center">
+                <div class="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm border-2 border-white/40 flex items-center justify-center group-hover:scale-110 group-hover:bg-white/30 transition-all duration-300 shadow-lg">
+                  <svg class="w-7 h-7 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z"/>
+                  </svg>
+                </div>
+              </div>
+              <!-- Tag badge -->
+              <span class="absolute top-3 left-3 bg-black/30 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-lg border border-white/10">{{ vid.tag }}</span>
+              <!-- Duration badge -->
+              <span class="absolute bottom-3 right-3 bg-black/50 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-lg flex items-center gap-1">
+                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3" /></svg>
+                {{ vid.duration }}
+              </span>
+            </div>
+            <!-- Content -->
+            <div class="p-4 flex flex-col flex-1">
+              <h4 class="text-[14px] font-bold text-[#2C3E50] leading-snug mb-3 line-clamp-2 group-hover:text-[#4A90E2] transition-colors">{{ vid.title }}</h4>
+              <div class="mt-auto flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <div class="w-7 h-7 rounded-full bg-gradient-to-br from-[#4A90E2]/20 to-indigo-100 flex items-center justify-center text-[#4A90E2] text-[10px] font-bold border border-[#4A90E2]/20">{{ vid.tutor.split(' ').map(n => n[0]).join('') }}</div>
+                  <span class="text-xs text-slate-500 font-semibold">{{ vid.tutor }}</span>
+                </div>
+                <span class="text-[10px] text-slate-400 font-bold flex items-center gap-1">
+                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                  {{ vid.views }}
+                </span>
               </div>
             </div>
           </div>
@@ -377,4 +472,8 @@ const joinSession = (session) => {
   border-color: rgba(255,255,255,0.2);
   background: rgba(255,255,255,0.15);
 }
+
+/* Hide scrollbar for recommendation carousel */
+.vid-scroll-hide::-webkit-scrollbar { display: none; }
+.vid-scroll-hide { -ms-overflow-style: none; scrollbar-width: none; }
 </style>
