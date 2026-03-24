@@ -3,6 +3,43 @@ import { ref } from 'vue'
 
 const isClassroomSync = ref(true)
 const fileRef = ref(null)
+const moduleCode = ref('')
+const moduleCodeError = ref('Required — 2 letters + 4 numbers')
+const moduleCodeTouched = ref(false)
+
+const handleModuleCodeInput = (e) => {
+  moduleCodeTouched.value = true
+  let raw = e.target.value.toUpperCase()
+
+  // Build filtered value: first 2 chars must be letters, next 4 must be digits
+  let filtered = ''
+  for (let i = 0; i < raw.length && filtered.length < 6; i++) {
+    const ch = raw[i]
+    if (filtered.length < 2) {
+      // Only allow letters for positions 0-1
+      if (/[A-Z]/.test(ch)) filtered += ch
+    } else {
+      // Only allow digits for positions 2-5
+      if (/\d/.test(ch)) filtered += ch
+    }
+  }
+
+  moduleCode.value = filtered
+  e.target.value = filtered // force the input display
+
+  // Update error message
+  if (filtered.length === 0) {
+    moduleCodeError.value = 'Required — 2 letters + 4 numbers'
+  } else if (filtered.length < 2) {
+    moduleCodeError.value = `Need ${2 - filtered.length} more letter(s)`
+  } else if (filtered.length < 6) {
+    moduleCodeError.value = `Need ${6 - filtered.length} more number(s)`
+  } else {
+    moduleCodeError.value = ''
+  }
+}
+
+const isModuleCodeValid = () => moduleCode.value.length === 6 && /^[A-Z]{2}\d{4}$/.test(moduleCode.value)
 
 const toggleSync = () => {
   isClassroomSync.value = !isClassroomSync.value
@@ -26,9 +63,31 @@ const toggleSync = () => {
         </div>
         
         <div class="grid md:grid-cols-2 gap-4">
-          <div class="space-y-1.5">
-            <label class="text-sm font-semibold text-slate-700">Module Code</label>
-            <input type="text" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-hero-highlight/20 focus:border-hero-highlight transition-all outline-none" placeholder="SE3040" />
+          <div class="space-y-1.5 flex-1">
+            <label class="text-sm font-semibold text-slate-700">Module Code <span class="text-red-500">*</span></label>
+            <div class="relative">
+              <input 
+                :value="moduleCode"
+                @input="handleModuleCodeInput"
+                type="text" 
+                maxlength="6"
+                required
+                class="w-full px-4 py-3 bg-slate-50 border rounded-xl focus:ring-2 focus:ring-hero-highlight/20 transition-all outline-none uppercase tracking-normal text-sm font-medium" 
+                :class="moduleCodeError && moduleCodeTouched ? 'border-red-400 focus:border-red-400 bg-red-50/30' : !moduleCodeError && moduleCode ? 'border-green-400 focus:border-green-400 bg-green-50/20' : 'border-slate-200 focus:border-hero-highlight'"
+                placeholder="SE3040" 
+              />
+              <span v-if="!moduleCodeError && moduleCode" class="absolute right-3 top-1/2 -translate-y-1/2 text-green-500">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+              </span>
+            </div>
+            <div class="h-4 overflow-hidden">
+              <p v-if="moduleCodeError && moduleCodeTouched" class="text-[10px] font-bold text-red-500 tracking-tight">
+                {{ moduleCodeError }}
+              </p>
+              <p v-else-if="!moduleCodeTouched" class="text-[10px] font-medium text-slate-400 tracking-tight">
+                Format: 2 letters + 4 numbers (e.g. SE3040)
+              </p>
+            </div>
           </div>
           <div class="space-y-1.5">
             <label class="text-sm font-semibold text-slate-700">Resource Type</label>
@@ -86,7 +145,10 @@ const toggleSync = () => {
 
       <!-- Submit Row -->
       <div class="pt-2 flex justify-end">
-        <button class="px-8 py-3 bg-hero-highlight text-white rounded-xl font-bold tracking-wide hover:opacity-90 transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5">
+        <button 
+          :disabled="!isModuleCodeValid()"
+          class="px-8 py-3 bg-hero-highlight text-white rounded-xl font-bold tracking-wide transition-all shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:-translate-y-0.5"
+        >
           Publish Resource
         </button>
       </div>
