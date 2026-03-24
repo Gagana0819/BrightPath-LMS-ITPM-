@@ -422,8 +422,8 @@ const getTypeColor = (type) => {
                   <div class="mt-auto flex items-center justify-between border-t border-slate-100 pt-4">
                     <div class="flex flex-col">
                       <span class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-0.5">Reward</span>
-                      <div class="flex items-center gap-1.5 text-[#2C3E50] font-black text-base">
-                        <span class="w-2 h-2 rounded-full bg-[#A8E6CF] animate-pulse"></span>
+                      <div class="flex items-center gap-1.5 text-slate-800 font-black text-base">
+                        <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse shadow-[0_0_8px_rgba(74,222,128,0.5)]"></span>
                         +{{ doc.points }} BP
                       </div>
                     </div>
