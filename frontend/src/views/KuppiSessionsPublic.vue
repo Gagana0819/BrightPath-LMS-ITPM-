@@ -79,10 +79,12 @@ const onSearch = () => {
 
 const joinSession = (session) => {
   const isLoggedIn = !!localStorage.getItem('access_token')
+  const targetPath = `/dashboard/kuppi/play/${session.id}`
+  
   if (isLoggedIn) {
-    router.push('/dashboard/kuppi')
+    router.push(targetPath)
   } else {
-    router.push({ path: '/login', query: { redirect: '/dashboard/kuppi' } })
+    router.push({ path: '/login', query: { redirect: targetPath } })
   }
 }
 </script>

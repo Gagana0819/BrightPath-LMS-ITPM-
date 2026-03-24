@@ -1,14 +1,84 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, onMounted, watch } from 'vue'
+import { useContentStore } from '../stores/contentStore'
+import { useRoute, useRouter } from 'vue-router'
+
+const contentStore = useContentStore()
+const route = useRoute()
+const router = useRouter()
 
 const tutorName = computed(() => localStorage.getItem('full_name') || 'Sandun Dimantha')
-const tutorRating = 4.8 // Mock rating
-const googleSyncActive = true
+const tutorRating = 4.8 
 
 const activeSessions = [
-  { id: 1, title: 'Object Oriented Programming - Past Papers', date: 'Oct 25', time: '6:00 PM', students: 45, link: 'meet.google.com/xyz' },
-  { id: 2, title: 'Database Optimization Techniques', date: 'Oct 27', time: '4:00 PM', students: 32, link: 'meet.google.com/abc' }
+  { 
+    id: 1, 
+    title: 'Object Oriented Programming - Past Papers', 
+    date: 'Oct 25', 
+    time: '6:00 PM', 
+    students: 45, 
+    link: 'https://meet.google.com/abc-xyz',
+    videoUrl: 'https://www.youtube.com/embed/ScMzIvxBSi4',
+    rawYoutube: 'https://www.youtube.com/watch?v=ScMzIvxBSi4'
+  },
+  { 
+    id: 2, 
+    title: 'Database Optimization Techniques', 
+    date: 'Oct 27', 
+    time: '4:00 PM', 
+    students: 32, 
+    link: 'https://meet.google.com/def-uvw',
+    videoUrl: 'https://www.youtube.com/embed/668nUCeBHyY',
+    rawYoutube: 'https://www.youtube.com/watch?v=668nUCeBHyY'
+  }
 ]
+
+// Video Player logic
+const selectedVideoId = ref(null)
+const selectedVideoUrl = ref('')
+const selectedVideoRawUrl = ref('')
+const isPlayerOpen = ref(false)
+const currentVideoTitle = ref('')
+
+const openPlayer = (id) => {
+  const session = activeSessions.find(s => s.id == id) || activeSessions[0]
+  currentVideoTitle.value = session.title
+  selectedVideoUrl.value = session.videoUrl
+  selectedVideoRawUrl.value = session.rawYoutube
+  selectedVideoId.value = id
+  isPlayerOpen.value = true
+}
+
+const closePlayer = () => {
+  isPlayerOpen.value = false
+  setTimeout(() => {
+    selectedVideoId.value = null
+    // Remove the play route but stay on dashboard
+    router.push({ name: 'kuppi' })
+  }, 300)
+}
+
+const handleSync = () => {
+  contentStore.syncWithGoogleClassroom()
+}
+
+onMounted(() => {
+  contentStore.fetchLiveSessions()
+  
+  // Check for auto-play from route
+  if (route.params.id) {
+    openPlayer(route.params.id)
+  }
+})
+
+// Watch for route changes to trigger playback
+watch(() => route.params.id, (newId) => {
+  if (newId) {
+    openPlayer(newId)
+  } else {
+    isPlayerOpen.value = false
+  }
+})
 
 const pendingRequests = [
   { id: 1, student: 'Malithi Perera', topic: 'Help with React Context API', votes: 12 },
@@ -25,31 +95,41 @@ const recentAttendees = [
 <template>
   <div class="animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12 font-sans bg-[#F4F7F9] min-h-screen px-4 md:px-8 py-8">
     
-    <!-- 1 & 6 & 7. Header + Badge + Integration Status -->
-    <div class="mb-8 bg-white p-6 md:p-8 rounded-[24px] shadow-sm border border-slate-200">
-      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <!-- Header + Integration Status -->
+    <div class="mb-8 bg-white p-6 md:p-8 rounded-[32px] shadow-sm border border-slate-200 relative overflow-hidden">
+      <div class="absolute top-0 right-0 w-64 h-64 bg-blue-50/50 rounded-full blur-3xl -mr-32 -mt-32"></div>
+      
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
         <div>
-          <h1 class="text-[28px] font-extrabold text-[#2C3E50] tracking-tight mb-2">
+          <h1 class="text-[32px] font-extrabold text-[#1E293B] tracking-tight mb-2">
             Kuppi Tutor Dashboard
           </h1>
-          <p class="text-[15px] text-[#4B5563] font-medium flex items-center gap-3">
-            Welcome back, <span class="font-bold text-[#2C3E50]">{{ tutorName }}</span>!
+          <div class="flex flex-wrap items-center gap-3">
+            <p class="text-[15px] text-[#4B5563] font-medium">
+              Welcome back, <span class="font-bold text-[#1E293B]">{{ tutorName }}</span>!
+            </p>
             
             <!-- Integration Status -->
-            <span v-if="googleSyncActive" class="flex items-center gap-1.5 text-[12px] bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full border border-emerald-100 font-bold shadow-sm">
-              <span class="relative flex h-2 w-2">
-                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span class="relative inline-flex rounded-full h-2 w-2 bg-[#A8E6CF]"></span>
+            <div @click="handleSync" class="cursor-pointer group">
+              <span v-if="!contentStore.isSyncing" class="flex items-center gap-2 text-[11px] bg-emerald-50 text-emerald-700 px-4 py-1.5 rounded-full border border-emerald-100 font-bold shadow-sm hover:bg-emerald-100 transition-colors">
+                <span class="flex h-2 w-2 relative">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                Google Sync: Active
               </span>
-              Google Sync: Active
-            </span>
-          </p>
+              <span v-else class="flex items-center gap-2 text-[11px] bg-blue-50 text-blue-700 px-4 py-1.5 rounded-full border border-blue-100 font-bold shadow-sm">
+                <svg class="animate-spin h-3 w-3" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                Syncing with Calendar...
+              </span>
+            </div>
+          </div>
         </div>
         
         <!-- Tutor Performance Badge -->
-        <div class="flex items-center gap-4 bg-gradient-to-r from-[#1E293B] to-[#0F172A] border border-slate-700 px-6 py-3.5 rounded-[20px] shadow-lg relative overflow-hidden group">
+        <div class="flex items-center gap-4 bg-slate-900 border border-slate-700 px-6 py-4 rounded-[24px] shadow-xl relative overflow-hidden group">
           <div class="absolute -right-4 -top-4 w-16 h-16 bg-yellow-500/20 blur-xl rounded-full"></div>
-          <div class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center shadow-inner text-2xl border border-white/5 backdrop-blur-md group-hover:scale-110 transition-transform">🏆</div>
+          <div class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center shadow-inner text-2xl border border-white/5 backdrop-blur-md group-hover:scale-110 transition-transform">🎓</div>
           <div>
             <h3 class="text-white font-bold text-[14px]">Top Rated Tutor</h3>
             <div class="flex items-center gap-1 mt-0.5">
@@ -67,143 +147,192 @@ const recentAttendees = [
       <!-- LEFT COLUMN -->
       <div class="xl:col-span-2 space-y-8">
         
-        <!-- 2. Active Sessions Overview -->
-        <div class="bg-white rounded-[24px] p-6 md:p-8 border border-slate-200 shadow-sm">
-          <div class="flex items-center justify-between mb-6">
-            <h2 class="text-[18px] font-bold text-[#2C3E50] flex items-center gap-2">
-              <span class="text-xl">🎙️</span> Active "Kuppi" Sessions
+        <!-- Active Sessions Overview -->
+        <div class="bg-white rounded-[32px] p-8 border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between mb-8">
+            <h2 class="text-[20px] font-extrabold text-[#1E293B] flex items-center gap-3">
+              <span class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-xl shadow-sm">🎙️</span> 
+              Active "Kuppi" Sessions
             </h2>
-            <button class="bg-[#4A90E2] hover:bg-blue-700 text-white text-[13px] font-bold py-2 px-4 rounded-xl shadow-sm transition-colors flex items-center gap-2">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            <button class="bg-blue-600 hover:bg-blue-700 text-white text-[13px] font-bold py-3 px-6 rounded-2xl shadow-lg shadow-blue-100 transition-all flex items-center gap-2 hover:-translate-y-0.5 active:translate-y-0">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
               New Session
             </button>
           </div>
           
           <div class="space-y-4">
-            <div v-for="session in activeSessions" :key="session.id" class="flex flex-col sm:flex-row justify-between p-5 bg-slate-50 border border-slate-100 rounded-[16px] hover:border-blue-200 transition-colors group">
-              <div>
-                <div class="flex items-center gap-3 mb-2">
-                  <span class="bg-blue-100 text-blue-700 text-[12px] font-bold px-2.5 py-0.5 rounded-lg border border-blue-200">{{ session.date }} &bull; {{ session.time }}</span>
-                  <span class="text-[12px] text-slate-500 font-bold flex items-center gap-1">
-                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5V4H2v16h5m4-4h2"></path></svg>
-                    {{ session.students }} Registered
-                  </span>
+            <div v-for="session in activeSessions" :key="session.id" class="flex flex-col sm:flex-row justify-between p-6 bg-white border border-slate-100 rounded-[24px] hover:border-blue-400 hover:shadow-md transition-all group">
+              <div class="flex items-start gap-4">
+                 <div class="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-xl group-hover:bg-blue-50 transition-colors">👨‍💻</div>
+                 <div>
+                  <div class="flex items-center gap-3 mb-1">
+                    <span class="bg-blue-50 text-blue-700 text-[11px] font-extrabold px-3 py-1 rounded-lg border border-blue-100 uppercase tracking-wider">{{ session.date }} @ {{ session.time }}</span>
+                    <span class="text-[12px] text-slate-400 font-bold flex items-center gap-1">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5V4H2v16h5m4-4h2"></path></svg>
+                      {{ session.students }} Students
+                    </span>
+                  </div>
+                  <h3 class="font-bold text-[#1E293B] text-[17px] leading-tight group-hover:text-blue-600 transition-colors">{{ session.title }}</h3>
                 </div>
-                <h3 class="font-bold text-[#2C3E50] text-[16px] leading-tight group-hover:text-[#4A90E2] transition-colors">{{ session.title }}</h3>
               </div>
               <div class="mt-4 sm:mt-0 flex gap-2 sm:self-center">
-                <button class="bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 font-bold py-2 px-4 rounded-xl text-[13px] transition-colors shadow-sm">
+                <button class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold py-2.5 px-5 rounded-xl text-[13px] transition-all">
                   Edit
                 </button>
-                <button class="bg-[#A8E6CF] hover:bg-emerald-600 text-white font-bold py-2 px-5 rounded-xl text-[13px] transition-colors shadow-sm flex items-center gap-2">
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                  Join
+                <button @click="openPlayer(session.id)" class="bg-[#4A90E2] hover:bg-blue-600 text-white font-bold py-2.5 px-6 rounded-xl text-[13px] transition-all shadow-md flex items-center gap-2">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path></svg>
+                  Watch Session
                 </button>
+                <a :href="session.link" target="_blank" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2.5 px-6 rounded-xl text-[13px] transition-all shadow-md flex items-center gap-2">
+                  Join Live
+                </a>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- 3. Resource Upload Center -->
-        <div class="bg-white rounded-[24px] p-6 md:p-8 border border-slate-200 shadow-sm">
-          <h2 class="text-[18px] font-bold text-[#2C3E50] flex items-center gap-2 mb-2">
-            <span class="text-xl">📁</span> Resource Upload Center
-          </h2>
-          <p class="text-[13px] text-slate-500 mb-6">Upload lecture notes and past papers for your sessions securely.</p>
-          
-          <div class="border-2 border-dashed border-slate-300 rounded-[20px] p-10 flex flex-col items-center justify-center bg-slate-50 hover:bg-blue-50/50 hover:border-blue-400 transition-colors cursor-pointer group">
-            <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-4 group-hover:scale-110 transition-transform">
-              <svg class="w-8 h-8 text-[#4A90E2]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+        <!-- Resource Upload Box -->
+        <div class="bg-gradient-to-br from-indigo-900 to-slate-900 rounded-[32px] p-8 text-white relative overflow-hidden shadow-2xl">
+          <div class="absolute -right-10 -bottom-10 w-48 h-48 bg-blue-500/20 blur-3xl rounded-full"></div>
+          <div class="relative z-10 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="text-center md:text-left">
+              <h2 class="text-[22px] font-extrabold mb-2">Resource Upload Center</h2>
+              <p class="text-blue-100 text-sm opacity-80 max-w-sm">Securely upload lecture notes and past papers to <span class="text-white font-bold">AWS S3 Cloud</span> for your students.</p>
             </div>
-            <h3 class="text-[#2C3E50] font-bold text-[15px] mb-1">Click to upload or drag and drop</h3>
-            <p class="text-[12px] text-slate-500">PDF, PPTX, or ZIP (Max 50MB)</p>
+            <button class="bg-white text-slate-900 hover:bg-blue-50 px-8 py-4 rounded-[20px] font-extrabold text-[15px] shadow-lg transition-all active:scale-95 flex items-center gap-2 whitespace-nowrap">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+              Quick Upload
+            </button>
           </div>
         </div>
 
       </div>
 
       <!-- RIGHT COLUMN -->
-      <div class="xl:col-span-1 space-y-8 flex flex-col">
+      <div class="xl:col-span-1 space-y-8">
 
-        <!-- 1. Session Scheduler (Mini Calendar Mock) -->
-        <div class="bg-white rounded-[24px] p-6 border border-slate-200 shadow-sm relative overflow-hidden">
-          <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 blur-2xl rounded-full pointer-events-none"></div>
-          <h3 class="font-bold text-[#2C3E50] text-[16px] mb-5 flex items-center gap-2">
-            <svg class="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-            Session Scheduler
+        <!-- Session Scheduler -->
+        <div class="bg-white rounded-[32px] p-8 border border-slate-200 shadow-sm relative overflow-hidden">
+          <h3 class="font-extrabold text-[#1E293B] text-[18px] mb-6 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+               <span class="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center text-blue-600">📅</span>
+               Calendar Sync
+            </div>
+            <button @click="handleSync" class="p-2 hover:bg-slate-50 rounded-lg transition-colors group">
+               <svg :class="['w-5 h-5 text-slate-400 group-hover:text-blue-600', contentStore.isSyncing ? 'animate-spin text-blue-600' : '']" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+            </button>
           </h3>
           
-          <!-- Mock Calendar Grid -->
-          <div class="bg-slate-50 border border-slate-100 rounded-xl p-4">
-            <div class="flex justify-between items-center text-[13px] font-bold text-[#2C3E50] mb-4">
-              <button class="p-1 hover:bg-slate-200 rounded">&lt;</button>
-              October 2026
-              <button class="p-1 hover:bg-slate-200 rounded">&gt;</button>
+          <div class="bg-slate-50 border border-slate-100 rounded-3xl p-6">
+            <div class="flex justify-between items-center text-[14px] font-bold text-[#1E293B] mb-6">
+              <button class="w-8 h-8 flex items-center justify-center hover:bg-white rounded-full transition-colors">&lt;</button>
+              March 2026
+              <button class="w-8 h-8 flex items-center justify-center hover:bg-white rounded-full transition-colors">&gt;</button>
             </div>
-            <div class="grid grid-cols-7 gap-1 text-center text-[11px] font-bold text-slate-400 mb-2">
-              <div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div>
-            </div>
-            <div class="grid grid-cols-7 gap-1 text-center text-[12px] font-medium text-slate-700">
+            
+            <div class="grid grid-cols-7 gap-2 mb-4">
+              <div v-for="d in ['S','M','T','W','T','F','S']" :key="d" class="text-center text-[11px] font-extrabold text-slate-400 uppercase tracking-widest">{{ d }}</div>
+              
               <!-- Placeholder Days -->
-              <div class="p-1.5 text-slate-300">27</div><div class="p-1.5 text-slate-300">28</div><div class="p-1.5 text-slate-300">29</div><div class="p-1.5 text-slate-300">30</div>
-              <div class="p-1.5 hover:bg-slate-200 rounded cursor-pointer">1</div><div class="p-1.5 hover:bg-slate-200 rounded cursor-pointer">2</div><div class="p-1.5 hover:bg-slate-200 rounded cursor-pointer">3</div>
-              <div class="p-1.5 hover:bg-slate-200 rounded cursor-pointer">4</div><div class="p-1.5 hover:bg-slate-200 rounded cursor-pointer">5</div><div class="p-1.5 hover:bg-slate-200 rounded cursor-pointer">6</div><div class="p-1.5 hover:bg-slate-200 rounded cursor-pointer">7</div>
-              <!-- Active Day -->
-              <div class="p-1.5 bg-[#4A90E2] text-white font-bold rounded cursor-pointer shadow-sm shadow-blue-200">8</div>
-              <div class="p-1.5 hover:bg-slate-200 rounded cursor-pointer">9</div><div class="p-1.5 hover:bg-slate-200 rounded cursor-pointer">10</div>
+              <div v-for="n in 5" :key="'p'+n" class="aspect-square flex items-center justify-center text-[13px] text-slate-200">2{{ n+3 }}</div>
+              <div v-for="n in 25" :key="n" class="aspect-square flex items-center justify-center text-[13px] font-bold text-slate-600 hover:bg-white hover:text-blue-600 hover:shadow-sm rounded-xl cursor-pointer transition-all" :class="n === 25 ? 'bg-blue-600 text-white shadow-lg ring-4 ring-blue-100' : ''">
+                {{ n }}
+              </div>
             </div>
-            <button class="w-full mt-4 border border-blue-200 text-blue-700 bg-blue-50 hover:bg-blue-100 font-bold py-2 rounded-xl text-[12px] transition-colors">Open Google Calendar</button>
+            
+            <a href="https://calendar.google.com" target="_blank" class="w-full mt-4 flex items-center justify-center gap-2 border-2 border-slate-200 text-slate-700 bg-white hover:border-blue-500 hover:text-blue-600 font-extrabold py-3.5 rounded-2xl text-[13px] transition-all">
+               <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Google_Calendar_icon_%282020%29.svg" class="w-5 h-5" alt="">
+               Launch Google Calendar
+            </a>
           </div>
         </div>
 
-        <!-- 5. Request Inbox -->
-        <div class="bg-white rounded-[24px] p-6 border border-slate-200 shadow-sm flex-1">
-          <h3 class="font-bold text-[#2C3E50] text-[16px] mb-5 flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <svg class="w-5 h-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-              Request Inbox
-            </div>
-            <span class="bg-amber-100 text-amber-800 text-[11px] px-2 py-0.5 rounded-full">+{{ pendingRequests.length }} New</span>
+        <!-- Attendance & Stats Group -->
+        <div class="bg-white rounded-[32px] p-8 border border-slate-200 shadow-sm flex-1">
+          <h3 class="font-extrabold text-[#1E293B] text-[18px] mb-6 flex items-center gap-3">
+             <span class="w-8 h-8 bg-purple-50 rounded-lg flex items-center justify-center text-purple-600 text-sm">📈</span>
+             Quick Analytics
           </h3>
           
-          <div class="space-y-3">
-            <div v-for="req in pendingRequests" :key="req.id" class="p-3 bg-amber-50/50 border border-amber-100 rounded-xl">
-              <div class="flex justify-between items-start mb-1">
-                <h4 class="font-bold text-[#2C3E50] text-[13px] leading-tight">{{ req.topic }}</h4>
-                <span class="text-[11px] font-bold text-amber-600 bg-amber-100 px-1.5 rounded flex items-center gap-1"><span class="text-[10px]">▲</span> {{ req.votes }}</span>
+          <div class="space-y-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-[12px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Attendance</p>
+                <p class="text-[24px] font-extrabold text-slate-800">1.2k <span class="text-[14px] text-emerald-500 font-bold ml-1">+12%</span></p>
               </div>
-              <p class="text-[11px] text-slate-500 mb-3">Requested by {{ req.student }}</p>
-              <div class="flex gap-2">
-                <button class="flex-1 bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-bold py-1.5 rounded-lg transition-colors">Accept Topic</button>
-                <button class="px-3 bg-white border border-slate-300 hover:bg-slate-100 text-slate-600 text-[11px] font-bold rounded-lg transition-colors">Dismiss</button>
+              <div class="w-20 h-10 bg-emerald-50 rounded-lg flex items-center justify-center border border-emerald-100">
+                <svg class="w-12 h-6 text-emerald-500" viewBox="0 0 100 30" fill="none" stroke="currentColor" stroke-width="4"><path d="M0 25 L20 15 L40 20 L60 5 L80 15 L100 0" stroke-linecap="round" /></svg>
               </div>
+            </div>
+
+            <div class="pt-6 border-t border-slate-50">
+               <p class="text-[13px] font-bold text-slate-700 mb-4">Recent Students</p>
+               <div class="flex -space-x-3 overflow-hidden">
+                 <div v-for="n in 5" :key="n" :class="['inline-block h-10 w-10 rounded-full ring-4 ring-white shadow-sm flex items-center justify-center font-bold text-xs border border-slate-100', ['bg-blue-100 text-blue-600', 'bg-purple-100 text-purple-600', 'bg-amber-100 text-amber-600', 'bg-rose-100 text-rose-600', 'bg-indigo-100 text-indigo-600'][n-1]]">
+                   {{ ['SP', 'MK', 'AF', 'PK', 'RJ'][n-1] }}
+                 </div>
+                 <div class="inline-block h-10 w-10 rounded-full bg-slate-900 border-2 border-white flex items-center justify-center text-white text-[10px] font-bold">+24</div>
+               </div>
             </div>
           </div>
         </div>
 
-        <!-- 4. Student Attendance Tracker -->
-        <div class="bg-white rounded-[24px] p-6 border border-slate-200 shadow-sm">
-          <h3 class="font-bold text-[#2C3E50] text-[16px] mb-4 flex items-center gap-2">
-            <svg class="w-5 h-5 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-            Recent Attendance
-          </h3>
-          
-          <ul class="space-y-2">
-            <li v-for="attendee in recentAttendees" :key="attendee.id" class="flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 transition-colors">
-              <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 text-[10px] font-bold">
-                  {{ attendee.name.substring(0, 2).toUpperCase() }}
-                </div>
-                <span class="text-[13px] font-medium text-[#2C3E50]">{{ attendee.name }}</span>
-              </div>
-              <div :class="attendee.present ? 'bg-[#A8E6CF] text-green-700' : 'bg-red-100 text-red-700'" class="text-[10px] font-bold px-2 py-0.5 rounded-full">
-                {{ attendee.present ? 'Present' : 'Absent' }}
-              </div>
-            </li>
-          </ul>
-          <button class="w-full mt-3 text-purple-600 text-[12px] font-bold hover:underline text-center">View Full Log</button>
+      </div>
+    </div>
+
+    <!-- Video Player Modal -->
+    <div v-if="isPlayerOpen" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/90 backdrop-blur-md p-4 animate-in fade-in duration-300">
+      <div class="bg-[#0F172A] w-full max-w-5xl rounded-[32px] shadow-2xl overflow-hidden border border-slate-800 flex flex-col max-h-[90vh]">
+        <!-- Modal Header -->
+        <div class="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
+          <div>
+            <span class="text-blue-500 text-[10px] font-bold uppercase tracking-widest mb-1 block">Now Playing Recording</span>
+            <h3 class="text-white font-extrabold text-xl">{{ currentVideoTitle }}</h3>
+          </div>
+          <button @click="closePlayer" class="w-10 h-10 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition-colors">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
         </div>
 
+        <!-- Video Player Body -->
+        <div class="flex-1 relative aspect-video bg-black flex items-center justify-center">
+          <iframe 
+            v-if="selectedVideoUrl"
+            class="w-full h-full"
+            :src="selectedVideoUrl + '?autoplay=1'" 
+            title="YouTube video player" 
+            frameborder="0" 
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+            referrerpolicy="strict-origin-when-cross-origin" 
+            allowfullscreen>
+          </iframe>
+          
+          <!-- Fallback/Loading -->
+          <div v-else class="absolute inset-0 flex items-center justify-center">
+            <div class="text-center animate-pulse">
+              <div class="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center mb-4 mx-auto">
+                <svg class="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg>
+              </div>
+              <p class="text-slate-500 font-bold uppercase tracking-tighter text-sm">Initializing Secure Stream...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Links Section -->
+        <div class="p-6 bg-slate-900 border-t border-slate-800 flex justify-between items-center">
+          <p class="text-slate-400 text-sm font-medium">Recorded Feb 24, 2026 • 2.4k Views</p>
+          <div class="flex gap-4">
+            <a :href="selectedVideoRawUrl" target="_blank" class="text-slate-300 font-bold text-sm hover:text-white flex items-center gap-2 border border-slate-700 px-4 py-2 rounded-xl transition-all hover:bg-slate-800">
+               <img src="https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png" class="h-4" alt="YouTube" />
+               Open in YouTube
+            </a>
+            <a href="#" class="text-emerald-500 font-bold text-sm hover:underline flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-width="2.5"/></svg>
+              Google Classroom Mirror
+            </a>
+            <button class="bg-blue-600 px-6 py-2.5 rounded-xl text-white font-bold text-sm shadow-lg shadow-blue-900/20">Download Assets</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>

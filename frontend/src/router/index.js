@@ -68,15 +68,17 @@ const router = createRouter({
           path: 'kuppi',
           name: 'kuppi',
           component: () => import('../views/KuppiDashboardView.vue'),
+          children: [
+            {
+              path: 'play/:id',
+              name: 'kuppi-play',
+              component: () => import('../views/KuppiDashboardView.vue'), // Self or child component
+            }
+          ]
         },
         {
           path: 'upload',
           name: 'upload-course',
-          component: () => import('../views/ContentDashboard.vue'), // Placeholder
-        },
-        {
-          path: 'grades',
-          name: 'my-grades',
           component: () => import('../views/ContentDashboard.vue'), // Placeholder
         },
         {
