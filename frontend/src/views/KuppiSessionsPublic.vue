@@ -10,12 +10,12 @@ const vidCanScrollLeft = ref(false)
 const vidCanScrollRight = ref(true)
 
 const recommendedVideos = ref([
-  { id: 'v1', title: 'OOP Past Paper Walkthrough — 2024 Final', tutor: 'Kasun Bandara', duration: '1h 20min', views: '2.3k', tag: 'Most Watched', image: '/5a108056-a070-44ee-a123-1afd489077e0.jpg' },
-  { id: 'v2', title: 'SQL Joins & Subqueries — Exam Revision', tutor: 'Nimesha Perera', duration: '45min', views: '1.8k', tag: 'Top Rated', image: '/de563836-04cc-4c46-bf78-228261acdef0_1024.jpeg' },
-  { id: 'v3', title: 'React Hooks Deep Dive — Live Coding', tutor: 'Malithi Fernando', duration: '1h 05min', views: '1.5k', tag: 'Trending', image: '/flat-design-minimal-technology-youtube-thumbnail_23-2149150484.avif' },
-  { id: 'v4', title: 'Network Security — Firewall Config Demo', tutor: 'Tharindu Silva', duration: '55min', views: '980', tag: 'New', image: '/HCF_UvPWUAAJXQH.jpg' },
-  { id: 'v5', title: 'Spring Boot Microservices Architecture', tutor: 'Sandun Dimantha', duration: '1h 30min', views: '3.1k', tag: 'Popular', image: '/hqdefault.jpg' },
-  { id: 'v6', title: 'Machine Learning — Neural Networks Intro', tutor: 'Amaya Jayasinghe', duration: '1h 10min', views: '2.0k', tag: 'AI Trending', image: '/modern-digital-coding-youtube-thumbnail-design-template-349557863df9c89a05c2c54b82d1d74b_screen.jpg' },
+  { id: 'v1', videoId: 'v9ejT8FO-7I', title: 'OOP Design Patterns Full Course', tutor: 'Kasun Bandara', duration: '1h 20min', views: '2.3k', tag: 'Most Watched', image: '/5a108056-a070-44ee-a123-1afd489077e0.jpg' },
+  { id: 'v2', videoId: 'erW_Tf_YtE0', title: 'Database Design & Optimization', tutor: 'Nimesha Perera', duration: '45min', views: '1.8k', tag: 'Top Rated', image: '/de563836-04cc-4c46-bf78-228261acdef0_1024.jpeg' },
+  { id: 'v3', videoId: 'LlvBzyy-558', title: 'React Hooks Mastery Tutorial', tutor: 'Malithi Fernando', duration: '1h 05min', views: '1.5k', tag: 'Trending', image: '/flat-design-minimal-technology-youtube-thumbnail_23-2149150484.avif' },
+  { id: 'v4', videoId: '6m82_K0r9_k', title: 'Network Security Basics for Engineers', tutor: 'Tharindu Silva', duration: '55min', views: '980', tag: 'New', image: '/HCF_UvPWUAAJXQH.jpg' },
+  { id: 'v5', videoId: '7u2mO6S9E_U', title: 'Java Spring Boot + AWS S3 Integration', tutor: 'Sandun Dimantha', duration: '1h 30min', views: '3.1k', tag: 'Popular', image: '/hqdefault.jpg' },
+  { id: 'v6', videoId: 'edvg4eHi_Mw', title: 'Python for Data Science — Full Course', tutor: 'Amaya Jayasinghe', duration: '1h 10min', views: '2.0k', tag: 'AI Trending', image: '/modern-digital-coding-youtube-thumbnail-design-template-349557863df9c89a05c2c54b82d1d74b_screen.jpg' },
 ])
 
 const updateVidScroll = () => {
@@ -33,12 +33,12 @@ const scrollVid = (dir) => {
 }
 
 const upcomingSessions = [
-  { id: 1, title: 'Object Oriented Programming — Past Papers', tutor: 'Kasun Bandara', year: 'Year 4', date: 'Oct 25, 2026', time: '6:00 PM', students: '45k', stream: 'Information Technology', tags: ['OOP', 'Past Papers', 'Coding', 'Java'], thumbnail: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=800&auto=format&fit=crop', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Kasun' },
-  { id: 2, title: 'Database Optimization Techniques', tutor: 'Nimesha Perera', year: 'Year 3', date: 'Oct 27, 2026', time: '4:00 PM', students: '32k', stream: 'Software Engineering', tags: ['SQL', 'Performance', 'Database', 'Indexing'], thumbnail: '/database-ai-thumbnail.png', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Nimesha' },
-  { id: 3, title: 'React Context API Deep Dive', tutor: 'Malithi Fernando', year: 'Year 3', date: 'Oct 28, 2026', time: '5:30 PM', students: '28k', stream: 'Information Technology', tags: ['React', 'Hooks', 'WebDev', 'Frontend'], thumbnail: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?q=80&w=800&auto=format&fit=crop', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Malithi' },
-  { id: 4, title: 'Network Security Fundamentals', tutor: 'Tharindu Silva', year: 'Year 4', date: 'Oct 30, 2026', time: '7:00 PM', students: '19k', stream: 'Cyber Security', tags: ['Network', 'Security', 'Cyber', 'Privacy'], thumbnail: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=800&auto=format&fit=crop', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Tharindu' },
-  { id: 5, title: 'Spring Boot Microservices', tutor: 'Sandun Dimantha', year: 'Year 3', date: 'Nov 01, 2026', time: '6:00 PM', students: '55k', stream: 'Software Engineering', tags: ['Java', 'Spring', 'Microservices', 'Backend'], thumbnail: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=800&auto=format&fit=crop', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sandun' },
-  { id: 6, title: 'Machine Learning with Python', tutor: 'Amaya Jayasinghe', year: 'Year 4', date: 'Nov 03, 2026', time: '4:30 PM', students: '38k', stream: 'Data Science', tags: ['ML', 'Python', 'AI', 'DataScience'], thumbnail: '/ml-ai-thumbnail.png', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Amaya' },
+  { id: 1, videoId: 'GoXwIVyNvX0', title: 'Object Oriented Programming — Past Papers', tutor: 'Kasun Bandara', year: 'Year 4', date: 'Oct 25, 2026', time: '6:00 PM', students: '45k', stream: 'Information Technology', tags: ['OOP', 'Past Papers', 'Coding', 'Java'], thumbnail: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=800&auto=format&fit=crop', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Kasun' },
+  { id: 2, videoId: 'HubezKbFL78', title: 'Database Optimization Techniques', tutor: 'Nimesha Perera', year: 'Year 3', date: 'Oct 27, 2026', time: '4:00 PM', students: '32k', stream: 'Software Engineering', tags: ['SQL', 'Performance', 'Database', 'Indexing'], thumbnail: '/database-ai-thumbnail.png', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Nimesha' },
+  { id: 3, videoId: '5LrDIWkK_Bc', title: 'React Context API Deep Dive', tutor: 'Malithi Fernando', year: 'Year 3', date: 'Oct 28, 2026', time: '5:30 PM', students: '28k', stream: 'Information Technology', tags: ['React', 'Hooks', 'WebDev', 'Frontend'], thumbnail: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?q=80&w=800&auto=format&fit=crop', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Malithi' },
+  { id: 4, videoId: 'nzj7Wg4DAbs', title: 'Network Security Fundamentals', tutor: 'Tharindu Silva', year: 'Year 4', date: 'Oct 30, 2026', time: '7:00 PM', students: '19k', stream: 'Cyber Security', tags: ['Network', 'Security', 'Cyber', 'Privacy'], thumbnail: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=800&auto=format&fit=crop', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Tharindu' },
+  { id: 5, videoId: 'M9S_ZfN0p0M', title: 'Spring Boot Microservices', tutor: 'Sandun Dimantha', year: 'Year 3', date: 'Nov 01, 2026', time: '6:00 PM', students: '55k', stream: 'Software Engineering', tags: ['Java', 'Spring', 'Microservices', 'Backend'], thumbnail: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=800&auto=format&fit=crop', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sandun' },
+  { id: 6, videoId: 'GwIo3gDZCVQ', title: 'Machine Learning with Python', tutor: 'Amaya Jayasinghe', year: 'Year 4', date: 'Nov 03, 2026', time: '4:30 PM', students: '38k', stream: 'Data Science', tags: ['ML', 'Python', 'AI', 'DataScience'], thumbnail: '/ml-ai-thumbnail.png', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Amaya' },
 ]
 
 const selectedFilter = ref('All')
@@ -84,6 +84,18 @@ const onSearch = () => {
 const joinSession = (session) => {
   const isLoggedIn = !!localStorage.getItem('access_token')
   const targetPath = `/dashboard/kuppi/play/${session.id}`
+  
+  if (isLoggedIn) {
+    router.push(targetPath)
+  } else {
+    router.push({ path: '/login', query: { redirect: targetPath } })
+  }
+}
+
+const playRecommendation = (vid) => {
+  const isLoggedIn = !!localStorage.getItem('access_token')
+  // Pass the videoId string directly to the play route
+  const targetPath = `/dashboard/kuppi/play/${vid.videoId}` 
   
   if (isLoggedIn) {
     router.push(targetPath)
@@ -180,6 +192,7 @@ const joinSession = (session) => {
           <div
             v-for="vid in recommendedVideos"
             :key="vid.id"
+            @click="playRecommendation(vid)"
             class="min-w-[280px] max-w-[280px] bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer group overflow-hidden flex flex-col shrink-0"
           >
             <!-- Video Thumbnail -->
