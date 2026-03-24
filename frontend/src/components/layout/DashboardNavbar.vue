@@ -6,7 +6,16 @@ const userRole = computed(() => localStorage.getItem('user_role') || 'STUDENT')
 const studentId = computed(() => localStorage.getItem('student_id') || 'STUDENT-XXX')
 
 // Mock notifications consistency
-const unreadCount = ref(2) // Consistent with AppNavbar's unread items
+const unreadCount = ref(2)
+const isNotificationsOpen = ref(false)
+const notifications = ref([
+  { id: 1, title: 'New Student Joined', message: 'Malithi Perera just joined your OOP session.', time: '2 min ago', type: 'user' },
+  { id: 2, title: 'Resource Downloaded', message: 'Your "SQL Joins" PDF was downloaded 15 times.', time: '1 hour ago', type: 'file' }
+])
+
+const toggleNotifications = () => {
+  isNotificationsOpen.value = !isNotificationsOpen.value
+}
 </script>
 
 <template>
@@ -19,26 +28,45 @@ const unreadCount = ref(2) // Consistent with AppNavbar's unread items
           <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
         </svg>
       </button>
-      
-      <!-- Search Input (Optional) -->
-      <div class="hidden md:flex items-center bg-base rounded-full px-4 py-2 border border-slate-200 focus-within:ring-2 focus-within:ring-hero-highlight/20 focus-within:border-hero-highlight w-[300px] transition-all">
-        <svg class="w-4 h-4 text-slate-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-        <input type="text" placeholder="Search courses, library..." class="bg-transparent border-none outline-none w-full text-sm text-content placeholder:text-slate-400" />
-      </div>
     </div>
 
     <!-- Right Actions -->
     <div class="flex items-center gap-2 md:gap-4">
       
       <!-- Notification Bell -->
-      <button class="relative p-2.5 rounded-full text-content hover:bg-black/5 transition-colors group">
-        <svg class="w-6 h-6 group-hover:text-hero-highlight transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-        </svg>
-        <span v-if="unreadCount > 0" class="absolute top-[6px] right-[8px] w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white shadow-sm"></span>
-      </button>
+      <div class="relative">
+        <button @click="toggleNotifications" class="relative p-2.5 rounded-full text-content hover:bg-black/5 transition-colors group">
+          <svg class="w-6 h-6 group-hover:text-hero-highlight transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+          <span v-if="unreadCount > 0" class="absolute top-[6px] right-[8px] w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white shadow-sm"></span>
+        </button>
+
+        <!-- Notification Dropdown -->
+        <div v-if="isNotificationsOpen" class="absolute right-0 mt-3 w-80 bg-white rounded-[24px] shadow-2xl border border-slate-100 py-4 animate-in fade-in zoom-in-95 duration-200 z-50">
+          <div class="px-6 pb-3 border-b border-slate-50 flex justify-between items-center">
+            <h3 class="font-extrabold text-[#1E293B] text-sm italic">Recent Activity</h3>
+            <span class="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-bold">New</span>
+          </div>
+          <div class="max-h-[300px] overflow-y-auto">
+            <div v-for="n in notifications" :key="n.id" class="px-6 py-4 hover:bg-slate-50 transition-colors cursor-pointer border-b border-slate-50 last:border-none">
+              <div class="flex gap-3">
+                <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 text-xs">
+                  {{ n.type === 'user' ? '👤' : '📄' }}
+                </div>
+                <div>
+                  <h4 class="text-[13px] font-bold text-slate-800">{{ n.title }}</h4>
+                  <p class="text-[11px] text-slate-500 mt-0.5 leading-relaxed">{{ n.message }}</p>
+                  <span class="text-[10px] text-slate-400 font-medium mt-1 block">{{ n.time }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="px-6 pt-3 mt-1 text-center">
+            <button class="text-xs font-bold text-blue-600 hover:underline">View All Notifications</button>
+          </div>
+        </div>
+      </div>
 
       <!-- Divider -->
       <div class="h-8 w-px bg-slate-200 hidden md:block mx-1"></div>

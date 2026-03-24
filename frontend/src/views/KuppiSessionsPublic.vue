@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -61,16 +61,20 @@ const runFilter = () => {
     results = results.filter(s =>
       s.title.toLowerCase().includes(q) ||
       s.tutor.toLowerCase().includes(q) ||
-      s.tags.some(t => t.toLowerCase().includes(q))
+      (s.tags && s.tags.some(t => t.toLowerCase().includes(q)))
     )
   }
 
   filteredSessions.value = results
 }
 
+// Automatically re-run filter whenever search query or selected filter changes
+watch([searchQuery, selectedFilter], () => {
+  runFilter()
+}, { immediate: true })
+
 const applyFilter = (filter) => {
   selectedFilter.value = filter
-  runFilter()
 }
 
 const onSearch = () => {
@@ -221,35 +225,49 @@ const joinSession = (session) => {
         </div>
       </div>
 
-    <div class="max-w-[1200px] mx-auto px-4">
+    <div class="max-w-[1200px] mx-auto px-4 mt-8">
+      
+      <!-- Premium Integrated Search & Filter Control -->
+      <div class="mb-10 bg-white/60 backdrop-blur-xl rounded-[32px] p-2 border border-white/80 shadow-[0_8px_32px_rgba(31,38,135,0.07)] animate-fade-in-up delay-200 relative z-30">
+        <div class="flex flex-col lg:flex-row items-center gap-2">
+          
+          <!-- Search Input Section -->
+          <div class="relative flex-1 w-full">
+            <!-- Icon container with pointer-events-none to allow clicks through to input -->
+            <div class="absolute left-6 top-1/2 -translate-y-1/2 flex items-center gap-3 text-[#4A90E2] pointer-events-none z-10">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+              <div class="h-4 w-[1px] bg-slate-200"></div>
+            </div>
+            <input
+              v-model="searchQuery"
+              @input="onSearch"
+              type="text"
+              placeholder="Search by session title, tutor name, or topic..."
+              class="relative z-0 w-full pl-16 pr-6 py-5 bg-transparent border-none outline-none text-[#2C3E50] font-semibold placeholder:text-slate-400 placeholder:font-medium text-base rounded-[24px]"
+            />
+          </div>
 
-      <!-- Search Bar (Glassmorphism) -->
-      <div class="mb-6 fade-up" style="animation-delay: 0.1s">
-        <div class="relative max-w-[520px]">
-          <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#4A90E2] pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-          <input
-            v-model="searchQuery"
-            @input="onSearch"
-            type="text"
-            placeholder="Search by session title, tutor, or topic..."
-            class="search-input w-full pl-12 pr-4 py-4 rounded-2xl border border-slate-200 bg-white/80 backdrop-blur-sm text-[14px] text-[#2C3E50] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4A90E2]/40 focus:border-[#4A90E2] shadow-[0_2px_16px_rgba(74,144,226,0.06)] transition-all duration-300"
-          />
+          <!-- Divider for Desktop -->
+          <div class="hidden lg:block w-[1px] h-10 bg-slate-200/60 mx-2"></div>
+
+          <!-- Filter Pills Section (Inline) -->
+          <div class="w-full lg:w-auto overflow-x-auto scrollbar-hide px-4 lg:px-2 py-3 lg:py-0">
+            <div class="flex items-center gap-2 min-w-max">
+              <button 
+                v-for="filter in filters"
+                :key="filter"
+                @click="applyFilter(filter)"
+                class="px-5 py-2.5 rounded-[18px] text-[13px] font-bold border transition-all duration-300 whitespace-nowrap"
+                :class="selectedFilter === filter 
+                  ? 'bg-[#4A90E2] text-white border-[#4A90E2] shadow-lg shadow-blue-200 translate-y-[-1px]' 
+                  : 'bg-white/50 text-[#64748B] border-slate-200/60 hover:border-[#4A90E2]/40 hover:text-[#4A90E2] hover:bg-white'"
+              >
+                {{ filter }}
+              </button>
+            </div>
+          </div>
+
         </div>
-      </div>
-
-      <!-- Stream Filters -->
-      <div class="flex flex-wrap gap-2 mb-8 animate-fade-in-up delay-100 fade-up" style="animation-delay: 0.2s">
-        <button 
-          v-for="filter in filters"
-          :key="filter"
-          @click="applyFilter(filter)"
-          class="filter-pill px-5 py-2.5 rounded-full text-[13px] font-bold border transition-all duration-300"
-          :class="selectedFilter === filter 
-            ? 'bg-[#4A90E2] text-white border-[#4A90E2] shadow-[0_4px_14px_rgba(74,144,226,0.35)] scale-[1.03]' 
-            : 'bg-white text-[#2C3E50] border-slate-200 hover:border-[#4A90E2] hover:text-[#4A90E2] hover:shadow-md'"
-        >
-          {{ filter }}
-        </button>
       </div>
 
       <transition-group name="list" tag="div" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-10 animate-fade-in-up delay-200 relative">
@@ -327,6 +345,14 @@ const joinSession = (session) => {
           </div>
         </div>
       </transition-group>
+
+      <!-- Beautiful Empty State for No Filter Results -->
+      <div v-if="filteredSessions.length === 0" class="mt-12 bg-white/60 backdrop-blur-md rounded-[32px] p-20 border border-white/80 shadow-sm text-center animate-pulse-slow">
+        <div class="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center text-5xl mx-auto mb-6 shadow-inner">🔍</div>
+        <h3 class="text-2xl font-extrabold text-[#2C3E50] mb-2 tracking-tight">No sessions found for "{{ searchQuery }}"</h3>
+        <p class="text-slate-500 font-medium text-lg">Try adjusting your keywords or switching filters to find what you're looking for!</p>
+        <button @click="searchQuery = ''; selectedFilter = 'All'" class="mt-8 bg-[#4A90E2] hover:bg-blue-600 text-white font-bold py-3 px-8 rounded-2xl transition-all shadow-md active:scale-95">Clear Filters</button>
+      </div>
 
       <!-- No Results -->
       <div v-if="filteredSessions.length === 0" class="text-center py-16 fade-up">
