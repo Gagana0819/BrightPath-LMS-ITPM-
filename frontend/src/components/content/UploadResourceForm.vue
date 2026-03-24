@@ -64,7 +64,7 @@ const toggleSync = () => {
         
         <div class="grid md:grid-cols-2 gap-4">
           <div class="space-y-1.5 flex-1">
-            <label class="text-sm font-semibold text-slate-700">Module Code <span class="text-red-500">*</span></label>
+            <label class="text-sm font-semibold text-slate-700">Module Code</label>
             <div class="relative">
               <input 
                 :value="moduleCode"
@@ -73,7 +73,7 @@ const toggleSync = () => {
                 maxlength="6"
                 required
                 class="w-full px-4 py-3 bg-slate-50 border rounded-xl focus:ring-2 focus:ring-hero-highlight/20 transition-all outline-none uppercase tracking-normal text-sm font-medium" 
-                :class="moduleCodeError && moduleCodeTouched ? 'border-red-400 focus:border-red-400 bg-red-50/30' : !moduleCodeError && moduleCode ? 'border-green-400 focus:border-green-400 bg-green-50/20' : 'border-slate-200 focus:border-hero-highlight'"
+                :class="moduleCodeError && moduleCodeTouched && moduleCode.length > 0 ? 'border-red-400 focus:border-red-400 bg-red-50/30' : !moduleCodeError && moduleCode ? 'border-green-400 focus:border-green-400 bg-green-50/20' : 'border-slate-200 focus:border-hero-highlight'"
                 placeholder="SE3040" 
               />
               <span v-if="!moduleCodeError && moduleCode" class="absolute right-3 top-1/2 -translate-y-1/2 text-green-500">
@@ -81,10 +81,10 @@ const toggleSync = () => {
               </span>
             </div>
             <div class="h-4 overflow-hidden">
-              <p v-if="moduleCodeError && moduleCodeTouched" class="text-[10px] font-bold text-red-500 tracking-tight">
+              <p v-if="moduleCodeError && moduleCodeTouched && moduleCode.length > 0" class="text-[10px] font-medium text-red-400 tracking-tight">
                 {{ moduleCodeError }}
               </p>
-              <p v-else-if="!moduleCodeTouched" class="text-[10px] font-medium text-slate-400 tracking-tight">
+              <p v-else-if="!moduleCodeTouched || moduleCode.length === 0" class="text-[10px] font-medium text-slate-400 tracking-tight">
                 Format: 2 letters + 4 numbers (e.g. SE3040)
               </p>
             </div>
