@@ -322,13 +322,13 @@ const getTypeColor = (type) => {
                     <!-- Module Filter Section -->
                     <div>
                       <label class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 block">Module</label>
-                      <div class="flex flex-wrap gap-2">
+                      <div class="flex flex-col gap-2">
                         <button
                           v-for="m in modules"
                           :key="m"
                           @click="selectedModule = m"
-                          class="px-3.5 py-2 rounded-xl text-sm font-semibold transition-all border"
-                          :class="selectedModule === m ? 'bg-[#4A90E2] text-white border-[#4A90E2] shadow-md' : 'bg-[#F4F7F9] text-[#2C3E50] border-slate-200 hover:border-[#4A90E2]/40'"
+                          class="px-4 py-3 rounded-xl text-sm font-semibold transition-all border text-left"
+                          :class="selectedModule === m ? 'bg-[#4A90E2] text-white border-[#4A90E2] shadow-md' : 'bg-[#F4F7F9] text-[#2C3E50] border-slate-200 hover:border-[#4A90E2]/40 bg-white hover:bg-slate-50'"
                         >
                           {{ m === 'All' ? '🗂 All Modules' : m }}
                         </button>
@@ -372,11 +372,11 @@ const getTypeColor = (type) => {
             </Teleport>
 
             <!-- Document Grid with Transition -->
-            <transition-group name="list" tag="div" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 animate-fade-in-up delay-200 relative">
+            <transition-group name="list" tag="div" class="flex flex-wrap justify-center gap-6 animate-fade-in-up delay-200 relative">
               <div
                 v-for="doc in filteredDocuments"
                 :key="doc.id"
-                class="bg-white rounded-2xl overflow-hidden border border-[#4A90E2]/10 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer flex flex-col"
+                class="bg-white rounded-2xl overflow-hidden border border-[#4A90E2]/10 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer flex flex-col w-[calc(33.333%-16px)] min-w-[280px]"
               >
                 <!-- Card Header with Type Badge -->
                 <div class="p-5 pb-0">
@@ -422,8 +422,8 @@ const getTypeColor = (type) => {
                   <div class="mt-auto flex items-center justify-between border-t border-slate-100 pt-4">
                     <div class="flex flex-col">
                       <span class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-0.5">Reward</span>
-                      <div class="flex items-center gap-1.5 text-[#2C3E50] font-black text-base">
-                        <span class="w-2 h-2 rounded-full bg-[#A8E6CF] animate-pulse"></span>
+                      <div class="flex items-center gap-1.5 text-slate-800 font-black text-base">
+                        <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse shadow-[0_0_8px_rgba(74,222,128,0.5)]"></span>
                         +{{ doc.points }} BP
                       </div>
                     </div>
