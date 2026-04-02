@@ -10,8 +10,7 @@ def extract_pdf_info(file_path):
             for i, page in enumerate(reader.pages):
                 print(f"--- Page {i+1} ---")
                 print(page.extract_text())
-                if i > 5: # Limit to first 6 pages for now
-                    break
+                # Read all pages
     except Exception as e:
         print(f"Error reading PDF: {e}")
 
