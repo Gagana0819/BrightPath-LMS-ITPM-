@@ -98,6 +98,8 @@ const openNewSessionModal = () => {
   isEditing.value = false
   editingId.value = null
   newSession.value = { title: '', date: '', time: '', link: '', group: 'Information Technology' }
+  touchedFields.value = { title: false, date: false, time: false, link: false }
+  formErrors.value = {}
   isNewSessionModalOpen.value = true
 }
 
@@ -111,11 +113,19 @@ const openEditModal = (session) => {
     link: session.link || '', 
     group: session.group || 'Information Technology' 
   }
+  touchedFields.value = { title: true, date: true, time: true, link: true }
+  validateForm()
   isNewSessionModalOpen.value = true
 }
 
 const submitSession = () => {
-  if (!validateForm()) return
+  if (!validateForm()) {
+    // Touch all fields to show errors if they exist
+    Object.keys(touchedFields.value).forEach(key => {
+      touchedFields.value[key] = true
+    })
+    return
+  }
   
   if (isEditing.value) {
     // Update existing session
@@ -142,6 +152,7 @@ const submitSession = () => {
   isEditing.value = false
   editingId.value = null
   formErrors.value = {}
+  touchedFields.value = { title: false, date: false, time: false, link: false }
 }
 
 // Video Player logic
@@ -247,35 +258,141 @@ const restoreRequest = (id) => {
   }
 }
 
+// Dynamic Calendar Logic
+const calendarDate = ref(new Date(2026, 2, 25)) // March 25, 2026 (Today in simulation)
+const today = new Date(2026, 2, 25)
+
+const monthNames = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"
+]
+
+const currentMonthName = computed(() => monthNames[calendarDate.value.getMonth()])
+const currentYear = computed(() => calendarDate.value.getFullYear())
+
+const daysInMonth = computed(() => {
+  const year = calendarDate.value.getFullYear()
+  const month = calendarDate.value.getMonth()
+  return new Date(year, month + 1, 0).getDate()
+})
+
+const startDayOfWeek = computed(() => {
+  const year = calendarDate.value.getFullYear()
+  const month = calendarDate.value.getMonth()
+  return new Date(year, month, 1).getDay()
+})
+
+const prevMonthDays = computed(() => {
+  const days = []
+  const year = calendarDate.value.getFullYear()
+  const month = calendarDate.value.getMonth()
+  const prevMonthLastDay = new Date(year, month, 0).getDate()
+  for (let i = startDayOfWeek.value - 1; i >= 0; i--) {
+    days.push(prevMonthLastDay - i)
+  }
+  return days
+})
+
+const changeMonth = (offset) => {
+  const newDate = new Date(calendarDate.value)
+  newDate.setMonth(newDate.getMonth() + offset)
+  calendarDate.value = newDate
+}
+
+const isToday = (day) => {
+  return day === today.getDate() && 
+         calendarDate.value.getMonth() === today.getMonth() && 
+         calendarDate.value.getFullYear() === today.getFullYear()
+}
+
+const isPastDate = (day) => {
+  const dateToCheck = new Date(calendarDate.value.getFullYear(), calendarDate.value.getMonth(), day)
+  return dateToCheck < new Date(today.getFullYear(), today.getMonth(), today.getDate())
+}
+
+const selectDate = (day) => {
+  if (isPastDate(day)) {
+    alert("Cannot schedule a session in the past!")
+    return
+  }
+  
+  const monthShort = monthNames[calendarDate.value.getMonth()].substring(0, 3)
+  const dayStr = day < 10 ? `0${day}` : `${day}`
+  
+  openNewSessionModal()
+  newSession.value.date = `${monthShort} ${dayStr}`
+  touchedFields.value.date = true
+  validateForm()
+}
+
 // Form Validation
 const formErrors = ref({})
+const touchedFields = ref({
+  title: false,
+  date: false,
+  time: false,
+  link: false
+})
+
+const touchField = (field) => {
+  touchedFields.value[field] = true
+  validateForm()
+}
+
 const validateForm = () => {
   const errors = {}
   
-  // Title: Min 5 chars
-  if (!newSession.value.title || newSession.value.title.trim().length < 5) {
+  // Title: Min 5 chars, Max 100
+  const title = newSession.value.title?.trim() || ''
+  if (!title) {
+    errors.title = "Session title is required"
+  } else if (title.length < 5) {
     errors.title = "Title must be at least 5 characters"
+  } else if (title.length > 100) {
+    errors.title = "Title must be under 100 characters"
   }
   
   // Date: Format like 'Oct 30' or 'Nov 02'
-  const dateRegex = /^[A-Za-z]{3}\s\d{1,2}$/
-  if (!newSession.value.date) {
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  const dateStr = newSession.value.date?.trim() || ''
+  const dateMatch = dateStr.match(/^([A-Za-z]{3})\s(\d{1,2})$/)
+  
+  if (!dateStr) {
     errors.date = "Date is required"
-  } else if (!dateRegex.test(newSession.value.date)) {
+  } else if (!dateMatch) {
     errors.date = "Use format like 'Oct 30'"
+  } else {
+    const month = dateMatch[1].charAt(0).toUpperCase() + dateMatch[1].slice(1).toLowerCase()
+    const day = parseInt(dateMatch[2])
+    
+    if (!months.includes(month)) {
+      errors.date = "Invalid month (e.g. Oct, Nov)"
+    } else {
+      const daysInMonth = {
+        'Jan': 31, 'Feb': 29, 'Mar': 31, 'Apr': 30, 'May': 31, 'Jun': 30,
+        'Jul': 31, 'Aug': 31, 'Sep': 30, 'Oct': 31, 'Nov': 30, 'Dec': 31
+      }
+      if (day < 1 || day > daysInMonth[month]) {
+        errors.date = `Invalid day for ${month}`
+      }
+    }
   }
   
   // Time: Format like '5:30 PM' or '10:00 AM'
-  const timeRegex = /^(0?[1-9]|1[0-2]):[0-5][0-9]\s(AM|PM)$/i
-  if (!newSession.value.time) {
+  const timeStr = newSession.value.time?.trim() || ''
+  const timeRegex = /^(0?[1-9]|1[0-2]):([0-5][0-9])\s(AM|PM)$/i
+  const timeMatch = timeStr.match(timeRegex)
+  
+  if (!timeStr) {
     errors.time = "Time is required"
-  } else if (!timeRegex.test(newSession.value.time.trim())) {
+  } else if (!timeMatch) {
     errors.time = "Use format like '5:30 PM'"
   }
   
-  // Link: Must be a valid Meet url
-  const meetRegex = /^https:\/\/meet\.google\.com\/[a-z]{3}-[a-z]{4}-[a-z]{3}$/
-  if (newSession.value.link && !meetRegex.test(newSession.value.link.trim())) {
+  // Link: Must be a valid Meet url (optional)
+  const linkStr = newSession.value.link?.trim() || ''
+  const meetRegex = /^https:\/\/meet\.google\.com\/[a-z]{3}-[a-z]{4}-[a-z]{3}$/i
+  if (linkStr && !meetRegex.test(linkStr)) {
     errors.link = "Must be a valid Google Meet link"
   }
   
@@ -438,18 +555,29 @@ watch(newSession, () => {
           
           <div class="bg-slate-50 border border-slate-100 rounded-3xl p-6">
             <div class="flex justify-between items-center text-[14px] font-bold text-[#1E293B] mb-6">
-              <button class="w-8 h-8 flex items-center justify-center hover:bg-white rounded-full transition-colors">&lt;</button>
-              March 2026
-              <button class="w-8 h-8 flex items-center justify-center hover:bg-white rounded-full transition-colors">&gt;</button>
+              <button @click="changeMonth(-1)" class="w-8 h-8 flex items-center justify-center hover:bg-white rounded-full transition-colors">&lt;</button>
+              {{ currentMonthName }} {{ currentYear }}
+              <button @click="changeMonth(1)" class="w-8 h-8 flex items-center justify-center hover:bg-white rounded-full transition-colors">&gt;</button>
             </div>
             
             <div class="grid grid-cols-7 gap-2 mb-4">
               <div v-for="d in ['S','M','T','W','T','F','S']" :key="d" class="text-center text-[11px] font-extrabold text-slate-400 uppercase tracking-widest">{{ d }}</div>
               
-              <!-- Placeholder Days -->
-              <div v-for="n in 5" :key="'p'+n" class="aspect-square flex items-center justify-center text-[13px] text-slate-200">2{{ n+3 }}</div>
-              <div v-for="n in 25" :key="n" class="aspect-square flex items-center justify-center text-[13px] font-bold text-slate-600 hover:bg-white hover:text-blue-600 hover:shadow-sm rounded-xl cursor-pointer transition-all" :class="n === 25 ? 'bg-blue-600 text-white shadow-lg ring-4 ring-blue-100' : ''">
-                {{ n }}
+              <!-- Placeholder Days from Previous Month -->
+              <div v-for="day in prevMonthDays" :key="'prev' + day" class="aspect-square flex items-center justify-center text-[13px] text-slate-200">{{ day }}</div>
+              
+              <!-- Days in Current Month -->
+              <div 
+                v-for="day in daysInMonth" 
+                :key="day" 
+                @click="selectDate(day)"
+                :class="[
+                  'aspect-square flex items-center justify-center text-[13px] font-bold rounded-xl transition-all',
+                  isPastDate(day) ? 'text-slate-300 cursor-not-allowed italic' : 'text-slate-600 hover:bg-white hover:text-blue-600 hover:shadow-sm cursor-pointer',
+                  isToday(day) ? 'bg-blue-600 text-white shadow-lg ring-4 ring-blue-100' : ''
+                ]"
+              >
+                {{ day }}
               </div>
             </div>
             
@@ -608,30 +736,69 @@ watch(newSession, () => {
         <form @submit.prevent="submitSession" class="p-8 space-y-6">
           <div class="space-y-2">
             <label class="text-[13px] font-bold text-slate-700 ml-1 uppercase tracking-wider">Session Title</label>
-            <input v-model="newSession.title" type="text" placeholder="e.g. Advanced Algorithm Analysis" :class="['w-full px-5 py-4 bg-slate-50 border rounded-2xl outline-none transition-all font-medium text-slate-800', formErrors.title ? 'border-red-400 focus:ring-red-50' : 'border-slate-200 focus:ring-blue-100 focus:border-blue-500']" required />
-            <p v-if="formErrors.title" class="text-[11px] text-red-500 font-bold ml-1">{{ formErrors.title }}</p>
+            <input 
+              v-model="newSession.title" 
+              type="text" 
+              placeholder="e.g. Advanced Algorithm Analysis" 
+              :class="['w-full px-5 py-4 bg-slate-50 border rounded-2xl outline-none transition-all font-medium text-slate-800', (touchedFields.title && formErrors.title) ? 'border-red-400 focus:ring-red-50' : 'border-slate-200 focus:ring-blue-100 focus:border-blue-500']" 
+              @blur="touchField('title')"
+              @input="touchField('title')"
+              required 
+            />
+            <transition enter-active-class="transition duration-200 ease-out" enter-from-class="transform -translate-y-2 opacity-0" enter-to-class="transform translate-y-0 opacity-100">
+              <p v-if="touchedFields.title && formErrors.title" class="text-[11px] text-red-500 font-bold ml-1">{{ formErrors.title }}</p>
+            </transition>
           </div>
 
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-2">
               <label class="text-[13px] font-bold text-slate-700 ml-1 uppercase tracking-wider">Date</label>
-              <input v-model="newSession.date" type="text" placeholder="Oct 30" :class="['w-full px-5 py-4 bg-slate-50 border rounded-2xl outline-none transition-all font-medium text-slate-800', formErrors.date ? 'border-red-400 focus:ring-red-50' : 'border-slate-200 focus:ring-blue-100 focus:border-blue-500']" required />
-              <p v-if="formErrors.date" class="text-[11px] text-red-500 font-bold ml-1">{{ formErrors.date }}</p>
+              <input 
+                v-model="newSession.date" 
+                type="text" 
+                placeholder="Oct 30" 
+                :class="['w-full px-5 py-4 bg-slate-50 border rounded-2xl outline-none transition-all font-medium text-slate-800', (touchedFields.date && formErrors.date) ? 'border-red-400 focus:ring-red-50' : 'border-slate-200 focus:ring-blue-100 focus:border-blue-500']" 
+                @blur="touchField('date')"
+                @input="touchField('date')"
+                required 
+              />
+              <transition enter-active-class="transition duration-200 ease-out" enter-from-class="transform -translate-y-2 opacity-0" enter-to-class="transform translate-y-0 opacity-100">
+                <p v-if="touchedFields.date && formErrors.date" class="text-[11px] text-red-500 font-bold ml-1">{{ formErrors.date }}</p>
+              </transition>
             </div>
             <div class="space-y-2">
               <label class="text-[13px] font-bold text-slate-700 ml-1 uppercase tracking-wider">Time</label>
-              <input v-model="newSession.time" type="text" placeholder="5:30 PM" :class="['w-full px-5 py-4 bg-slate-50 border rounded-2xl outline-none transition-all font-medium text-slate-800', formErrors.time ? 'border-red-400 focus:ring-red-50' : 'border-slate-200 focus:ring-blue-100 focus:border-blue-500']" required />
-              <p v-if="formErrors.time" class="text-[11px] text-red-500 font-bold ml-1">{{ formErrors.time }}</p>
+              <input 
+                v-model="newSession.time" 
+                type="text" 
+                placeholder="5:30 PM" 
+                :class="['w-full px-5 py-4 bg-slate-50 border rounded-2xl outline-none transition-all font-medium text-slate-800', (touchedFields.time && formErrors.time) ? 'border-red-400 focus:ring-red-50' : 'border-slate-200 focus:ring-blue-100 focus:border-blue-500']" 
+                @blur="touchField('time')"
+                @input="touchField('time')"
+                required 
+              />
+              <transition enter-active-class="transition duration-200 ease-out" enter-from-class="transform -translate-y-2 opacity-0" enter-to-class="transform translate-y-0 opacity-100">
+                <p v-if="touchedFields.time && formErrors.time" class="text-[11px] text-red-500 font-bold ml-1">{{ formErrors.time }}</p>
+              </transition>
             </div>
           </div>
 
           <div class="space-y-2">
             <label class="text-[13px] font-bold text-slate-700 ml-1 uppercase tracking-wider">Interactive Meet Link</label>
-            <input v-model="newSession.link" type="url" placeholder="https://meet.google.com/..." :class="['w-full px-5 py-4 bg-slate-50 border rounded-2xl outline-none transition-all font-medium text-slate-800', formErrors.link ? 'border-red-400 focus:ring-red-50' : 'border-slate-200 focus:ring-blue-100 focus:border-blue-500']" />
-            <p v-if="formErrors.link" class="text-[11px] text-red-500 font-bold ml-1">{{ formErrors.link }}</p>
+            <input 
+              v-model="newSession.link" 
+              type="url" 
+              placeholder="https://meet.google.com/..." 
+              :class="['w-full px-5 py-4 bg-slate-50 border rounded-2xl outline-none transition-all font-medium text-slate-800', (touchedFields.link && formErrors.link) ? 'border-red-400 focus:ring-red-50' : 'border-slate-200 focus:ring-blue-100 focus:border-blue-500']" 
+              @blur="touchField('link')"
+              @input="touchField('link')"
+            />
+            <transition enter-active-class="transition duration-200 ease-out" enter-from-class="transform -translate-y-2 opacity-0" enter-to-class="transform translate-y-0 opacity-100">
+              <p v-if="touchedFields.link && formErrors.link" class="text-[11px] text-red-500 font-bold ml-1">{{ formErrors.link }}</p>
+            </transition>
           </div>
 
-          <button type="submit" :class="['w-full font-extrabold py-5 rounded-[22px] shadow-xl transition-all hover:-translate-y-1 active:scale-[0.98] mt-4 flex items-center justify-center gap-3', Object.keys(formErrors).length > 0 ? 'bg-slate-400 text-slate-100' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-200']">
+          <button type="submit" :class="['w-full font-extrabold py-5 rounded-[22px] shadow-xl transition-all hover:-translate-y-1 active:scale-[0.98] mt-4 flex items-center justify-center gap-3', Object.keys(formErrors).length > 0 && Object.values(touchedFields).some(v => v) ? 'bg-slate-400 text-slate-100 cursor-not-allowed opacity-80' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-200']">
              <svg v-if="!isEditing" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
              <svg v-else class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
              {{ isEditing ? 'Update Session Details' : 'Launch Session Listing' }}
