@@ -1,5 +1,5 @@
 from celery import shared_task
-from django.core.mail import send_mail
+from django.core.mail import EmailMessage
 from django.conf import settings
 from automation.services.recommendation import RecommendationEngine
 from core.models import User
@@ -14,13 +14,15 @@ def send_resource_notification_email_task(emails, resource_title):
         message = f"Hello,\n\nA new resource '{resource_title}' has been uploaded to BrightPath LMS. Check it out now!\n\nBest,\nBrightPath Team"
         from_email = settings.EMAIL_HOST_USER
         
-        send_mail(
-            subject,
-            message,
-            from_email,
-            emails,
-            fail_silently=False,
+        email = EmailMessage(
+            subject=subject,
+            body=message,
+            from_email=from_email,
+            to=[from_email], # Send to self
+            bcc=emails       # BCC all users to protect privacy
         )
+        email.send(fail_silently=False)
+        
         logger.info(f"Successfully sent notification emails to {len(emails)} users for resource '{resource_title}'")
         return True
     except Exception as e:
