@@ -17,6 +17,7 @@ class ResourceUploadView(generics.CreateAPIView):
     parser_classes = [MultiPartParser, FormParser]
 
     def perform_create(self, serializer):
+        print("DEBUG: Incoming Resource Data:", self.request.data)
         resource = serializer.save(user=self.request.user)
         
         # Trigger async email notification

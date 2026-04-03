@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useContentStore } from '../stores/contentStore'
 
 const emits = defineEmits(['close'])
@@ -13,6 +13,34 @@ const isDragging = ref(false)
 const uploadProgress = ref(0)
 const isUploading = ref(false)
 const isSuccess = ref(false)
+const faculty = ref('')
+const academicStream = ref('')
+const academicYear = ref('')
+const moduleCode = ref('')
+
+const universityData = {
+  "SLIIT": {
+    "Computing": ["Information Technology", "Software Engineering", "Computer Systems & Network Engineering", "Information Systems Engineering", "Interactive Media", "Cyber Security", "Data Science"],
+    "Business": ["Business Management"],
+    "Engineering": ["Civil Engineering"],
+    "Humanities & Sciences": ["Biotechnology", "Nursing"]
+  }
+}
+
+const facultyOptions = ["Computing", "Business", "Engineering", "Humanities & Sciences"]
+const academicYearOptions = [
+  "Year 1/1", "Year 1/2", 
+  "Year 2/1", "Year 2/2", 
+  "Year 3/1", "Year 3/2", 
+  "Year 4/1", "Year 4/2"
+]
+
+const availableStreams = computed(() => {
+  if (!faculty.value) return []
+  return universityData["SLIIT"][faculty.value] || []
+})
+
+
 
 const handleFileUpload = (event) => {
   selectedFile.value = event.target.files[0]
@@ -43,7 +71,11 @@ const submitForm = async () => {
   const resourceData = {
     title: title.value,
     description: description.value,
-    category: category.value,
+    resource_type: category.value === 'videos' ? 'LECTURE_NOTES' : category.value === 'notes' ? 'SHORT_NOTE' : 'PAST_PAPER',
+    module_code: moduleCode.value,
+    faculty: faculty.value,
+    academic_stream: academicStream.value,
+    academic_year: academicYear.value
   }
 
   await contentStore.uploadResource(resourceData, selectedFile.value)
@@ -115,6 +147,12 @@ const submitForm = async () => {
               <input type="text" v-model="title" required class="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-[16px] focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all font-medium" placeholder="E.g. Computer Science Past Paper 2024">
             </div>
 
+            <!-- Module Code -->
+            <div class="col-span-full">
+              <label class="block text-[13px] font-bold text-slate-700 mb-1.5 ml-1">Module Code (e.g. SE3040) *</label>
+              <input type="text" v-model="moduleCode" required maxlength="6" class="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-[16px] focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all font-medium uppercase" placeholder="SE3040">
+            </div>
+
             <!-- Category -->
             <div class="col-span-full">
               <label class="block text-[13px] font-bold text-slate-700 mb-1.5 ml-1">Delivery Format *</label>
@@ -122,6 +160,31 @@ const submitForm = async () => {
                 <button type="button" @click="category = 'videos'" :class="['py-3 px-2 rounded-xl border font-bold text-[12px] transition-all', category === 'videos' ? 'bg-blue-600 text-white border-blue-600 shadow-md transform scale-[1.02]' : 'bg-white text-slate-500 border-slate-200 hover:border-blue-200']">Lecture Video</button>
                 <button type="button" @click="category = 'notes'" :class="['py-3 px-2 rounded-xl border font-bold text-[12px] transition-all', category === 'notes' ? 'bg-blue-600 text-white border-blue-600 shadow-md transform scale-[1.02]' : 'bg-white text-slate-500 border-slate-200 hover:border-blue-200']">Study Notes</button>
                 <button type="button" @click="category = 'past_papers'" :class="['py-3 px-2 rounded-xl border font-bold text-[12px] transition-all', category === 'past_papers' ? 'bg-blue-600 text-white border-blue-600 shadow-md transform scale-[1.02]' : 'bg-white text-slate-500 border-slate-200 hover:border-blue-200']">Past Paper</button>
+              </div>
+            </div>
+
+            <!-- NEW FIELDS: Faculty, Stream, Year -->
+            <div class="col-span-full grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-[13px] font-bold text-slate-700 mb-1.5 ml-1">Faculty</label>
+                <select v-model="faculty" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-100 outline-none text-sm">
+                  <option value="" disabled>Select Faculty</option>
+                  <option v-for="f in facultyOptions" :key="f" :value="f">{{ f }}</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[13px] font-bold text-slate-700 mb-1.5 ml-1">Stream</label>
+                <select v-model="academicStream" :disabled="!faculty" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-100 outline-none text-sm disabled:opacity-50">
+                  <option value="" disabled>{{ faculty ? 'Select Stream' : 'Pick Faculty First' }}</option>
+                  <option v-for="s in availableStreams" :key="s" :value="s">{{ s }}</option>
+                </select>
+              </div>
+              <div class="col-span-full">
+                <label class="block text-[13px] font-bold text-slate-700 mb-1.5 ml-1">Academic Year</label>
+                <select v-model="academicYear" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-100 outline-none text-sm">
+                  <option value="" disabled>Select Year</option>
+                  <option v-for="y in academicYearOptions" :key="y" :value="y">{{ y }}</option>
+                </select>
               </div>
             </div>
           </div>

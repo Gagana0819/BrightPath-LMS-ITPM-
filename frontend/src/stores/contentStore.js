@@ -38,6 +38,12 @@ export const useContentStore = defineStore('content', () => {
       formData.append('title', resourceData.title)
       formData.append('module_code', resourceData.module_code)
       formData.append('resource_type', resourceData.resource_type)
+      
+      // Optional fields
+      if (resourceData.faculty) formData.append('faculty', resourceData.faculty)
+      if (resourceData.academic_stream) formData.append('academic_stream', resourceData.academic_stream)
+      if (resourceData.academic_year) formData.append('academic_year', resourceData.academic_year)
+      
       formData.append('file', file)
 
       const response = await api.post('core/resources/upload/', formData, {

@@ -17,8 +17,8 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = (
             'id', 'username', 'email', 'password', 'role', 'full_name', 'nic_number', 
-            'phone_number', 'university', 'faculty', 'academic_stream', 'student_id', 
-            'is_peer_tutor', 'institution', 'department', 'designation',
+            'phone_number', 'university', 'faculty', 'academic_stream', 'academic_year',
+            'student_id', 'is_peer_tutor', 'institution', 'department', 'designation',
             'id_photo', 'verification_doc'
         )
 

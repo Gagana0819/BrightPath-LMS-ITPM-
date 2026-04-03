@@ -65,6 +65,19 @@ const formatDate = (dateString) => {
           {{ doc.module_code }}
         </span>
       </div>
+
+      <!-- Faculty and Year Badges -->
+      <div v-if="doc.faculty || doc.academic_year || doc.academic_stream" class="flex flex-wrap gap-2 mb-4">
+        <span v-if="doc.faculty" class="text-[9px] font-black text-blue-600 bg-blue-50 px-2 py-1 rounded uppercase tracking-tighter border border-blue-100">
+          {{ doc.faculty }}
+        </span>
+        <span v-if="doc.academic_stream" class="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded uppercase tracking-tighter border border-emerald-100">
+          {{ doc.academic_stream }}
+        </span>
+        <span v-if="doc.academic_year" class="text-[9px] font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded uppercase tracking-tighter border border-amber-100">
+          {{ doc.academic_year }}
+        </span>
+      </div>
       
       <div class="flex items-center text-slate-400 text-xs font-medium mb-5">
         <svg class="w-4 h-4 mr-2 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor">

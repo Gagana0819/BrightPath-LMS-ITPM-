@@ -96,3 +96,33 @@ class ResetPasswordView(APIView):
             return Response({'message': 'Password reset successful!'}, status=status.HTTP_200_OK)
         except User.DoesNotExist:
             return Response({'error': 'No user found with the provided Email and NIC.'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class OCRScanView(APIView):
+    """Accepts a Student ID image and returns OCR-extracted data."""
+    permission_classes = [AllowAny]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request):
+        image_file = request.FILES.get('image')
+        if not image_file:
+            return Response(
+                {'error': 'No image file provided. Send an image with key "image".'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Validate file type
+        allowed_types = ['image/jpeg', 'image/png', 'image/jpg']
+        if image_file.content_type not in allowed_types:
+            return Response(
+                {'error': 'Invalid file type. Please upload a JPG or PNG image.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        from accounts.services.ocr_service import extract_data_from_id_image
+        result = extract_data_from_id_image(image_file)
+
+        if 'error' in result:
+            return Response({'error': result['error']}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response(result, status=status.HTTP_200_OK)

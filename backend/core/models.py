@@ -43,6 +43,12 @@ class StudyResource(models.Model):
     title = models.CharField(max_length=255)
     module_code = models.CharField(max_length=10) # e.g. SE3040
     resource_type = models.CharField(max_length=20, choices=RESOURCE_TYPES)
+    
+    # New fields for resource categorization
+    faculty = models.CharField(max_length=255, blank=True, null=True)
+    academic_stream = models.CharField(max_length=255, blank=True, null=True)
+    academic_year = models.CharField(max_length=20, blank=True, null=True)
+    
     file = models.FileField(upload_to=resource_upload_path)
     uploaded_at = models.DateTimeField(auto_now_add=True)
 

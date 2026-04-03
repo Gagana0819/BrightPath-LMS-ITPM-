@@ -7,7 +7,10 @@ class StudyResourceSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = StudyResource
-        fields = ['id', 'user', 'uploader_name', 'title', 'module_code', 'resource_type', 'file', 'uploaded_at']
+        fields = [
+            'id', 'user', 'uploader_name', 'title', 'module_code', 'resource_type', 
+            'faculty', 'academic_stream', 'academic_year', 'file', 'uploaded_at'
+        ]
         read_only_fields = ['user', 'uploaded_at', 'uploader_name']
 
     def get_uploader_name(self, obj):

@@ -8,9 +8,34 @@ const isClassroomSync = ref(false)
 const title = ref('')
 const moduleCode = ref('')
 const resourceType = ref('LECTURE_NOTES')
+const faculty = ref('')
+const academicStream = ref('')
+const academicYear = ref('')
 const selectedFile = ref(null)
 const uploadSuccess = ref(false)
 const errorMessage = ref('')
+
+const universityData = {
+  "SLIIT": {
+    "Computing": ["Information Technology", "Software Engineering", "Computer Systems & Network Engineering", "Information Systems Engineering", "Interactive Media", "Cyber Security", "Data Science"],
+    "Business": ["Business Management"],
+    "Engineering": ["Civil Engineering"],
+    "Humanities & Sciences": ["Biotechnology", "Nursing"]
+  }
+}
+
+const facultyOptions = ["Computing", "Business", "Engineering", "Humanities & Sciences"]
+const academicYearOptions = [
+  "Year 1/1", "Year 1/2", 
+  "Year 2/1", "Year 2/2", 
+  "Year 3/1", "Year 3/2", 
+  "Year 4/1", "Year 4/2"
+]
+
+const availableStreams = computed(() => {
+  if (!faculty.value) return []
+  return universityData["SLIIT"][faculty.value] || []
+})
 
 const moduleCodeError = ref('Required — 2 letters + 4 numbers')
 const moduleCodeTouched = ref(false)
@@ -72,13 +97,20 @@ const handlePublish = async () => {
     await contentStore.uploadResource({
       title: title.value,
       module_code: moduleCode.value,
-      resource_type: resourceType.value
+      resource_type: resourceType.value,
+      faculty: faculty.value,
+      academic_stream: academicStream.value,
+      academic_year: academicYear.value
     }, selectedFile.value)
 
     uploadSuccess.value = true
     // Reset form
     title.value = ''
     moduleCode.value = ''
+    resourceType.value = 'LECTURE_NOTES'
+    faculty.value = ''
+    academicStream.value = ''
+    academicYear.value = ''
     selectedFile.value = null
     moduleCodeTouched.value = false
   } catch (err) {
@@ -160,6 +192,43 @@ const toggleSync = () => {
               <option v-for="type in resourceTypeChoices" :key="type.value" :value="type.value">
                 {{ type.label }}
               </option>
+            </select>
+          </div>
+        </div>
+
+        <!-- NEW FIELDS: Faculty, Stream, Year -->
+        <div class="grid md:grid-cols-3 gap-4">
+          <div class="space-y-1.5">
+            <label class="text-sm font-semibold text-slate-700">Faculty</label>
+            <select 
+              v-model="faculty"
+              class="w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-hero-highlight/20 focus:border-hero-highlight transition-all outline-none text-slate-700 text-sm"
+            >
+              <option value="" disabled>Select Faculty</option>
+              <option v-for="f in facultyOptions" :key="f" :value="f">{{ f }}</option>
+            </select>
+          </div>
+          
+          <div class="space-y-1.5">
+            <label class="text-sm font-semibold text-slate-700">Stream</label>
+            <select 
+              v-model="academicStream"
+              :disabled="!faculty"
+              class="w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-hero-highlight/20 focus:border-hero-highlight transition-all outline-none text-slate-700 text-sm disabled:opacity-50"
+            >
+              <option value="" disabled>{{ faculty ? 'Select Stream' : 'Pick Faculty First' }}</option>
+              <option v-for="s in availableStreams" :key="s" :value="s">{{ s }}</option>
+            </select>
+          </div>
+
+          <div class="space-y-1.5">
+            <label class="text-sm font-semibold text-slate-700">Academic Year</label>
+            <select 
+              v-model="academicYear"
+              class="w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-hero-highlight/20 focus:border-hero-highlight transition-all outline-none text-slate-700 text-sm"
+            >
+              <option value="" disabled>Select Year</option>
+              <option v-for="y in academicYearOptions" :key="y" :value="y">{{ y }}</option>
             </select>
           </div>
         </div>

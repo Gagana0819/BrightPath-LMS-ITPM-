@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '../api/axios'
 import AppNavbar from '../components/layout/AppNavbar.vue'
@@ -114,14 +114,7 @@ const universityData = {
   }
 }
 
-const currentStep = ref(1)
 const selectedRole = ref(null)
-
-const roles = [
-  { id: 'STUDENT', title: 'STUDENT', icon: 'M12 14l9-5-9-5-9 5 9 5z' },
-  { id: 'LECTURER', title: 'LECTURER', icon: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10' },
-  { id: 'STAFF', title: 'STAFF', icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z' }
-]
 
 const formData = ref({
   fullName: '',
@@ -157,9 +150,85 @@ const isUniversityDropdownOpen = ref(false)
 
 const errors = ref({})
 const isLoading = ref(false)
+const isScanning = ref(false)
+const ocrMessage = ref('')
 const showPassword = ref(false)
 const fileInputRef = ref(null)
 const docInputRef = ref(null)
+
+// ── Auto-derive fields from Student ID (Reg No) ──
+const FACULTY_MAP = {
+  'IT': 'Computing',
+  'SE': 'Computing',
+  'CS': 'Computing',
+  'DS': 'Computing',
+  'EN': 'Engineering',
+  'CE': 'Engineering',
+  'ME': 'Engineering',
+  'BM': 'Business',
+  'BA': 'Business',
+  'HS': 'Humanities & Sciences',
+  'BT': 'Humanities & Sciences',
+}
+
+const EMAIL_DOMAIN_MAP = {
+  'SLIIT': '@my.sliit.lk',
+  'NSBM': '@students.nsbm.ac.lk',
+  'IIT': '@iit.ac.lk',
+}
+
+// Known ID prefixes per university (used to infer university from Reg No)
+const SLIIT_PREFIXES = ['IT', 'SE', 'CS', 'DS', 'EN', 'CE', 'ME', 'BM', 'BA', 'HS', 'BT']
+
+// Reusable function to derive university, faculty, academic year, email from student ID
+const deriveFieldsFromStudentId = () => {
+  const id = formData.value.studentId
+  if (!id || id.length < 4) return
+
+  const cleaned = id.replace(/\s/g, '').toUpperCase()
+  const prefix = cleaned.substring(0, 2)
+  const yearDigits = cleaned.substring(2, 4)
+
+  // 1. University from ID pattern (SLIIT: 2 letters + 8 digits, known prefix)
+  if (!formData.value.university && cleaned.length >= 10 && SLIIT_PREFIXES.includes(prefix) && /^[A-Z]{2}\d{8}$/.test(cleaned)) {
+    formData.value.university = 'SLIIT'
+    universitySearchQuery.value = 'SLIIT'
+  }
+
+  // 4. Faculty from prefix
+  if (FACULTY_MAP[prefix]) {
+    formData.value.faculty = FACULTY_MAP[prefix]
+  }
+
+  // 5. Academic Year from join year
+  const joinYearNum = parseInt(yearDigits)
+  if (!isNaN(joinYearNum)) {
+    const joinYear = joinYearNum > 50 ? 1900 + joinYearNum : 2000 + joinYearNum
+    const currentYear = new Date().getFullYear()
+    const yearNum = currentYear - joinYear + 1
+    if (yearNum >= 1 && yearNum <= 6) {
+      formData.value.academicYear = `Year ${yearNum}`
+    }
+  }
+
+  // 6. Email from Reg No + university domain
+  if (cleaned.length >= 6) {
+    const uni = formData.value.university
+    if (uni && EMAIL_DOMAIN_MAP[uni]) {
+      formData.value.email = `${cleaned.toLowerCase()}${EMAIL_DOMAIN_MAP[uni]}`
+    }
+  }
+}
+
+// Watch studentId — derive faculty + year + email
+watch(() => formData.value.studentId, () => {
+  deriveFieldsFromStudentId()
+})
+
+// Watch university — re-derive email when university is set (even after OCR)
+watch(() => formData.value.university, () => {
+  deriveFieldsFromStudentId()
+})
 
 const availableUniversities = computed(() => Object.keys(universityData))
 
@@ -230,7 +299,77 @@ const removePhoto = () => {
   }
   formData.value.idPhoto = null
   formData.value.idPhotoPreview = null
+  ocrMessage.value = ''
   if (fileInputRef.value) fileInputRef.value.value = ''
+}
+
+const scanIdPhoto = async () => {
+  if (!formData.value.idPhoto) {
+    errors.value.idPhoto = 'Please upload an ID photo first.'
+    return
+  }
+
+  isScanning.value = true
+  ocrMessage.value = ''
+
+  try {
+    const scanData = new FormData()
+    scanData.append('image', formData.value.idPhoto)
+
+    const response = await api.post('http://127.0.0.1:8000/api/accounts/ocr-scan/', scanData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+
+    if (response.data && response.data.extracted) {
+      const ext = response.data.extracted
+      let fieldsPopulated = 0
+
+      if (ext.full_name) {
+        formData.value.fullName = ext.full_name
+        fieldsPopulated++
+      }
+      if (ext.student_id) {
+        formData.value.studentId = ext.student_id
+        fieldsPopulated++
+      }
+      if (ext.nic_number) {
+        formData.value.nicNumber = ext.nic_number
+        fieldsPopulated++
+      }
+      if (ext.university) {
+        formData.value.university = ext.university
+        universitySearchQuery.value = ext.university
+        fieldsPopulated++
+      }
+      // Set faculty from OCR even if university wasn't detected
+      if (ext.faculty) {
+        formData.value.faculty = ext.faculty
+        fieldsPopulated++
+      }
+      if (ext.academic_year) {
+        formData.value.academicYear = ext.academic_year
+        fieldsPopulated++
+      }
+      if (ext.email) {
+        formData.value.email = ext.email
+        fieldsPopulated++
+      }
+
+      if (fieldsPopulated > 0) {
+        ocrMessage.value = `✅ Extracted ${fieldsPopulated} field(s) from your ID. Please verify the data.`
+      } else {
+        ocrMessage.value = '⚠️ Could not extract data. Please fill in the fields manually.'
+      }
+
+      console.log('OCR Raw Text:', response.data.raw_text)
+      console.log('OCR Extracted:', ext)
+    }
+  } catch (err) {
+    console.error('OCR Error:', err)
+    ocrMessage.value = '❌ OCR scan failed. Please fill in the fields manually.'
+  } finally {
+    isScanning.value = false
+  }
 }
 
 const triggerDocInput = () => {
@@ -265,6 +404,7 @@ const fillDemoData = () => {
   formData.value.nicNumber = '991234567V'
   formData.value.phoneNumber = '0771234567'
 
+  selectedRole.value = 'STUDENT'
   if (selectedRole.value === 'STUDENT') {
     formData.value.studentId = 'IT21005678'
     formData.value.university = 'University of Moratuwa'
@@ -290,6 +430,10 @@ const fillDemoData = () => {
 
 const validateForm = () => {
   const newErrors = {}
+
+  if (!selectedRole.value) {
+    newErrors.role = 'Please select a role.'
+  }
   
   const nicRegex = /^([0-9]{9}[vVxX]|[0-9]{12})$/
   const phoneRegex = /^[0-9]{10}$/
@@ -367,6 +511,7 @@ const handleRegister = async () => {
       formDataPayload.append('university', formData.value.university)
       formDataPayload.append('faculty', formData.value.faculty)
       formDataPayload.append('academic_stream', formData.value.academicStream)
+      formDataPayload.append('academic_year', formData.value.academicYear)
       formDataPayload.append('student_id', formData.value.studentId)
       formDataPayload.append('is_peer_tutor', formData.value.isPeerTutor)
       if (formData.value.idPhoto) {
@@ -424,83 +569,13 @@ const handleRegister = async () => {
 
     <AppNavbar class="z-20 relative" />
     
-    <main class="flex-1 flex items-center justify-center p-4 sm:p-8 z-10 relative">
-      <div class="w-full max-w-4xl bg-white rounded-[2rem] shadow-[0_10px_40px_rgba(0,0,0,0.06)] border border-slate-100 overflow-hidden relative" :style="currentStep === 2 ? 'max-height: calc(100vh - 120px); overflow-y: auto;' : ''">
+     <main class="flex-1 flex items-center justify-center p-4 sm:p-8 z-10 relative">
+      <div class="w-full max-w-4xl bg-white rounded-[2rem] shadow-[0_10px_40px_rgba(0,0,0,0.06)] border border-slate-100 overflow-hidden relative" style="max-height: calc(100vh - 120px); overflow-y: auto;">
         
-        <!-- Step 1: Role Selection Screen -->
-        <div v-if="currentStep === 1" class="p-8 sm:p-14 relative z-10 text-center animate-fade-in-up flex flex-col items-center justify-center w-full">
-          <h1 class="text-4xl font-bold text-slate-800 mb-3">Create an Account</h1>
-          <p class="text-slate-500 mb-12 text-lg">Welcome to the BrightPath Learning Community! Please select your role to get started.</p>
-
-          <div class="flex flex-col sm:flex-row justify-center gap-6 sm:gap-8 w-full max-w-5xl">
-            <!-- STUDENT CARD -->
-            <div @click="selectedRole = 'STUDENT'"
-              class="bg-white border-2 rounded-3xl w-full sm:w-52 sm:h-52 p-6 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 relative overflow-hidden group aspect-square"
-              :class="selectedRole === 'STUDENT' ? 'border-[3px] border-hero-highlight bg-[#97C4C4]/5 shadow-[0_10px_30px_rgba(107,70,193,0.15)] transform -translate-y-2' : 'border-slate-100 shadow-sm hover:border-hero-highlight/40 hover:shadow-[0_10px_25px_rgba(107,70,193,0.08)] hover:-translate-y-1.5'">
-              <div class="absolute inset-0 bg-gradient-to-b from-transparent to-[#97C4C4]/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              <div class="w-20 h-20 rounded-full flex items-center justify-center mb-4 transition-all duration-300 relative z-10"
-                :class="selectedRole === 'STUDENT' ? 'text-hero-highlight scale-110 bg-hero-highlight/10' : 'text-slate-800 group-hover:text-hero-highlight bg-slate-50'">
-                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
-                  <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
-                </svg>
-              </div>
-              <h3 class="font-bold text-2xl text-slate-800 tracking-widest relative z-10 mt-2">STUDENT</h3>
-            </div>
-
-            <!-- LECTURER CARD -->
-            <div @click="selectedRole = 'LECTURER'"
-              class="bg-white border-2 rounded-3xl w-full sm:w-52 sm:h-52 p-6 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 relative overflow-hidden group aspect-square"
-              :class="selectedRole === 'LECTURER' ? 'border-[3px] border-hero-highlight bg-[#97C4C4]/5 shadow-[0_10px_30px_rgba(107,70,193,0.15)] transform -translate-y-2' : 'border-slate-100 shadow-sm hover:border-hero-highlight/40 hover:shadow-[0_10px_25px_rgba(107,70,193,0.08)] hover:-translate-y-1.5'">
-              <div class="absolute inset-0 bg-gradient-to-b from-transparent to-[#97C4C4]/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              <div class="w-20 h-20 rounded-full flex items-center justify-center mb-4 transition-all duration-300 relative z-10"
-                :class="selectedRole === 'LECTURER' ? 'text-hero-highlight scale-110 bg-hero-highlight/10' : 'text-slate-800 group-hover:text-hero-highlight bg-slate-50'">
-                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M2 3h20M21 3v11a2 2 0 01-2 2H5a2 2 0 01-2-2V3m7 19v-4m4 4v-4m-4 0h4"></path>
-                </svg>
-              </div>
-              <h3 class="font-bold text-2xl text-slate-800 tracking-widest relative z-10 mt-2">LECTURER</h3>
-            </div>
-
-            <!-- STAFF CARD -->
-            <div @click="selectedRole = 'STAFF'"
-              class="bg-white border-2 rounded-3xl w-full sm:w-52 sm:h-52 p-6 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 relative overflow-hidden group aspect-square"
-              :class="selectedRole === 'STAFF' ? 'border-[3px] border-hero-highlight bg-[#97C4C4]/5 shadow-[0_10px_30px_rgba(107,70,193,0.15)] transform -translate-y-2' : 'border-slate-100 shadow-sm hover:border-hero-highlight/40 hover:shadow-[0_10px_25px_rgba(107,70,193,0.08)] hover:-translate-y-1.5'">
-              <div class="absolute inset-0 bg-gradient-to-b from-transparent to-[#97C4C4]/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              <div class="w-20 h-20 rounded-full flex items-center justify-center mb-4 transition-all duration-300 relative z-10"
-                :class="selectedRole === 'STAFF' ? 'text-hero-highlight scale-110 bg-hero-highlight/10' : 'text-slate-800 group-hover:text-hero-highlight bg-slate-50'">
-                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2z"></path>
-                  <circle cx="9" cy="12" r="2"></circle>
-                  <path d="M14 11h4M14 14h2"></path>
-                </svg>
-              </div>
-              <h3 class="font-bold text-2xl text-slate-800 tracking-widest relative z-10 mt-2">STAFF</h3>
-            </div>
-          </div>
-
-          <div class="mt-[50px] flex justify-center w-full">
-            <button @click="currentStep = 2" :disabled="!selectedRole"
-              class="w-full sm:w-auto min-w-[300px] bg-hero-highlight hover:bg-hero-highlight/90 text-white font-bold py-4 px-12 rounded-full transition-all duration-300 shadow-[0_10px_30px_rgba(107,70,193,0.25)] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none transform hover:-translate-y-1 hover:scale-105 tracking-widest text-[1.1rem] uppercase">
-              {{ selectedRole ? 'JOIN AS ' + selectedRole : 'SELECT A ROLE' }}
-            </button>
-          </div>
-          
-          <p class="text-center mt-12 pb-8 text-sm text-slate-500 ">
-            Already have an account? 
-            <router-link to="/login" class="text-hero-highlight hover:opacity-80 font-bold transition-opacity">LOGIN</router-link>
-          </p>
-        </div>
-
-        <!-- Step 2: Role-Specific Form -->
-        <div v-if="currentStep === 2" class="p-8 sm:p-12 relative z-10 animate-fade-in-up">
+        <!-- Registration Form -->
+        <div class="p-8 sm:p-12 relative z-10 animate-fade-in-up">
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 relative">
-            <button type="button" @click="currentStep = 1" 
-              class="text-sm font-bold text-slate-400 hover:text-hero-highlight transition-colors flex items-center gap-2 mb-6 sm:mb-0 border border-slate-200 px-4 py-2 rounded-full hover:bg-slate-50 relative top-1">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
-              BACK TO ROLES
-            </button>
-            <h1 class="text-2xl sm:text-3xl font-bold text-content sm:absolute sm:left-1/2 sm:-translate-x-1/2 uppercase">{{ selectedRole }} REGISTRATION</h1>
+            <h1 class="text-2xl sm:text-3xl font-bold text-content uppercase">Registration</h1>
             <button type="button" @click="fillDemoData" 
               class="text-sm font-bold text-brand border-2 border-brand bg-transparent hover:bg-brand/10 px-5 py-2 rounded-full transition-all shadow-sm flex items-center gap-2 tracking-wide mt-4 sm:mt-0 relative top-1">
               <svg class="w-4 h-4 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
@@ -512,6 +587,60 @@ const handleRegister = async () => {
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
               <!-- Column 1: Core Details (Shared) -->
               <div class="space-y-6">
+                <!-- Role Selector -->
+                <div>
+                  <label for="role" class="block text-sm font-bold text-content mb-2 tracking-wide">I am a</label>
+                  <select id="role" v-model="selectedRole"
+                    class="w-full px-4 py-3.5 rounded-xl border-[1.5px] border-[#97C4C4]/50 hover:border-[#97C4C4] bg-white focus:bg-white focus:outline-none focus:ring-[3px] focus:ring-hero-highlight/20 focus:border-hero-highlight transition-all duration-200 appearance-none text-content font-semibold"
+                    :class="{'border-red-400 focus:border-red-500 bg-red-50/30': errors.role}">
+                    <option value="" disabled selected>Select your role</option>
+                    <option value="STUDENT">Student</option>
+                    <option value="LECTURER">Lecturer</option>
+                    <option value="STAFF">Staff</option>
+                  </select>
+                  <p v-if="errors.role" class="text-red-500 text-sm mt-2 flex items-center gap-1 font-bold">{{ errors.role }}</p>
+                </div>
+
+                <!-- STUDENT ID PHOTO + OCR (right below role when Student) -->
+                <div v-if="selectedRole === 'STUDENT'" class="bg-[#F4F7F9] rounded-2xl p-5 border border-slate-100">
+                  <label class="block text-sm font-bold text-content mb-2 tracking-wide">Student ID Photo</label>
+                  <div class="flex items-center gap-4">
+                    <div class="relative flex-1 flex items-center cursor-pointer transition-opacity" @click="triggerFileInput" :class="{'opacity-80': formData.idPhotoPreview}">
+                      <input type="file" ref="fileInputRef" @change="onFileChange" accept="image/jpeg, image/png" class="hidden" />
+                      <input type="text" :value="formData.idPhoto ? formData.idPhoto.name : ''" readonly placeholder="Choose a file..." 
+                        class="w-full px-4 py-3.5 pr-[110px] rounded-xl border-[1.5px] border-[#97C4C4]/50 bg-white hover:border-[#97C4C4] text-content cursor-pointer" />
+                      <button type="button" @click.stop="triggerFileInput" class="absolute right-[5px] top-[5px] bottom-[5px] bg-hero-highlight hover:bg-hero-highlight/90 text-white font-bold px-6 rounded-lg pointer-events-none">Browse</button>
+                    </div>
+                    <div v-if="formData.idPhotoPreview" class="relative shrink-0 w-[60px] h-[60px]">
+                      <div class="w-full h-full rounded-xl overflow-hidden shadow-sm"><img :src="formData.idPhotoPreview" class="w-full h-full object-cover" /></div>
+                      <button type="button" @click.stop="removePhoto" class="absolute -top-1.5 -right-1.5 bg-hero-highlight text-white w-5 h-5 rounded-full flex items-center justify-center border-2 border-white"><svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                    </div>
+                  </div>
+                  
+                  <!-- OCR Scan Button -->
+                  <div class="mt-3">
+                    <button type="button" @click="scanIdPhoto" :disabled="!formData.idPhoto || isScanning"
+                      class="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-bold text-sm transition-all duration-300"
+                      :class="formData.idPhoto && !isScanning 
+                        ? 'bg-gradient-to-r from-[#4A90E2] to-[#5C6BC0] text-white shadow-lg hover:-translate-y-0.5 hover:shadow-xl' 
+                        : 'bg-slate-100 text-slate-400 cursor-not-allowed'">
+                      <svg v-if="isScanning" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                      </svg>
+                      {{ isScanning ? 'Scanning ID...' : 'Scan ID with OCR' }}
+                    </button>
+                    <p class="text-xs text-slate-400 mt-1.5 text-center">Upload your Student ID photo and click to auto-fill fields</p>
+                    <p v-if="ocrMessage" class="text-sm mt-2 font-semibold text-center px-2 py-2 rounded-lg"
+                      :class="ocrMessage.startsWith('✅') ? 'bg-emerald-50 text-emerald-700' : ocrMessage.startsWith('⚠') ? 'bg-amber-50 text-amber-700' : 'bg-red-50 text-red-600'">
+                      {{ ocrMessage }}
+                    </p>
+                  </div>
+                </div>
                 <div>
                   <label for="fullName" class="block text-sm font-bold text-content mb-2 tracking-wide">Full Name</label>
                   <input type="text" id="fullName" v-model="formData.fullName"
@@ -691,24 +820,9 @@ const handleRegister = async () => {
 
               <!-- === ATTACHMENTS LAYER === -->
               <div class="md:col-span-2">
-                <!-- STUDENT PHOTO UPLOAD -->
+                <!-- STUDENT: Peer Tutor Toggle -->
                 <div v-if="selectedRole === 'STUDENT'">
-                  <label class="block text-sm font-bold text-content mb-2 tracking-wide">Student ID Photo</label>
-                  <div class="flex items-center gap-4">
-                    <div class="relative flex-1 flex items-center cursor-pointer transition-opacity" @click="triggerFileInput" :class="{'opacity-80': formData.idPhotoPreview}">
-                      <input type="file" ref="fileInputRef" @change="onFileChange" accept="image/jpeg, image/png" class="hidden" />
-                      <input type="text" :value="formData.idPhoto ? formData.idPhoto.name : ''" readonly placeholder="Choose a file..." 
-                        class="w-full px-4 py-3.5 pr-[110px] rounded-xl border-[1.5px] border-[#97C4C4]/50 bg-white hover:border-[#97C4C4] text-content cursor-pointer" />
-                      <button type="button" @click.stop="triggerFileInput" class="absolute right-[5px] top-[5px] bottom-[5px] bg-hero-highlight hover:bg-hero-highlight/90 text-white font-bold px-6 rounded-lg pointer-events-none">Browse</button>
-                    </div>
-                    <div v-if="formData.idPhotoPreview" class="relative shrink-0 w-[60px] h-[60px]">
-                      <div class="w-full h-full rounded-xl overflow-hidden shadow-sm"><img :src="formData.idPhotoPreview" class="w-full h-full object-cover" /></div>
-                      <button type="button" @click.stop="removePhoto" class="absolute -top-1.5 -right-1.5 bg-hero-highlight text-white w-5 h-5 rounded-full flex items-center justify-center border-2 border-white"><svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg></button>
-                    </div>
-                  </div>
-                  
-                  <!-- Peer Tutor Toggle -->
-                  <div class="mt-8 bg-[#97C4C4]/10 p-5 rounded-xl border border-[#97C4C4]/30">
+                  <div class="bg-[#97C4C4]/10 p-5 rounded-xl border border-[#97C4C4]/30">
                     <label class="flex items-center cursor-pointer justify-between w-full">
                       <div class="font-bold text-content tracking-wide flex items-center gap-3">
                         <svg class="w-5 h-5 text-hero-highlight" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
@@ -749,6 +863,11 @@ const handleRegister = async () => {
                 <svg v-if="isLoading" class="animate-spin -ml-1 mr-2 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                 <span>{{ isLoading ? 'CREATING ACCOUNT...' : 'REGISTER' }}</span>
               </button>
+
+              <p class="text-center mt-6 text-sm text-slate-500">
+                Already have an account? 
+                <router-link to="/login" class="text-hero-highlight hover:opacity-80 font-bold transition-opacity">LOGIN</router-link>
+              </p>
             </div>
           </form>
         </div>

@@ -16,6 +16,7 @@ class User(AbstractUser):
     university = models.CharField(max_length=255, blank=True, null=True)
     faculty = models.CharField(max_length=255, blank=True, null=True)
     academic_stream = models.CharField(max_length=255, blank=True, null=True)
+    academic_year = models.CharField(max_length=20, blank=True, null=True)
     student_id = models.CharField(max_length=50, blank=True, null=True)
     institution = models.CharField(max_length=255, blank=True, null=True)
     department = models.CharField(max_length=255, blank=True, null=True)
