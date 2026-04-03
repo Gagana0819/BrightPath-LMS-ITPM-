@@ -1,10 +1,19 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 
+import { useContentStore } from '@/stores/contentStore'
+import ResourceCard from '@/components/content/ResourceCard.vue'
+
 // Recommendation carousel
 const recScrollRef = ref(null)
 const canScrollLeft = ref(false)
 const canScrollRight = ref(true)
+
+const contentStore = useContentStore()
+
+onMounted(() => {
+  contentStore.fetchResources({ userOnly: false })
+})
 
 const recommendedResources = ref([
   { id: 'r1', title: 'ITPM 2025 Final Exam Past Paper with Model Answers', type: 'Past Paper', module: 'IT Project Management', uploader: 'Kasun Silva', tag: 'Most Downloaded', image: '/itpm_thumbnail.png' },
@@ -33,37 +42,25 @@ const scrollRec = (dir) => {
 const searchQuery = ref('')
 const selectedModule = ref('All')
 const selectedType = ref('All')
-const sortBy = ref('rank')
+const sortBy = ref('recent')
 const showFilterPanel = ref(false)
 
 const activeFilterCount = computed(() => {
   let count = 0
   if (selectedModule.value !== 'All') count++
   if (selectedType.value !== 'All') count++
-  if (sortBy.value !== 'rank') count++
+  if (sortBy.value !== 'recent') count++
   return count
 })
 
 const clearFilters = () => {
   selectedModule.value = 'All'
   selectedType.value = 'All'
-  sortBy.value = 'rank'
+  sortBy.value = 'recent'
 }
 
-const modules = ['All', 'IT Project Management', 'Object-Oriented Programming', 'Database Systems', 'Data Structures', 'UI/UX Design', 'Machine Learning', 'Cloud Computing']
-const fileTypes = ['All', 'PDF', 'DOCX', 'PPT', 'ZIP', 'FIG']
-
-// Mock documents data
-const documents = ref([
-  { id: 1, title: 'IT Project Management - 2024 Midterm Past Paper & Answers', uploader: 'Kasun Silva', module: 'IT Project Management', rank: 'Gold', score: 98, type: 'PDF', points: 350, downloads: 1240 },
-  { id: 2, title: 'Object-Oriented Programming Complete Lecture Notes', uploader: 'Dr. Amanda', module: 'Object-Oriented Programming', rank: 'Gold', score: 95, type: 'DOCX', points: 210, downloads: 890 },
-  { id: 3, title: 'Database Systems - SQL Joins Summary (Week 4-7)', uploader: 'Nuwan P.', module: 'Database Systems', rank: 'Silver', score: 82, type: 'PPT', points: 150, downloads: 620 },
-  { id: 4, title: 'Data Structures & Algorithms - Final Assignment Template', uploader: 'Sanduni M.', module: 'Data Structures', rank: 'Gold', score: 92, type: 'ZIP', points: 420, downloads: 1100 },
-  { id: 5, title: 'UI/UX Design Wireframes & Mockup Library', uploader: 'Sanduni S.', module: 'UI/UX Design', rank: 'Gold', score: 91, type: 'FIG', points: 280, downloads: 760 },
-  { id: 6, title: 'Machine Learning Basics - Neural Networks Overview', uploader: 'Dr. Fernando', module: 'Machine Learning', rank: 'Silver', score: 78, type: 'PDF', points: 190, downloads: 540 },
-  { id: 7, title: 'Cloud Computing AWS Lab Guide', uploader: 'Prof. Kumara', module: 'Cloud Computing', rank: 'Bronze', score: 65, type: 'PDF', points: 120, downloads: 320 },
-  { id: 8, title: 'ITPM Final Exam Revision Notes 2025', uploader: 'Dilshan K.', module: 'IT Project Management', rank: 'Silver', score: 84, type: 'PDF', points: 175, downloads: 690 },
-])
+const modules = ['All', 'IT3040', 'IT3030', 'IT Project Management', 'Object-Oriented Programming', 'Database Systems', 'Data Structures', 'UI/UX Design', 'Machine Learning', 'Cloud Computing']
+const fileTypes = ['All', 'LECTURE_NOTES', 'PAST_PAPER', 'TUTORIAL_ANSWER', 'SHORT_NOTE']
 
 // Points wallet data
 const walletData = ref({
@@ -80,52 +77,28 @@ const walletData = ref({
 
 // Filtered & sorted documents
 const filteredDocuments = computed(() => {
-  let result = documents.value
+  let result = [...contentStore.resources]
 
   if (searchQuery.value) {
     const q = searchQuery.value.toLowerCase()
     result = result.filter(d =>
       d.title.toLowerCase().includes(q) ||
-      d.uploader.toLowerCase().includes(q) ||
-      d.module.toLowerCase().includes(q)
+      (d.module_code && d.module_code.toLowerCase().includes(q))
     )
   }
   if (selectedModule.value !== 'All') {
-    result = result.filter(d => d.module === selectedModule.value)
+    result = result.filter(d => d.module_code && d.module_code.includes(selectedModule.value))
   }
   if (selectedType.value !== 'All') {
-    result = result.filter(d => d.type === selectedType.value)
+    result = result.filter(d => d.resource_type === selectedType.value)
   }
 
-  if (sortBy.value === 'rank') result = [...result].sort((a, b) => b.score - a.score)
-  else if (sortBy.value === 'downloads') result = [...result].sort((a, b) => b.downloads - a.downloads)
-  else if (sortBy.value === 'points') result = [...result].sort((a, b) => b.points - a.points)
+  if (sortBy.value === 'recent') {
+    result.sort((a, b) => new Date(b.uploaded_at) - new Date(a.uploaded_at))
+  }
 
   return result
 })
-
-const getRankColor = (rank) => {
-  if (rank === 'Gold') return 'text-[#FFB800] bg-[#FFB800]/10 border-[#FFB800]/40'
-  if (rank === 'Silver') return 'text-slate-500 bg-slate-100 border-slate-300'
-  if (rank === 'Bronze') return 'text-amber-700 bg-amber-50 border-amber-300'
-  return 'text-slate-500 bg-slate-100 border-slate-200'
-}
-
-const getRankIcon = (rank) => {
-  if (rank === 'Gold') return '🏆'
-  if (rank === 'Silver') return '🥈'
-  if (rank === 'Bronze') return '🥉'
-  return ''
-}
-
-const getTypeColor = (type) => {
-  if (type === 'PDF') return 'bg-red-50 text-red-500'
-  if (type === 'DOCX') return 'bg-[#4A90E2]/10 text-[#4A90E2]'
-  if (type === 'PPT') return 'bg-amber-50 text-amber-600'
-  if (type === 'ZIP') return 'bg-[#A8E6CF]/30 text-[#2C3E50]'
-  if (type === 'FIG') return 'bg-purple-50 text-purple-600'
-  return 'bg-slate-100 text-slate-600'
-}
 </script>
 
 <template>
@@ -376,67 +349,9 @@ const getTypeColor = (type) => {
               <div
                 v-for="doc in filteredDocuments"
                 :key="doc.id"
-                class="bg-white rounded-2xl overflow-hidden border border-[#4A90E2]/10 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer flex flex-col w-[calc(33.333%-16px)] min-w-[280px]"
+                class="w-full md:w-[calc(33.33%-16px)] min-w-[280px]"
               >
-                <!-- Card Header with Type Badge -->
-                <div class="p-5 pb-0">
-                  <div class="flex justify-between items-start mb-4">
-                    <div class="w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-lg shadow-inner" :class="getTypeColor(doc.type)">
-                      {{ doc.type }}
-                    </div>
-                    <!-- Rank Badge -->
-                    <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border" :class="getRankColor(doc.rank)">
-                      <span>{{ getRankIcon(doc.rank) }}</span>
-                      {{ doc.rank }} Rank
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Card Body -->
-                <div class="px-5 pb-5 flex flex-col flex-1">
-                  <h3 class="font-bold text-[#2C3E50] text-[1.05rem] leading-tight mb-2 line-clamp-2 group-hover:text-[#4A90E2] transition-colors">
-                    {{ doc.title }}
-                  </h3>
-
-                  <p class="text-sm text-slate-500 mb-1">
-                    By <span class="font-semibold text-[#4A90E2]">{{ doc.uploader }}</span>
-                  </p>
-                  <p class="text-xs text-slate-400 mb-4">{{ doc.module }}</p>
-
-                  <!-- Score Bar -->
-                  <div class="mb-4">
-                    <div class="flex justify-between items-center mb-1">
-                      <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Quality Score</span>
-                      <span class="text-sm font-bold" :class="doc.score >= 90 ? 'text-[#FFB800]' : 'text-[#2C3E50]'">{{ doc.score }}%</span>
-                    </div>
-                    <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                      <div
-                        class="h-1.5 rounded-full transition-all duration-500"
-                        :class="doc.score >= 90 ? 'bg-gradient-to-r from-[#4A90E2] to-[#FFB800]' : doc.score >= 75 ? 'bg-[#4A90E2]' : 'bg-slate-400'"
-                        :style="{ width: doc.score + '%' }"
-                      ></div>
-                    </div>
-                  </div>
-
-                  <!-- Card Footer -->
-                  <div class="mt-auto flex items-center justify-between border-t border-slate-100 pt-4">
-                    <div class="flex flex-col">
-                      <span class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-0.5">Reward</span>
-                      <div class="flex items-center gap-1.5 text-slate-800 font-black text-base">
-                        <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse shadow-[0_0_8px_rgba(74,222,128,0.5)]"></span>
-                        +{{ doc.points }} BP
-                      </div>
-                    </div>
-                    <div class="flex items-center gap-2">
-                      <span class="text-xs text-slate-400">{{ doc.downloads.toLocaleString() }} downloads</span>
-                      <button class="w-10 h-10 rounded-full bg-[#F4F7F9] border border-[#4A90E2]/20 flex items-center justify-center text-[#4A90E2] hover:bg-[#4A90E2] hover:text-white transition-colors">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                <ResourceCard :doc="doc" />
               </div>
             </transition-group>
 

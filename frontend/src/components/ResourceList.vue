@@ -12,7 +12,8 @@ const props = defineProps({
 const contentStore = useContentStore()
 
 const loadResources = () => {
-  contentStore.fetchResources(props.category)
+  // Since ResourceList is used in the personal Content Dashboard, we only fetch user's resources
+  contentStore.fetchResources({ userOnly: true, category: props.category })
 }
 
 const handleDelete = (id) => {

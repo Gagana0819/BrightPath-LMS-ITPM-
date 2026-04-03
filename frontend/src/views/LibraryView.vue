@@ -26,7 +26,7 @@ const searchQuery = ref('')
       </div>
 
       <!-- Member 03: The Library Grid -->
-      <DocumentGrid :searchQuery="searchQuery" />
+      <DocumentGrid :searchQuery="searchQuery" :userOnly="true" />
     </div>
 
     <!-- Right Sidebar Modules -->

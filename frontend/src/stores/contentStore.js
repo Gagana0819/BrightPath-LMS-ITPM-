@@ -1,29 +1,30 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import api from '@/api/axios'
 
 export const useContentStore = defineStore('content', () => {
-  const resources = ref([
-    { id: 1, title: 'Introduction to Vue 3', description: 'Basics of Composition API', category: 'videos', url: 'https://example.com/video1.mp4' },
-    { id: 2, title: 'Chapter 1 Notes', description: 'Key points from chapter 1', category: 'notes', url: 'https://example.com/notes1.pdf' },
-    { id: 3, title: '2022 Past Paper', description: 'Final exam 2022', category: 'past_papers', url: 'https://example.com/pastpaper.pdf' }
-  ])
+  const resources = ref([])
   const liveSessions = ref([])
   const isLoading = ref(false)
   const isSyncing = ref(false)
   const error = ref(null)
 
-  // Fetch resources based on category (videos, notes, past_papers)
-  const fetchResources = async (category) => {
+  // Fetch resources (optionally filtered by module_code or user_only)
+  const fetchResources = async (options = {}) => {
+    const { moduleCode = null, userOnly = false, category = null } = options
     isLoading.value = true
     error.value = null
     try {
-      // Mock data for UI development
-      setTimeout(() => {
-        // In a real app, this would be an API call
-        isLoading.value = false
-      }, 500)
+      const params = {}
+      if (moduleCode) params.module_code = moduleCode
+      if (userOnly) params.user_only = 'true'
+      if (category) params.category = category // If backend supports category filtering later
+
+      const response = await api.get('core/resources/', { params })
+      resources.value = response.data
     } catch (err) {
-      error.value = err.message
+      error.value = err.response?.data?.detail || err.message
+    } finally {
       isLoading.value = false
     }
   }
@@ -33,47 +34,44 @@ export const useContentStore = defineStore('content', () => {
     isLoading.value = true
     error.value = null
     try {
-      // Simulate real delay for "Premium" feel
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          const newResource = {
-            id: Date.now(),
-            ...resourceData,
-            url: file ? URL.createObjectURL(file) : 'https://example.com/placeholder.pdf'
-          }
-          resources.value.unshift(newResource)
-          isLoading.value = false
-          resolve(newResource)
-        }, 1500)
+      const formData = new FormData()
+      formData.append('title', resourceData.title)
+      formData.append('module_code', resourceData.module_code)
+      formData.append('resource_type', resourceData.resource_type)
+      formData.append('file', file)
+
+      const response = await api.post('core/resources/upload/', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
       })
+      
+      resources.value.unshift(response.data)
+      return response.data
     } catch (err) {
-      error.value = err.message
+      error.value = err.response?.data || { message: err.message }
+      throw error.value
+    } finally {
       isLoading.value = false
     }
   }
-
+// ... rest of the functions (delete, update, fetchLiveSessions, syncWithGoogleClassroom remains similar but can be updated later if needed)
   // Delete a resource
   const deleteResource = async (id) => {
-    isLoading.value = true
-    setTimeout(() => {
-      resources.value = resources.value.filter(r => r.id !== id)
-      isLoading.value = false
-    }, 500)
+    // To be implemented in backend
+    resources.value = resources.value.filter(r => r.id !== id)
   }
 
   // Update a resource
   const updateResource = async (id, updatedData) => {
-    isLoading.value = true
-    setTimeout(() => {
-      const index = resources.value.findIndex(r => r.id === id)
-      if (index !== -1) {
-        resources.value[index] = { ...resources.value[index], ...updatedData }
-      }
-      isLoading.value = false
-    }, 500)
+    // To be implemented in backend
+    const index = resources.value.findIndex(r => r.id === id)
+    if (index !== -1) {
+      resources.value[index] = { ...resources.value[index], ...updatedData }
+    }
   }
 
-  // Fetch live sessions
+  // Fetch live sessions (still mocked for now as per Kuppi sessions request)
   const fetchLiveSessions = async () => {
     isLoading.value = true
     error.value = null
