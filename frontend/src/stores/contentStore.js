@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import api from '@/api/axios'
+import api from '../api/axios'
 
 export const useContentStore = defineStore('content', () => {
   const resources = ref([])
@@ -9,104 +9,210 @@ export const useContentStore = defineStore('content', () => {
   const isSyncing = ref(false)
   const error = ref(null)
 
-  // Fetch resources (optionally filtered by module_code or user_only)
-  const fetchResources = async (options = {}) => {
-    const { moduleCode = null, userOnly = false, category = null } = options
+  const fetchResources = async (params = {}) => {
     isLoading.value = true
     error.value = null
     try {
-      const params = {}
-      if (moduleCode) params.module_code = moduleCode
-      if (userOnly) params.user_only = 'true'
-      if (category) params.category = category // If backend supports category filtering later
-
       const response = await api.get('core/resources/', { params })
       resources.value = response.data
     } catch (err) {
-      error.value = err.response?.data?.detail || err.message
+      error.value = err.response?.data || err.message
     } finally {
       isLoading.value = false
     }
   }
 
-  // Upload a new resource
   const uploadResource = async (resourceData, file) => {
     isLoading.value = true
     error.value = null
     try {
       const formData = new FormData()
-      formData.append('title', resourceData.title)
-      formData.append('module_code', resourceData.module_code)
-      formData.append('resource_type', resourceData.resource_type)
-      
-      // Optional fields
-      if (resourceData.faculty) formData.append('faculty', resourceData.faculty)
-      if (resourceData.academic_stream) formData.append('academic_stream', resourceData.academic_stream)
-      if (resourceData.academic_year) formData.append('academic_year', resourceData.academic_year)
-      
+      Object.keys(resourceData).forEach(key => {
+        formData.append(key, resourceData[key])
+      })
       formData.append('file', file)
-
+      
       const response = await api.post('core/resources/upload/', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
       })
-      
       resources.value.unshift(response.data)
       return response.data
     } catch (err) {
-      error.value = err.response?.data || { message: err.message }
+      error.value = err.response?.data || err.message
       throw error.value
     } finally {
       isLoading.value = false
     }
   }
-// ... rest of the functions (delete, update, fetchLiveSessions, syncWithGoogleClassroom remains similar but can be updated later if needed)
-  // Delete a resource
+
   const deleteResource = async (id) => {
-    // To be implemented in backend
-    resources.value = resources.value.filter(r => r.id !== id)
-  }
-
-  // Update a resource
-  const updateResource = async (id, updatedData) => {
-    // To be implemented in backend
-    const index = resources.value.findIndex(r => r.id === id)
-    if (index !== -1) {
-      resources.value[index] = { ...resources.value[index], ...updatedData }
-    }
-  }
-
-  // Fetch live sessions (still mocked for now as per Kuppi sessions request)
-  const fetchLiveSessions = async () => {
     isLoading.value = true
     error.value = null
     try {
-      setTimeout(() => {
-        liveSessions.value = [
-          { id: 1, title: 'Advanced Vue Concepts', scheduled_time: new Date(Date.now() + 86400000).toISOString(), join_link: 'https://meet.google.com/abc-xyz' },
-          { id: 2, title: 'Tailwind CSS Workshop', scheduled_time: new Date(Date.now() + 172800000).toISOString(), join_link: 'https://meet.google.com/def-uvw' }
-        ]
-        isLoading.value = false
-      }, 500)
+      await api.delete(`core/resources/${id}/`)
+      resources.value = resources.value.filter(r => r.id !== id)
     } catch (err) {
-      error.value = err.message
+      error.value = err.response?.data || err.message
+    } finally {
       isLoading.value = false
     }
   }
 
-  // Sync with Google Classroom
+  const updateResource = async (id, resourceData) => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const response = await api.put(`core/resources/${id}/`, resourceData)
+      const index = resources.value.findIndex(r => r.id === id)
+      if (index !== -1) {
+        resources.value[index] = response.data
+      }
+      return response.data
+    } catch (err) {
+      error.value = err.response?.data || err.message
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  const fetchLiveSessions = async (params = {}) => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const response = await api.get('core/kuppi/sessions/', { params })
+      liveSessions.value = response.data
+    } catch (err) {
+      error.value = err.response?.data || err.message
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  const createLiveSession = async (sessionData) => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const response = await api.post('core/kuppi/sessions/', sessionData)
+      liveSessions.value.unshift(response.data)
+      return response.data
+    } catch (err) {
+      error.value = err.response?.data || err.message
+      throw error.value
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  const updateLiveSession = async (id, sessionData) => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const response = await api.put(`core/kuppi/sessions/${id}/`, sessionData)
+      const index = liveSessions.value.findIndex(s => s.id === id)
+      if (index !== -1) {
+        liveSessions.value[index] = response.data
+      }
+      return response.data
+    } catch (err) {
+      error.value = err.response?.data || err.message
+      throw error.value
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  const deleteLiveSession = async (id) => {
+    isLoading.value = true
+    error.value = null
+    try {
+      await api.delete(`core/kuppi/sessions/${id}/`)
+      liveSessions.value = liveSessions.value.filter(s => s.id !== id)
+    } catch (err) {
+      error.value = err.response?.data || err.message
+      throw error.value
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  const uploadSessionVideo = async (id, file) => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      const response = await api.post(`core/kuppi/sessions/${id}/upload-video/`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+      
+      const index = liveSessions.value.findIndex(s => s.id === id)
+      if (index !== -1) {
+        liveSessions.value[index].video_url = response.data.video_url
+        if (response.data.thumbnail) {
+          liveSessions.value[index].thumbnail = response.data.thumbnail
+        }
+      }
+      return response.data
+    } catch (err) {
+      error.value = err.response?.data || err.message
+      throw error.value
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  const uploadSessionThumbnail = async (id, file) => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      const response = await api.post(`core/kuppi/sessions/${id}/upload-thumbnail/`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+      
+      const index = liveSessions.value.findIndex(s => s.id === id)
+      if (index !== -1) {
+        liveSessions.value[index].thumbnail = response.data.thumbnail
+      }
+      return response.data
+    } catch (err) {
+      error.value = err.response?.data || err.message
+      throw error.value
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  const incrementSessionViews = async (id) => {
+    try {
+      const response = await api.post(`core/kuppi/sessions/${id}/increment-views/`)
+      const index = liveSessions.value.findIndex(s => s.id === id)
+      if (index !== -1) {
+        liveSessions.value[index].view_count = response.data.view_count
+      }
+    } catch (err) {
+      console.error('Failed to increment views', err)
+    }
+  }
+
   const syncWithGoogleClassroom = async () => {
     isSyncing.value = true
     error.value = null
     try {
-      console.log('Syncing with Google Classroom...')
+      console.log('Syncing with Google Classroom (simulated)...')
       return new Promise((resolve) => {
         setTimeout(() => {
-          fetchLiveSessions() // Refresh
+          fetchLiveSessions({ userOnly: true })
           isSyncing.value = false
           resolve(true)
-        }, 2000)
+        }, 1500)
       })
     } catch (err) {
       error.value = err.message
@@ -125,6 +231,12 @@ export const useContentStore = defineStore('content', () => {
     deleteResource,
     updateResource,
     fetchLiveSessions,
+    createLiveSession,
+    updateLiveSession,
+    deleteLiveSession,
+    uploadSessionVideo,
+    uploadSessionThumbnail,
+    incrementSessionViews,
     syncWithGoogleClassroom
   }
 })

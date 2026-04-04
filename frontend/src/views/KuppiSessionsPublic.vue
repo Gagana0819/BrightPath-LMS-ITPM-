@@ -1,13 +1,34 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { useContentStore } from '../stores/contentStore'
 
 const router = useRouter()
+const contentStore = useContentStore()
+
+onMounted(() => {
+  contentStore.fetchLiveSessions()
+})
 
 // Recommendation carousel
 const vidScrollRef = ref(null)
 const vidCanScrollLeft = ref(false)
 const vidCanScrollRight = ref(true)
+
+const formatDate = (dateString) => {
+  if (!dateString) return ''
+  const options = { month: 'short', day: 'numeric' }
+  return new Date(dateString).toLocaleDateString('en-US', options)
+}
+
+const formatTime = (timeString) => {
+  if (!timeString) return ''
+  const [hours, minutes] = timeString.split(':')
+  const h = parseInt(hours)
+  const ampm = h >= 12 ? 'PM' : 'AM'
+  const displayHours = ((h + 11) % 12 + 1)
+  return `${displayHours}:${minutes} ${ampm}`
+}
 
 const recommendedVideos = ref([
   { id: 'v1', videoId: 'v9ejT8FO-7I', title: 'OOP Design Patterns Full Course', tutor: 'Kasun Bandara', duration: '1h 20min', views: '2.3k', tag: 'Most Watched', image: '/5a108056-a070-44ee-a123-1afd489077e0.jpg' },
@@ -32,23 +53,16 @@ const scrollVid = (dir) => {
   setTimeout(updateVidScroll, 350)
 }
 
-const upcomingSessions = [
-  { id: 1, videoId: 'GoXwIVyNvX0', title: 'Object Oriented Programming — Past Papers', tutor: 'Kasun Bandara', year: 'Year 4', date: 'Oct 25, 2026', time: '6:00 PM', students: '45k', stream: 'Information Technology', tags: ['OOP', 'Past Papers', 'Coding', 'Java'], thumbnail: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=800&auto=format&fit=crop', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Kasun' },
-  { id: 2, videoId: 'HubezKbFL78', title: 'Database Optimization Techniques', tutor: 'Nimesha Perera', year: 'Year 3', date: 'Oct 27, 2026', time: '4:00 PM', students: '32k', stream: 'Software Engineering', tags: ['SQL', 'Performance', 'Database', 'Indexing'], thumbnail: '/database-ai-thumbnail.png', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Nimesha' },
-  { id: 3, videoId: '5LrDIWkK_Bc', title: 'React Context API Deep Dive', tutor: 'Malithi Fernando', year: 'Year 3', date: 'Oct 28, 2026', time: '5:30 PM', students: '28k', stream: 'Information Technology', tags: ['React', 'Hooks', 'WebDev', 'Frontend'], thumbnail: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?q=80&w=800&auto=format&fit=crop', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Malithi' },
-  { id: 4, videoId: 'nzj7Wg4DAbs', title: 'Network Security Fundamentals', tutor: 'Tharindu Silva', year: 'Year 4', date: 'Oct 30, 2026', time: '7:00 PM', students: '19k', stream: 'Cyber Security', tags: ['Network', 'Security', 'Cyber', 'Privacy'], thumbnail: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=800&auto=format&fit=crop', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Tharindu' },
-  { id: 5, videoId: 'M9S_ZfN0p0M', title: 'Spring Boot Microservices', tutor: 'Sandun Dimantha', year: 'Year 3', date: 'Nov 01, 2026', time: '6:00 PM', students: '55k', stream: 'Software Engineering', tags: ['Java', 'Spring', 'Microservices', 'Backend'], thumbnail: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=800&auto=format&fit=crop', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sandun' },
-  { id: 6, videoId: 'GwIo3gDZCVQ', title: 'Machine Learning with Python', tutor: 'Amaya Jayasinghe', year: 'Year 4', date: 'Nov 03, 2026', time: '4:30 PM', students: '38k', stream: 'Data Science', tags: ['ML', 'Python', 'AI', 'DataScience'], thumbnail: '/ml-ai-thumbnail.png', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Amaya' },
-]
+// Removed hardcoded upcomingSessions
 
 const selectedFilter = ref('All')
 const searchQuery = ref('')
 const filters = ['All', 'Information Technology', 'Software Engineering', 'Cyber Security', 'Data Science']
 
-const filteredSessions = ref(upcomingSessions)
+const filteredSessions = ref([])
 
 const runFilter = () => {
-  let results = upcomingSessions
+  let results = contentStore.liveSessions || []
 
   // Stream filter
   if (selectedFilter.value !== 'All') {
@@ -68,10 +82,10 @@ const runFilter = () => {
   filteredSessions.value = results
 }
 
-// Automatically re-run filter whenever search query or selected filter changes
-watch([searchQuery, selectedFilter], () => {
+// Automatically re-run filter whenever search query, selected filter or store data changes
+watch([searchQuery, selectedFilter, () => contentStore.liveSessions], () => {
   runFilter()
-}, { immediate: true })
+}, { immediate: true, deep: true })
 
 const applyFilter = (filter) => {
   selectedFilter.value = filter
@@ -158,7 +172,7 @@ const playRecommendation = (vid) => {
             <!-- Stats Cards -->
             <div class="flex gap-4 hero-stats-enter shrink-0">
               <div class="stat-card bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl p-5 text-center min-w-[120px] shadow-lg">
-                <p class="text-4xl font-extrabold text-[#A8E6CF]">{{ upcomingSessions.length }}</p>
+                <p class="text-4xl font-extrabold text-[#A8E6CF]">{{ (contentStore.liveSessions || []).length }}</p>
                 <p class="text-slate-300 text-[13px] font-medium mt-1">Sessions Available</p>
               </div>
               <div class="stat-card bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl p-5 text-center min-w-[120px] shadow-lg hidden sm:block">
@@ -288,7 +302,7 @@ const playRecommendation = (vid) => {
           <!-- Thumbnail Container -->
           <div class="relative aspect-video rounded-xl overflow-hidden mb-3 shadow-sm group-hover:shadow-md transition-shadow duration-300 bg-slate-200">
             <img 
-              :src="session.thumbnail" 
+              :src="session.thumbnail || 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=800&auto=format&fit=crop'" 
               :alt="session.title" 
               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               @error="(e) => e.target.src = 'https://picsum.photos/seed/error/800/450'"
@@ -303,13 +317,19 @@ const playRecommendation = (vid) => {
 
             <!-- Badges -->
             <div class="absolute inset-0 p-2 flex flex-col justify-between pointer-events-none">
-              <div class="flex justify-start">
-                <span class="bg-[#4A90E2] text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm opacity-90">
+              <div class="flex flex-wrap gap-1">
+                <span class="bg-[#4A90E2] text-white text-[9px] font-bold px-2 py-0.5 rounded shadow-sm opacity-90 uppercase truncate max-w-[120px]">
                   {{ session.stream }}
                 </span>
+                <span v-if="session.module_code" class="bg-indigo-600 text-white text-[9px] font-bold px-2 py-0.5 rounded shadow-sm opacity-90 uppercase">
+                  {{ session.module_code }}
+                </span>
               </div>
-              <div class="flex justify-end">
-                <span class="bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow uppercase tracking-tighter">
+              <div class="flex justify-between items-end">
+                <span v-if="session.session_type" class="bg-slate-800/80 text-white text-[9px] font-bold px-2 py-0.5 rounded shadow-sm opacity-90 uppercase backdrop-blur-sm">
+                  {{ session.session_type }}
+                </span>
+                <span v-if="session.is_live" class="bg-red-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-sm uppercase tracking-tighter">
                   Live
                 </span>
               </div>
@@ -321,7 +341,7 @@ const playRecommendation = (vid) => {
             <!-- Tutor Avatar -->
             <div class="shrink-0 pt-0.5">
               <div class="w-9 h-9 rounded-full overflow-hidden border border-slate-100 shadow-sm group-hover:border-[#4A90E2]/30 transition-colors duration-300">
-                <img :src="session.avatar" class="w-full h-full object-cover" />
+                <img :src="session.tutor_avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + session.tutor_name" class="w-full h-full object-cover" />
               </div>
             </div>
 
@@ -333,12 +353,12 @@ const playRecommendation = (vid) => {
               
               <div class="flex flex-col gap-0.5">
                 <p class="text-[13px] text-slate-500 font-medium hover:text-[#2C3E50] transition-colors truncate">
-                  {{ session.tutor }}
+                  {{ session.tutor_name || session.tutor }}
                 </p>
                 <div class="flex items-center text-[12px] text-slate-400 font-medium">
-                  <span>{{ session.students }} views</span>
+                  <span>{{ session.view_count || session.students || 0 }} views</span>
                   <span class="mx-1">•</span>
-                  <span>{{ session.date }}</span>
+                  <span>{{ formatDate(session.scheduled_date || session.date) }}</span>
                 </div>
               </div>
 

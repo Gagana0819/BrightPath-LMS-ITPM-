@@ -11,74 +11,50 @@ const router = useRouter()
 const tutorName = computed(() => localStorage.getItem('full_name') || 'Sandun Dimantha')
 const tutorRating = 4.8 
 
-const activeSessionsList = ref([
-  { 
-    id: 1, 
-    title: 'Object Oriented Programming — Past Papers', 
-    date: 'Oct 25', 
-    time: '6:00 PM', 
-    students: 45, 
-    link: 'https://meet.google.com/abc-xyz',
-    videoUrl: 'https://www.youtube.com/embed/GoXwIVyNvX0',
-    rawYoutube: 'https://www.youtube.com/watch?v=GoXwIVyNvX0'
-  },
-  { 
-    id: 2, 
-    title: 'Database Optimization Techniques', 
-    date: 'Oct 27', 
-    time: '4:00 PM', 
-    students: 32, 
-    link: 'https://meet.google.com/def-uvw',
-    videoUrl: 'https://www.youtube.com/embed/HubezKbFL78',
-    rawYoutube: 'https://www.youtube.com/watch?v=HubezKbFL78'
-  },
-  { 
-    id: 3, 
-    title: 'React Context API Deep Dive', 
-    date: 'Oct 28', 
-    time: '5:30 PM', 
-    students: 28, 
-    link: 'https://meet.google.com/ghi-jkl',
-    videoUrl: 'https://www.youtube.com/embed/5LrDIWkK_Bc',
-    rawYoutube: 'https://www.youtube.com/watch?v=5LrDIWkK_Bc'
-  },
-  { 
-    id: 4, 
-    title: 'Network Security Fundamentals', 
-    date: 'Oct 30', 
-    time: '7:00 PM', 
-    students: 19, 
-    link: 'https://meet.google.com/mno-pqr',
-    videoUrl: 'https://www.youtube.com/embed/nzj7Wg4DAbs',
-    rawYoutube: 'https://www.youtube.com/watch?v=nzj7Wg4DAbs'
-  },
-  { 
-    id: 5, 
-    title: 'Spring Boot Microservices', 
-    date: 'Nov 01', 
-    time: '6:00 PM', 
-    students: 55, 
-    link: 'https://meet.google.com/stu-vwx',
-    videoUrl: 'https://www.youtube.com/embed/M9S_ZfN0p0M',
-    rawYoutube: 'https://www.youtube.com/watch?v=M9S_ZfN0p0M'
-  },
-  { 
-    id: 6, 
-    title: 'Machine Learning with Python', 
-    date: 'Nov 03', 
-    time: '4:30 PM', 
-    students: 38, 
-    link: 'https://meet.google.com/yz-abc',
-    videoUrl: 'https://www.youtube.com/embed/GwIo3gDZCVQ',
-    rawYoutube: 'https://www.youtube.com/watch?v=GwIo3gDZCVQ'
+const formatDate = (dateString) => {
+  if (!dateString) return ''
+  const options = { month: 'short', day: 'numeric' }
+  return new Date(dateString).toLocaleDateString('en-US', options)
+}
+
+const formatTime = (timeString) => {
+  if (!timeString) return ''
+  const [hours, minutes] = timeString.split(':')
+  const h = parseInt(hours)
+  const ampm = h >= 12 ? 'PM' : 'AM'
+  const displayHours = ((h + 11) % 12 + 1)
+  return `${displayHours}:${minutes} ${ampm}`
+}
+
+const universityData = {
+  "SLIIT": {
+    "Computing": ["Information Technology", "Software Engineering", "Computer Systems & Network Engineering", "Information Systems Engineering", "Interactive Media", "Cyber Security", "Data Science"],
+    "Business": ["Business Management"],
+    "Engineering": ["Civil Engineering"],
+    "Humanities & Sciences": ["Biotechnology", "Nursing"]
   }
-])
+}
+
+const facultyOptions = ["Computing", "Business", "Engineering", "Humanities & Sciences"]
+const academicYearOptions = [
+  "Year 1/1", "Year 1/2", 
+  "Year 2/1", "Year 2/2", 
+  "Year 3/1", "Year 3/2", 
+  "Year 4/1", "Year 4/2"
+]
+const sessionTypeOptions = ["Lecture", "Notes Discussion", "Papers Discussion"]
+
+const availableStreams = computed(() => {
+  if (!newSession.value.faculty) return []
+  return universityData["SLIIT"][newSession.value.faculty] || []
+})
 
 const searchQuery = ref('')
 const filteredSessions = computed(() => {
-  if (!searchQuery.value) return activeSessionsList.value
+  const sessions = contentStore.liveSessions || []
+  if (!searchQuery.value) return sessions
   const q = searchQuery.value.toLowerCase()
-  return activeSessionsList.value.filter(s => s.title.toLowerCase().includes(q))
+  return sessions.filter(s => s.title.toLowerCase().includes(q))
 })
 
 const isUploadModalOpen = ref(false)
@@ -88,16 +64,38 @@ const editingId = ref(null)
 
 const newSession = ref({
   title: '',
+  description: '',
+  faculty: 'Computing',
+  stream: 'Information Technology',
+  academic_year: 'Year 1/1',
+  module_code: '',
+  session_type: 'Lecture',
   date: '',
   time: '',
   link: '',
-  group: 'Information Technology'
+  videoFile: null,
+  imageFile: null
 })
 
 const openNewSessionModal = () => {
   isEditing.value = false
   editingId.value = null
-  newSession.value = { title: '', date: '', time: '', link: '', group: 'Information Technology' }
+  newSession.value = { 
+    title: '', 
+    description: '', 
+    faculty: 'Computing',
+    stream: 'Information Technology', 
+    academic_year: 'Year 1/1', 
+    module_code: '',
+    session_type: 'Lecture',
+    date: '', 
+    time: '', 
+    link: '', 
+    thumbnail: '',
+    videoUrl: '',
+    videoFile: null,
+    imageFile: null
+  }
   touchedFields.value = { title: false, date: false, time: false, link: false }
   formErrors.value = {}
   isNewSessionModalOpen.value = true
@@ -108,17 +106,26 @@ const openEditModal = (session) => {
   editingId.value = session.id
   newSession.value = { 
     title: session.title, 
-    date: session.date, 
-    time: session.time, 
-    link: session.link || '', 
-    group: session.group || 'Information Technology' 
+    description: session.description || '',
+    faculty: session.faculty || 'Computing',
+    stream: session.stream || 'Information Technology',
+    academic_year: session.academic_year || 'Year 1/1',
+    module_code: session.module_code || '',
+    session_type: session.session_type || 'Lecture',
+    date: session.scheduled_date || session.date || '', 
+    time: session.scheduled_time || session.time || '', 
+    link: session.meet_link || session.link || '', 
+    thumbnail: session.thumbnail || '',
+    videoUrl: session.video_url || '',
+    videoFile: null,
+    imageFile: null
   }
   touchedFields.value = { title: true, date: true, time: true, link: true }
   validateForm()
   isNewSessionModalOpen.value = true
 }
 
-const submitSession = () => {
+const submitSession = async () => {
   if (!validateForm()) {
     // Touch all fields to show errors if they exist
     Object.keys(touchedFields.value).forEach(key => {
@@ -127,32 +134,55 @@ const submitSession = () => {
     return
   }
   
-  if (isEditing.value) {
-    // Update existing session
-    const index = activeSessionsList.value.findIndex(s => s.id === editingId.value)
-    if (index !== -1) {
-      activeSessionsList.value[index] = {
-        ...activeSessionsList.value[index],
-        ...newSession.value
-      }
-    }
-  } else {
-    // Create new session
-    activeSessionsList.value.unshift({
-      id: Date.now(),
-      ...newSession.value,
-      students: 0,
-      videoUrl: '',
-      rawYoutube: ''
-    })
+  const payload = {
+    title: newSession.value.title,
+    description: newSession.value.description,
+    faculty: newSession.value.faculty,
+    stream: newSession.value.stream,
+    academic_year: newSession.value.academic_year,
+    module_code: newSession.value.module_code,
+    session_type: newSession.value.session_type,
+    scheduled_date: newSession.value.date,
+    scheduled_time: newSession.value.time,
+    meet_link: newSession.value.link
   }
-  
-  // Close and reset
-  isNewSessionModalOpen.value = false
-  isEditing.value = false
-  editingId.value = null
-  formErrors.value = {}
-  touchedFields.value = { title: false, date: false, time: false, link: false }
+
+  try {
+    let savedSession;
+    if (isEditing.value) {
+      savedSession = await contentStore.updateLiveSession(editingId.value, payload)
+    } else {
+      savedSession = await contentStore.createLiveSession(payload)
+    }
+
+    if (newSession.value.videoFile) {
+      await contentStore.uploadSessionVideo(savedSession.id || editingId.value, newSession.value.videoFile)
+    }
+
+    if (newSession.value.imageFile) {
+      await contentStore.uploadSessionThumbnail(savedSession.id || editingId.value, newSession.value.imageFile)
+    }
+
+    // Close and reset
+    isNewSessionModalOpen.value = false
+    isEditing.value = false
+    editingId.value = null
+    formErrors.value = {}
+    touchedFields.value = { title: false, date: false, time: false, link: false }
+  } catch (error) {
+    console.error("Failed to save session", error)
+    alert("Failed to save session. Please try again.")
+  }
+}
+
+const deleteSession = async (id) => {
+  if (confirm('Are you sure you want to delete this session?')) {
+    try {
+      await contentStore.deleteLiveSession(id)
+    } catch (e) {
+      alert("Failed to delete session.")
+    }
+  }
 }
 
 // Video Player logic
@@ -164,12 +194,12 @@ const currentVideoTitle = ref('')
 
 const openPlayer = (id) => {
   // 1. Try to find a local session by ID
-  let session = activeSessionsList.value.find(s => s.id == id)
+  let session = filteredSessions.value.find(s => s.id == id)
   
   if (session) {
     currentVideoTitle.value = session.title
-    selectedVideoUrl.value = session.videoUrl
-    selectedVideoRawUrl.value = session.rawYoutube
+    selectedVideoUrl.value = session.video_url || session.videoUrl
+    selectedVideoRawUrl.value = session.rawYoutube || session.video_url
     selectedVideoId.value = id
   } else {
     // 2. If no local session, it might be a direct YouTube ID (e.g. from recommendations)
@@ -197,7 +227,7 @@ const handleSync = () => {
 }
 
 onMounted(() => {
-  contentStore.fetchLiveSessions()
+  contentStore.fetchLiveSessions({ userOnly: true })
   
   // Check for auto-play from route
   if (route.params.id) {
@@ -316,11 +346,12 @@ const selectDate = (day) => {
     return
   }
   
-  const monthShort = monthNames[calendarDate.value.getMonth()].substring(0, 3)
-  const dayStr = day < 10 ? `0${day}` : `${day}`
+  const year = calendarDate.value.getFullYear()
+  const month = String(calendarDate.value.getMonth() + 1).padStart(2, '0')
+  const d = String(day).padStart(2, '0')
   
   openNewSessionModal()
-  newSession.value.date = `${monthShort} ${dayStr}`
+  newSession.value.date = `${year}-${month}-${d}`
   touchedFields.value.date = true
   validateForm()
 }
@@ -352,41 +383,14 @@ const validateForm = () => {
     errors.title = "Title must be under 100 characters"
   }
   
-  // Date: Format like 'Oct 30' or 'Nov 02'
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-  const dateStr = newSession.value.date?.trim() || ''
-  const dateMatch = dateStr.match(/^([A-Za-z]{3})\s(\d{1,2})$/)
-  
-  if (!dateStr) {
+  // Date
+  if (!newSession.value.date) {
     errors.date = "Date is required"
-  } else if (!dateMatch) {
-    errors.date = "Use format like 'Oct 30'"
-  } else {
-    const month = dateMatch[1].charAt(0).toUpperCase() + dateMatch[1].slice(1).toLowerCase()
-    const day = parseInt(dateMatch[2])
-    
-    if (!months.includes(month)) {
-      errors.date = "Invalid month (e.g. Oct, Nov)"
-    } else {
-      const daysInMonth = {
-        'Jan': 31, 'Feb': 29, 'Mar': 31, 'Apr': 30, 'May': 31, 'Jun': 30,
-        'Jul': 31, 'Aug': 31, 'Sep': 30, 'Oct': 31, 'Nov': 30, 'Dec': 31
-      }
-      if (day < 1 || day > daysInMonth[month]) {
-        errors.date = `Invalid day for ${month}`
-      }
-    }
   }
   
-  // Time: Format like '5:30 PM' or '10:00 AM'
-  const timeStr = newSession.value.time?.trim() || ''
-  const timeRegex = /^(0?[1-9]|1[0-2]):([0-5][0-9])\s(AM|PM)$/i
-  const timeMatch = timeStr.match(timeRegex)
-  
-  if (!timeStr) {
+  // Time
+  if (!newSession.value.time) {
     errors.time = "Time is required"
-  } else if (!timeMatch) {
-    errors.time = "Use format like '5:30 PM'"
   }
   
   // Link: Must be a valid Meet url (optional)
@@ -496,25 +500,30 @@ watch(newSession, () => {
                  <div class="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-xl group-hover:bg-blue-50 transition-colors">👨‍💻</div>
                  <div>
                   <div class="flex items-center gap-3 mb-1">
-                    <span class="bg-blue-50 text-blue-700 text-[11px] font-extrabold px-3 py-1 rounded-lg border border-blue-100 uppercase tracking-wider">{{ session.date }} @ {{ session.time }}</span>
+                    <span class="bg-blue-50 text-blue-700 text-[11px] font-extrabold px-3 py-1 rounded-lg border border-blue-100 uppercase tracking-wider">{{ formatDate(session.scheduled_date || session.date) }} @ {{ formatTime(session.scheduled_time || session.time) }}</span>
+                    <span class="bg-emerald-50 text-emerald-700 text-[11px] font-extrabold px-3 py-1 rounded-lg border border-emerald-100 uppercase tracking-wider hidden md:inline-block">{{ session.stream }}</span>
                     <span class="text-[12px] text-slate-400 font-bold flex items-center gap-1">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5V4H2v16h5m4-4h2"></path></svg>
-                      {{ session.students }} Students
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                      {{ session.view_count || session.students || 0 }} Views
                     </span>
                   </div>
                   <h3 class="font-bold text-[#1E293B] text-[17px] leading-tight group-hover:text-blue-600 transition-colors">{{ session.title }}</h3>
                 </div>
               </div>
               <div class="mt-4 sm:mt-0 flex gap-2 sm:self-center">
-                <button @click="openEditModal(session)" class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold py-2.5 px-5 rounded-xl text-[13px] transition-all">
+                <button @click="openEditModal(session)" class="bg-white border border-blue-200 text-blue-600 hover:bg-blue-50 font-bold py-2.5 px-4 rounded-xl text-[13px] transition-all">
                   Edit
                 </button>
-                <button @click="openPlayer(session.id)" class="bg-[#4A90E2] hover:bg-blue-600 text-white font-bold py-2.5 px-6 rounded-xl text-[13px] transition-all shadow-md flex items-center gap-2">
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path></svg>
-                  Watch Session
+                <button @click="deleteSession(session.id)" class="bg-white border border-red-200 text-red-500 hover:bg-red-50 font-bold py-2.5 px-4 rounded-xl text-[13px] transition-all">
+                  Delete
                 </button>
-                <a :href="session.link" target="_blank" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2.5 px-6 rounded-xl text-[13px] transition-all shadow-md flex items-center gap-2">
-                  Join Live
+                <button v-if="session.video_url" @click="openPlayer(session.id)" class="bg-[#4A90E2] hover:bg-blue-600 text-white font-bold py-2.5 px-5 rounded-xl text-[13px] transition-all shadow-md flex items-center gap-2">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path></svg>
+                  Watch
+                </button>
+                <a v-if="session.meet_link || session.link" :href="session.meet_link || session.link" target="_blank" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2.5 px-6 rounded-xl text-[13px] transition-all shadow-md flex items-center justify-center gap-2">
+                   <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                  Start
                 </a>
               </div>
             </div>
@@ -722,7 +731,7 @@ watch(newSession, () => {
 
     <!-- New Session Modal -->
     <div v-if="isNewSessionModalOpen" class="fixed inset-0 z-[110] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-      <div class="bg-white w-full max-w-lg rounded-[32px] shadow-2xl overflow-hidden border border-slate-100 flex flex-col animate-in zoom-in-95 duration-300">
+      <div class="bg-white w-full max-w-lg rounded-[32px] shadow-2xl overflow-hidden border border-slate-100 flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-300">
         <div class="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
           <div>
             <h3 class="text-[#1E293B] font-extrabold text-2xl tracking-tight">{{ isEditing ? 'Edit Session' : 'Create New Session' }}</h3>
@@ -733,7 +742,7 @@ watch(newSession, () => {
           </button>
         </div>
 
-        <form @submit.prevent="submitSession" class="p-8 space-y-6">
+        <form @submit.prevent="submitSession" class="p-8 space-y-6 overflow-y-auto">
           <div class="space-y-2">
             <label class="text-[13px] font-bold text-slate-700 ml-1 uppercase tracking-wider">Session Title</label>
             <input 
@@ -750,13 +759,56 @@ watch(newSession, () => {
             </transition>
           </div>
 
+          <div class="space-y-2">
+            <label class="text-[13px] font-bold text-slate-700 ml-1 uppercase tracking-wider">Description (Optional)</label>
+            <textarea 
+              v-model="newSession.description" 
+              placeholder="Provide a brief description about the topic..." 
+              class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none transition-all font-medium text-slate-800 focus:ring-blue-100 focus:border-blue-500 min-h-[80px]" 
+            ></textarea>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-2">
+              <label class="text-[13px] font-bold text-slate-700 ml-1 uppercase tracking-wider">Faculty</label>
+              <select v-model="newSession.faculty" class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none transition-all font-medium text-slate-800 focus:ring-blue-100 focus:border-blue-500">
+                <option v-for="f in facultyOptions" :key="f" :value="f">{{ f }}</option>
+              </select>
+            </div>
+            <div class="space-y-2">
+              <label class="text-[13px] font-bold text-slate-700 ml-1 uppercase tracking-wider">Academic Year</label>
+              <select v-model="newSession.academic_year" class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none transition-all font-medium text-slate-800 focus:ring-blue-100 focus:border-blue-500">
+                <option v-for="y in academicYearOptions" :key="y" :value="y">{{ y }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-2">
+              <label class="text-[13px] font-bold text-slate-700 ml-1 uppercase tracking-wider">Academic Stream</label>
+              <select v-model="newSession.stream" class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none transition-all font-medium text-slate-800 focus:ring-blue-100 focus:border-blue-500">
+                <option v-for="s in availableStreams" :key="s" :value="s">{{ s }}</option>
+              </select>
+            </div>
+            <div class="space-y-2">
+              <label class="text-[13px] font-bold text-slate-700 ml-1 uppercase tracking-wider">Module Code</label>
+              <input v-model="newSession.module_code" type="text" placeholder="e.g. IT3020" class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none transition-all font-medium text-slate-800 focus:ring-blue-100 focus:border-blue-500" />
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <label class="text-[13px] font-bold text-slate-700 ml-1 uppercase tracking-wider">Session Type</label>
+            <select v-model="newSession.session_type" class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none transition-all font-medium text-slate-800 focus:ring-blue-100 focus:border-blue-500">
+              <option v-for="t in sessionTypeOptions" :key="t" :value="t">{{ t }}</option>
+            </select>
+          </div>
+
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-2">
               <label class="text-[13px] font-bold text-slate-700 ml-1 uppercase tracking-wider">Date</label>
               <input 
                 v-model="newSession.date" 
-                type="text" 
-                placeholder="Oct 30" 
+                type="date" 
                 :class="['w-full px-5 py-4 bg-slate-50 border rounded-2xl outline-none transition-all font-medium text-slate-800', (touchedFields.date && formErrors.date) ? 'border-red-400 focus:ring-red-50' : 'border-slate-200 focus:ring-blue-100 focus:border-blue-500']" 
                 @blur="touchField('date')"
                 @input="touchField('date')"
@@ -770,8 +822,7 @@ watch(newSession, () => {
               <label class="text-[13px] font-bold text-slate-700 ml-1 uppercase tracking-wider">Time</label>
               <input 
                 v-model="newSession.time" 
-                type="text" 
-                placeholder="5:30 PM" 
+                type="time" 
                 :class="['w-full px-5 py-4 bg-slate-50 border rounded-2xl outline-none transition-all font-medium text-slate-800', (touchedFields.time && formErrors.time) ? 'border-red-400 focus:ring-red-50' : 'border-slate-200 focus:ring-blue-100 focus:border-blue-500']" 
                 @blur="touchField('time')"
                 @input="touchField('time')"
@@ -796,6 +847,28 @@ watch(newSession, () => {
             <transition enter-active-class="transition duration-200 ease-out" enter-from-class="transform -translate-y-2 opacity-0" enter-to-class="transform translate-y-0 opacity-100">
               <p v-if="touchedFields.link && formErrors.link" class="text-[11px] text-red-500 font-bold ml-1">{{ formErrors.link }}</p>
             </transition>
+          </div>
+
+          <div class="space-y-2">
+            <label class="text-[13px] font-bold text-slate-700 ml-1 uppercase tracking-wider">Session Thumbnail (Optional)</label>
+            <input 
+              type="file" 
+              accept="image/*"
+              @change="(e) => newSession.imageFile = e.target.files[0]"
+              class="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-2xl outline-none text-slate-800 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 transition-all font-medium" 
+            />
+            <p v-if="isEditing && newSession.thumbnail" class="text-[11px] text-emerald-500 font-bold ml-1 mt-1">A thumbnail is currently set for this session.</p>
+          </div>
+
+          <div class="space-y-2">
+            <label class="text-[13px] font-bold text-slate-700 ml-1 uppercase tracking-wider">Upload Session Recording (Optional)</label>
+            <input 
+              type="file" 
+              accept="video/*"
+              @change="(e) => newSession.videoFile = e.target.files[0]"
+              class="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-2xl outline-none text-slate-800 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-all font-medium" 
+            />
+            <p v-if="isEditing && newSession.videoUrl" class="text-[11px] text-emerald-500 font-bold ml-1 mt-1">A video is currently attached to this session.</p>
           </div>
 
           <button type="submit" :class="['w-full font-extrabold py-5 rounded-[22px] shadow-xl transition-all hover:-translate-y-1 active:scale-[0.98] mt-4 flex items-center justify-center gap-3', Object.keys(formErrors).length > 0 && Object.values(touchedFields).some(v => v) ? 'bg-slate-400 text-slate-100 cursor-not-allowed opacity-80' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-200']">

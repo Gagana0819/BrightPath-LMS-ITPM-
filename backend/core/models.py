@@ -54,3 +54,34 @@ class StudyResource(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.module_code})"
+
+class KuppiSession(models.Model):
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    tutor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='kuppi_sessions')
+    stream = models.CharField(max_length=100) # e.g. "Software Engineering"
+    faculty = models.CharField(max_length=100, default='Computing')
+    academic_year = models.CharField(max_length=20) # e.g. "Year 1/1"
+    module_code = models.CharField(max_length=50, blank=True, null=True)
+    session_type = models.CharField(
+        max_length=50, 
+        choices=[
+            ('Lecture', 'Lecture'),
+            ('Notes Discussion', 'Notes Discussion'),
+            ('Papers Discussion', 'Papers Discussion')
+        ],
+        default='Lecture'
+    )
+    tags = models.JSONField(default=list, blank=True)
+    scheduled_date = models.CharField(max_length=50) # "Oct 25"
+    scheduled_time = models.CharField(max_length=50) # "6:00 PM"
+    meet_link = models.URLField(blank=True, null=True)
+    video_url = models.URLField(blank=True, null=True) # Cloudinary URL
+    thumbnail = models.URLField(blank=True, null=True) # Cloudinary Thumbnail URL
+    view_count = models.PositiveIntegerField(default=0)
+    is_live = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.title} by {self.tutor.full_name if hasattr(self.tutor, 'full_name') else self.tutor.email}"
