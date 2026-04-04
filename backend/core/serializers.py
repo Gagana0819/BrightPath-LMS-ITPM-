@@ -1,6 +1,14 @@
 from rest_framework import serializers
-from .models import StudyResource, KuppiSession
+from .models import StudyResource, KuppiSession, ResourceReview
 import os
+
+class ResourceReviewSerializer(serializers.ModelSerializer):
+    user_name = serializers.CharField(source='user.full_name', read_only=True)
+    
+    class Meta:
+        model = ResourceReview
+        fields = ['id', 'user', 'user_name', 'resource', 'rating', 'comment', 'created_at']
+        read_only_fields = ['user', 'created_at']
 
 class StudyResourceSerializer(serializers.ModelSerializer):
     uploader_name = serializers.SerializerMethodField()

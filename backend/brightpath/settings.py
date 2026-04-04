@@ -179,7 +179,7 @@ AWS_S3_REGION_NAME = 'us-east-1'  # Default for Supabase S3
 AWS_S3_SIGNATURE_VERSION = 's3v4'
 AWS_S3_FILE_OVERWRITE = False
 AWS_S3_USE_PATH_STYLE = True # EXPLICITLY REQUIRED for Supabase S3
-AWS_QUERYSTRING_AUTH = False  # URLs won't expire (good for public buckets)
+AWS_QUERYSTRING_AUTH = True  # Enable signatures for secure access to Supabase Storage
 AWS_DEFAULT_ACL = None
 AWS_S3_VERIFY = True
 

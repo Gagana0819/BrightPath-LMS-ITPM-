@@ -85,3 +85,12 @@ class KuppiSession(models.Model):
 
     def __str__(self):
         return f"{self.title} by {self.tutor.full_name if hasattr(self.tutor, 'full_name') else self.tutor.email}"
+class ResourceReview(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    resource = models.ForeignKey(StudyResource, on_delete=models.CASCADE, related_name='reviews')
+    rating = models.IntegerField(default=5) # 1-5
+    comment = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.email} - {self.resource.title} ({self.rating})"

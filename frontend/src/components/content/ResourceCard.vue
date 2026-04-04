@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { useContentStore } from '@/stores/contentStore'
 
 const props = defineProps({
   doc: {
@@ -7,6 +8,12 @@ const props = defineProps({
     required: true
   }
 })
+
+const contentStore = useContentStore()
+
+const handleDownload = () => {
+  contentStore.recordResourceDownload(props.doc.id)
+}
 
 const getFileTypeLabel = (resourceType) => {
   const types = {
@@ -45,7 +52,7 @@ const formatDate = (dateString) => {
       </div>
       
       <!-- Top-Right Download Button -->
-      <a :href="doc.file" target="_blank" @click.stop class="absolute top-4 right-4 w-11 h-11 bg-white/20 hover:bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:text-[#5C6BC0] transition-all shadow-lg border border-white/30">
+      <a :href="doc.file" target="_blank" @click.stop="handleDownload" class="absolute top-4 right-4 w-11 h-11 bg-white/20 hover:bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:text-[#5C6BC0] transition-all shadow-lg border border-white/30">
         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>

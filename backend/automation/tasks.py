@@ -47,3 +47,32 @@ def update_peer_recommendations_task():
             logger.info(f"Generated recommendations for User {user.username}: {rec_titles}")
             
     return "Peer recommendations updated"
+@shared_task
+def send_feedback_request_email(user_email, resource_id):
+    from core.models import StudyResource
+    try:
+        print(f"CELERY DEBUG: Attempting to send feedback email to {user_email} for resource_id {resource_id}")
+        resource = StudyResource.objects.get(id=resource_id)
+        subject = f"How was the resource: {resource.title}?"
+        message = f"Hello,\n\nYou recently downloaded '{resource.title}'. We would love to hear your feedback!\n\nPlease take a moment to rate and review it to help other students.\n\nThank you,\nBrightPath Team"
+        from_email = settings.EMAIL_HOST_USER
+        
+        email = EmailMessage(
+            subject=subject,
+            body=message,
+            from_email=from_email,
+            to=[user_email]
+        )
+        email.send(fail_silently=False)
+        print(f"CELERY DEBUG: EMAIL SENT SUCCESSFULLY to {user_email}")
+        
+        logger.info(f"Successfully sent feedback request email to {user_email} for resource {resource_id}")
+        return True
+    except StudyResource.DoesNotExist:
+        print(f"CELERY ERROR: Resource {resource_id} not found in DB")
+        logger.error(f"Resource {resource_id} not found for feedback request")
+        return False
+    except Exception as e:
+        print(f"CELERY ERROR: {str(e)}")
+        logger.error(f"Failed to send feedback request email: {e}")
+        return False

@@ -3,11 +3,44 @@ from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.authentication import SessionAuthentication
-from .models import StudyResource, KuppiSession
-from .serializers import StudyResourceSerializer, KuppiSessionSerializer
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
+from .models import StudyResource, KuppiSession, ResourceReview
+from .serializers import StudyResourceSerializer, KuppiSessionSerializer, ResourceReviewSerializer
+from rest_framework.views import APIView
+
+class ResourceReviewCreateView(generics.CreateAPIView):
+    queryset = ResourceReview.objects.all()
+    serializer_class = ResourceReviewSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+class RecordResourceDownloadView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, pk, format=None):
+        try:
+            resource = StudyResource.objects.get(pk=pk)
+            print(f"DEBUG: RECIEVED DOWNLOAD REQUEST for resource '{resource.title}' from user: {request.user.email}")
+            
+            # Trigger delayed feedback email (30 seconds)
+            from automation.tasks import send_feedback_request_email
+            send_feedback_request_email.apply_async(
+                args=[request.user.email, resource.id],
+                countdown=30 # 30 seconds delay
+            )
+            print(f"DEBUG: Celery task scheduled for {request.user.email} with 30s countdown")
+            
+            return Response({'message': 'Download recorded and feedback task scheduled'}, status=status.HTTP_200_OK)
+        except StudyResource.DoesNotExist:
+            print(f"DEBUG Error: Resource {pk} not found")
+            return Response({'error': 'Resource not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            print(f"DEBUG Error: {str(e)}")
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class ResourceUploadView(generics.CreateAPIView):
     queryset = StudyResource.objects.all()

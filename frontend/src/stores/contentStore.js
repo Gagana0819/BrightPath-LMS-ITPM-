@@ -220,6 +220,30 @@ export const useContentStore = defineStore('content', () => {
     }
   }
 
+  const recordResourceDownload = async (resourceId) => {
+    console.log(`DEBUG: Calling recordResourceDownload for resource ID: ${resourceId}`);
+    try {
+      const response = await api.post(`core/resources/${resourceId}/record-download/`)
+      console.log('DEBUG: recordResourceDownload response:', response.data.message);
+    } catch (err) {
+      console.error('Failed to record download', err)
+    }
+  }
+
+  const submitResourceReview = async (resourceId, reviewData) => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const response = await api.post(`core/resources/${resourceId}/reviews/`, reviewData)
+      return response.data
+    } catch (err) {
+      error.value = err.response?.data || err.message
+      throw error.value
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   return {
     resources,
     liveSessions,
@@ -237,6 +261,8 @@ export const useContentStore = defineStore('content', () => {
     uploadSessionVideo,
     uploadSessionThumbnail,
     incrementSessionViews,
+    recordResourceDownload,
+    submitResourceReview,
     syncWithGoogleClassroom
   }
 })
