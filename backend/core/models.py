@@ -92,5 +92,8 @@ class ResourceReview(models.Model):
     comment = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        unique_together = ('user', 'resource')
+
     def __str__(self):
         return f"{self.user.email} - {self.resource.title} ({self.rating})"

@@ -1,5 +1,6 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 
 import { useContentStore } from '@/stores/contentStore'
 import ResourceCard from '@/components/content/ResourceCard.vue'
@@ -10,10 +11,39 @@ const canScrollLeft = ref(false)
 const canScrollRight = ref(true)
 
 const contentStore = useContentStore()
+const router = useRouter()
+const route = useRoute()
 
-onMounted(() => {
-  contentStore.fetchResources({ userOnly: false })
+onMounted(async () => {
+  await contentStore.fetchResources({ userOnly: false })
+  checkDeepLink()
 })
+
+const checkDeepLink = () => {
+  const resourceId = route.query.review_resource
+  if (resourceId && contentStore.resources.length > 0) {
+    // Auth Guard: Only open deep-links for logged-in users
+    const isLoggedIn = !!localStorage.getItem('access_token')
+    if (!isLoggedIn) {
+      // Save current path to redirect back after login
+      router.push({ path: '/login', query: { redirect: route.fullPath } })
+      return
+    }
+
+    // Find the resource in the loaded list
+    const resource = contentStore.resources.find(r => r.id == resourceId)
+    if (resource) {
+      openPreview(resource)
+      // Automatically open the reviews modal after a short delay for smooth animation
+      setTimeout(() => {
+        showReviewsModal.value = true
+      }, 600)
+      
+      // Clean up the URL so it doesn't re-trigger on refresh
+      router.replace({ query: { ...route.query, review_resource: undefined } })
+    }
+  }
+}
 
 const recommendedResources = ref([
   { id: 'r1', title: 'ITPM 2025 Final Exam Past Paper with Model Answers', type: 'Past Paper', module: 'IT Project Management', uploader: 'Kasun Silva', tag: 'Most Downloaded', image: '/itpm_thumbnail.png' },
@@ -44,6 +74,64 @@ const selectedModule = ref('All')
 const selectedType = ref('All')
 const sortBy = ref('recent')
 const showFilterPanel = ref(false)
+
+// Resource Preview state
+const selectedResource = ref(null)
+const showPreview = ref(false)
+
+const openPreview = (doc) => {
+  selectedResource.value = doc
+  showPreview.value = true
+}
+
+const handleDownload = (doc, e) => {
+  const isLoggedIn = !!localStorage.getItem('access_token')
+  if (!isLoggedIn) {
+     if (e) e.preventDefault()
+     router.push('/login')
+     return
+  }
+  contentStore.recordResourceDownload(doc.id)
+}
+
+// Stats & Reviews
+const ratingStats = ref({ average_rating: 0, total_ratings: 0, distribution: {1:0, 2:0, 3:0, 4:0, 5:0} })
+const reviewsList = ref([])
+const showReviewsModal = ref(false)
+const showAddReviewForm = ref(false)
+const userHasReviewed = ref(false)
+const newReview = ref({ rating: 5, comment: '' })
+
+watch(selectedResource, async (newVal) => {
+  if (newVal) {
+    const [stats, reviews] = await Promise.all([
+      contentStore.fetchResourceStats(newVal.id),
+      contentStore.fetchResourceReviews(newVal.id)
+    ])
+    if (stats) {
+      ratingStats.value = stats
+      userHasReviewed.value = stats.user_has_reviewed
+    }
+    reviewsList.value = reviews
+  }
+})
+
+const submitReview = async () => {
+  if (!selectedResource.value) return
+  try {
+    await contentStore.submitResourceReview(selectedResource.value.id, newReview.value)
+    // Refresh
+    if (stats) {
+      ratingStats.value = stats
+      userHasReviewed.value = stats.user_has_reviewed
+    }
+    reviewsList.value = reviews
+    showAddReviewForm.value = false
+    newReview.value = { rating: 5, comment: '' }
+  } catch (err) {
+    alert(err.detail || 'Failed to submit review')
+  }
+}
 
 const activeFilterCount = computed(() => {
   let count = 0
@@ -351,7 +439,7 @@ const filteredDocuments = computed(() => {
                 :key="doc.id"
                 class="w-full md:w-[calc(33.33%-16px)] min-w-[280px]"
               >
-                <ResourceCard :doc="doc" />
+                <ResourceCard :doc="doc" @preview="openPreview" />
               </div>
             </transition-group>
 
@@ -366,6 +454,258 @@ const filteredDocuments = computed(() => {
       </div>
     </main>
 
+
+    <!-- Resource Preview Slide-Over Panel -->
+    <Teleport to="body">
+      <Transition name="overlay">
+        <div v-if="showPreview" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[110]" @click="showPreview = false"></div>
+      </Transition>
+      <Transition name="slide">
+        <div v-if="showPreview && selectedResource" class="fixed top-0 right-0 h-full w-[500px] max-w-[95vw] bg-white z-[111] shadow-2xl flex flex-col">
+          <!-- Panel Header -->
+          <div class="flex items-center justify-between p-6 border-b border-slate-100 shrink-0">
+            <div>
+              <h2 class="text-xl font-bold text-[#2C3E50]">Resource Preview</h2>
+              <p class="text-sm text-slate-400 mt-0.5">Details about this study material</p>
+            </div>
+            <button @click="showPreview = false" class="w-10 h-10 rounded-xl bg-[#F4F7F9] flex items-center justify-center text-slate-500 hover:text-red-500 hover:bg-red-50 transition-colors">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Panel Body -->
+          <div class="flex-1 overflow-y-auto p-6 space-y-6">
+            <!-- Thumbnail -->
+            <div class="aspect-video w-full rounded-2xl overflow-hidden shadow-md border border-slate-100">
+               <img :src="selectedResource.image || 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'" class="w-full h-full object-cover">
+            </div>
+
+            <!-- Title & Type -->
+            <div>
+              <div class="flex items-center gap-2 mb-2">
+                <span class="px-2.5 py-1 bg-[#4A90E2]/10 text-[#4A90E2] text-[10px] font-black uppercase rounded-lg">
+                  {{ selectedResource.resource_type?.replace('_', ' ') || 'RESOURCE' }}
+                </span>
+                <span v-if="selectedResource.module_code" class="px-2.5 py-1 bg-slate-100 text-slate-500 text-[10px] font-black uppercase rounded-lg">
+                  {{ selectedResource.module_code }}
+                </span>
+              </div>
+              <div class="flex items-center justify-between">
+                <h1 class="text-2xl font-bold text-[#2C3E50] leading-tight">{{ selectedResource.title }}</h1>
+              </div>
+
+              <!-- Rating Summary Line -->
+              <div class="flex items-center gap-2 mt-2">
+                <span class="text-amber-500 font-bold text-lg">{{ ratingStats.average_rating.toFixed(1) }}</span>
+                <div class="flex text-amber-400">
+                  <span v-for="i in 5" :key="i" class="text-lg">
+                    <template v-if="i <= Math.round(ratingStats.average_rating)">★</template>
+                    <template v-else>☆</template>
+                  </span>
+                </div>
+                <button 
+                  @click="showReviewsModal = true"
+                  class="text-slate-400 text-sm font-medium hover:text-[#4A90E2] hover:underline transition-all cursor-pointer"
+                >
+                  ({{ ratingStats.total_ratings.toLocaleString() }} ratings)
+                </button>
+              </div>
+            </div>
+
+            <!-- Metadata Cards -->
+            <div class="grid grid-cols-2 gap-4">
+              <div class="p-4 bg-[#F4F7F9] rounded-2xl border border-slate-100">
+                <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Faculty</p>
+                <p class="text-sm font-bold text-[#2C3E50]">{{ selectedResource.faculty || 'Not Specified' }}</p>
+              </div>
+              <div class="p-4 bg-[#F4F7F9] rounded-2xl border border-slate-100">
+                <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Academic Year</p>
+                <p class="text-sm font-bold text-[#2C3E50]">{{ selectedResource.academic_year || 'Not Specified' }}</p>
+              </div>
+              <div class="p-4 bg-[#F4F7F9] rounded-2xl border border-slate-100">
+                <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Stream</p>
+                <p class="text-sm font-bold text-[#2C3E50]">{{ selectedResource.academic_stream || 'Not Specified' }}</p>
+              </div>
+              <div class="p-4 bg-[#F4F7F9] rounded-2xl border border-slate-100">
+                <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Uploaded On</p>
+                <p class="text-sm font-bold text-[#2C3E50]">{{ new Date(selectedResource.uploaded_at).toLocaleDateString() }}</p>
+              </div>
+            </div>
+
+            <!-- Description / Help -->
+            <div class="p-5 bg-emerald-50 rounded-2xl border border-emerald-100">
+              <div class="flex items-start gap-3">
+                <div class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm font-bold text-emerald-800">Verified Resource</p>
+                  <p class="text-xs text-emerald-700 mt-0.5">This resource has been verified for quality and accuracy by the BrightPath academic committee.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Panel Footer -->
+          <div class="p-6 border-t border-slate-100 shrink-0 bg-white">
+            <a 
+              :href="selectedResource.file" 
+              target="_blank"
+              @click="handleDownload(selectedResource, $event)"
+              class="w-full flex items-center justify-center gap-3 py-4 rounded-2xl bg-[#4A90E2] text-white font-bold hover:bg-[#3A7BC8] transition-all shadow-lg hover:shadow-[#4A90E2]/30 active:scale-[0.98]"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Download Full Resource
+            </a>
+            <p class="text-center text-[10px] text-slate-400 mt-4 font-medium uppercase tracking-widest">
+              Secured by BrightPath Storage
+            </p>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!-- Reviews Modal (Udemy-style) -->
+    <Teleport to="body">
+      <Transition name="overlay">
+        <div v-if="showReviewsModal" class="fixed inset-0 z-[120] pointer-events-none">
+          <!-- Dark Backdrop (Only to the left of preview) -->
+          <div class="absolute inset-0 bg-black/40 backdrop-blur-sm pointer-events-auto" @click="showReviewsModal = false"></div>
+          
+          <!-- Modal Sidebar (Anchored to the left of the preview panel) -->
+          <div 
+            class="absolute top-1/2 -translate-y-1/2 right-[520px] bg-white w-full max-w-4xl max-h-[90vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col pointer-events-auto border border-slate-100"
+            @click.stop
+          >
+            <!-- Close Button -->
+            <button @click="showReviewsModal = false" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center hover:bg-red-50 hover:text-red-500 transition-colors z-10">
+              ✕
+            </button>
+
+            <!-- Modal Header -->
+            <div class="p-8 border-b border-slate-100 shrink-0">
+              <div class="flex items-center gap-3 text-amber-500 mb-1">
+                <span class="text-2xl font-black">★</span>
+                <h2 class="text-2xl font-bold text-[#2C3E50]">{{ ratingStats.average_rating.toFixed(1) }} resource rating • {{ ratingStats.total_ratings.toLocaleString() }} ratings</h2>
+              </div>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="flex-1 overflow-y-auto flex flex-col md:flex-row min-h-0">
+              <!-- Left: Statistics Sidebar -->
+              <div class="w-full md:w-1/3 p-8 bg-slate-50/50 border-r border-slate-100 flex flex-col">
+                <h3 class="font-bold text-slate-700 mb-6 uppercase text-xs tracking-widest">Rating Statistics</h3>
+                <div class="space-y-4">
+                  <div v-for="star in [5, 4, 3, 2, 1]" :key="star" class="flex items-center gap-3 group">
+                    <div class="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
+                      <div 
+                        class="h-full bg-slate-500 group-hover:bg-[#4A90E2] transition-all" 
+                        :style="{ width: `${ratingStats.total_ratings > 0 ? (ratingStats.distribution[star] / ratingStats.total_ratings * 100) : 0}%` }"
+                      ></div>
+                    </div>
+                    <div class="flex items-center gap-1 w-20 justify-end">
+                      <span class="text-amber-500 font-bold text-xs">{{ star }} ★</span>
+                      <span class="text-slate-400 text-[10px] font-bold">{{ ratingStats.total_ratings > 0 ? Math.round(ratingStats.distribution[star] / ratingStats.total_ratings * 100) : 0 }}%</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Add Review Action -->
+                <div class="mt-auto pt-8">
+                  <div v-if="userHasReviewed" class="p-4 bg-emerald-50 rounded-xl border border-emerald-100 text-center">
+                    <p class="text-sm font-bold text-emerald-800">You've shared your thoughts!</p>
+                    <p class="text-xs text-emerald-600 mt-1">Thank you for your valuable feedback on this resource.</p>
+                  </div>
+                  <button 
+                    v-else
+                    @click="showAddReviewForm = !showAddReviewForm"
+                    class="w-full py-3 bg-white border-2 border-slate-200 rounded-xl font-bold text-slate-700 hover:border-[#4A90E2] hover:text-[#4A90E2] transition-all flex items-center justify-center gap-2"
+                  >
+                    {{ showAddReviewForm ? 'Cancel Review' : 'Add Review' }}
+                  </button>
+                </div>
+              </div>
+
+              <!-- Right: Review List & Form -->
+              <div class="flex-1 p-8">
+                <!-- Search Mock -->
+                <div class="relative mb-8">
+                   <input type="text" placeholder="Search reviews" class="w-full pl-10 pr-4 py-3 bg-[#F4F7F9] border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#4A90E2]/20 focus:border-[#4A90E2] outline-none text-sm trans">
+                   <svg class="absolute left-3 top-3.5 text-slate-400" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <circle cx="11" cy="11" r="8" stroke-width="2"/>
+                      <path d="M21 21l-4.35-4.35" stroke-width="2" stroke-linecap="round"/>
+                   </svg>
+                </div>
+
+                <!-- Review Form -->
+                <transition enter-active-class="transition-all duration-300 overflow-hidden" enter-from-class="max-h-0 opacity-0" enter-to-class="max-h-[500px] opacity-100" leave-active-class="transition-all duration-300 overflow-hidden" leave-from-class="max-h-[500px] opacity-100" leave-to-class="max-h-0 opacity-0">
+                  <div v-if="showAddReviewForm" class="mb-8 p-6 bg-[#4A90E2]/5 rounded-2xl border border-[#4A90E2]/10">
+                    <h4 class="font-bold text-[#2C3E50] mb-4">Rate this resource</h4>
+                    <div class="flex gap-2 mb-6">
+                      <button v-for="i in 5" :key="i" @click="newReview.rating = i" class="text-3xl transition-transform active:scale-90" :class="i <= newReview.rating ? 'text-amber-400' : 'text-slate-200'">
+                        ★
+                      </button>
+                    </div>
+                    <textarea 
+                      v-model="newReview.comment" 
+                      placeholder="What did you think of this resource? Your feedback helps other students."
+                      class="w-full p-4 bg-white border border-slate-200 rounded-xl h-32 text-sm outline-none focus:border-[#4A90E2] mb-4"
+                    ></textarea>
+                    <button 
+                      @click="submitReview"
+                      class="px-8 py-3 bg-[#4A90E2] text-white font-bold rounded-xl shadow-lg hover:bg-[#3A7BC8] transition-all"
+                    >
+                      Post Review
+                    </button>
+                  </div>
+                </transition>
+
+                <!-- Reviews Feed -->
+                <div class="space-y-8">
+                  <div v-if="reviewsList.length === 0" class="text-center py-12">
+                     <p class="text-slate-400 font-medium italic">No reviews yet. Be the first to share your thoughts!</p>
+                  </div>
+                  <div v-for="review in reviewsList" :key="review.id" class="flex gap-4 border-b border-slate-100 pb-8 last:border-0">
+                    <!-- User Circle -->
+                    <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center shrink-0 font-bold text-slate-500 uppercase">
+                      {{ review.user_name?.substring(0, 2) || '??' }}
+                    </div>
+                    <div class="flex-1">
+                      <div class="flex justify-between items-start mb-2">
+                        <div>
+                          <p class="font-bold text-[#2C3E50] leading-none mb-1">{{ review.user_name }}</p>
+                          <div class="flex items-center gap-2">
+                            <div class="flex text-amber-400 text-xs">
+                              <span v-for="i in 5" :key="i">{{ i <= review.rating ? '★' : '☆' }}</span>
+                            </div>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{{ new Date(review.created_at).toLocaleDateString() }}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <p class="text-slate-600 text-[0.95rem] leading-relaxed mb-4">
+                        {{ review.comment }}
+                      </p>
+                      <div class="flex items-center gap-4 text-xs font-bold text-slate-400">
+                        <span>Helpful?</span>
+                        <button class="hover:text-emerald-500 flex items-center gap-1">👍 Yes</button>
+                        <button class="hover:text-red-500 flex items-center gap-1">👎 No</button>
+                        <button class="ml-auto hover:text-slate-600 underline">Report</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 

@@ -18,6 +18,50 @@ class ResourceReviewCreateView(generics.CreateAPIView):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
+class ResourceReviewListView(generics.ListAPIView):
+    serializer_class = ResourceReviewSerializer
+    permission_classes = [permissions.AllowAny]
+    authentication_classes = []
+
+    def get_queryset(self):
+        resource_id = self.kwargs.get('pk')
+        return ResourceReview.objects.filter(resource_id=resource_id).order_by('-created_at')
+
+class ResourceRatingStatsView(APIView):
+    permission_classes = [permissions.AllowAny]
+    authentication_classes = []
+
+    def get(self, request, pk):
+        from django.db.models import Avg, Count
+        reviews = ResourceReview.objects.filter(resource_id=pk)
+        stats = reviews.aggregate(
+            average=Avg('rating'),
+            total=Count('id')
+        )
+        
+        # Calculate distribution
+        distribution = {i: 0 for i in range(1, 6)}
+        counts = reviews.values('rating').annotate(count=Count('id'))
+        for item in counts:
+            distribution[item['rating']] = item['count']
+
+        # Check if the current user has already reviewed
+        user_has_reviewed = False
+        try:
+            from rest_framework_simplejwt.authentication import JWTAuthentication
+            user_auth = JWTAuthentication().authenticate(request)
+            if user_auth:
+                user_has_reviewed = ResourceReview.objects.filter(resource_id=pk, user=user_auth[0]).exists()
+        except:
+            pass
+            
+        return Response({
+            'average_rating': stats['average'] or 0,
+            'total_ratings': stats['total'],
+            'distribution': distribution,
+            'user_has_reviewed': user_has_reviewed
+        })
+
 class RecordResourceDownloadView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -66,8 +110,8 @@ class ResourceUploadView(generics.CreateAPIView):
 class ResourceListView(generics.ListAPIView):
     queryset = StudyResource.objects.all()
     serializer_class = StudyResourceSerializer
-    authentication_classes = [JWTAuthentication, SessionAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = []
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
         queryset = StudyResource.objects.all()

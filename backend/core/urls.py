@@ -4,7 +4,8 @@ from .views import (
     KuppiSessionListCreateView, KuppiSessionDetailView,
     KuppiSessionVideoUploadView, KuppiSessionIncrementViews,
     KuppiSessionThumbnailUploadView,
-    RecordResourceDownloadView, ResourceReviewCreateView
+    RecordResourceDownloadView, ResourceReviewCreateView,
+    ResourceReviewListView, ResourceRatingStatsView
 )
 
 urlpatterns = [
@@ -20,5 +21,7 @@ urlpatterns = [
     
     # Resource Reviews & Downloads
     path('resources/<int:pk>/record-download/', RecordResourceDownloadView.as_view(), name='resource-record-download'),
-    path('resources/<int:pk>/reviews/', ResourceReviewCreateView.as_view(), name='resource-review-create'),
+    path('resources/<int:pk>/reviews/', ResourceReviewListView.as_view(), name='resource-review-list'),
+    path('resources/<int:pk>/stats/', ResourceRatingStatsView.as_view(), name='resource-rating-stats'),
+    path('resources/reviews/add/', ResourceReviewCreateView.as_view(), name='resource-review-create'),
 ]

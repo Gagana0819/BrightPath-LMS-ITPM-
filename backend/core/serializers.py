@@ -12,17 +12,28 @@ class ResourceReviewSerializer(serializers.ModelSerializer):
 
 class StudyResourceSerializer(serializers.ModelSerializer):
     uploader_name = serializers.SerializerMethodField()
+    average_rating = serializers.SerializerMethodField()
+    total_ratings = serializers.SerializerMethodField()
     
     class Meta:
         model = StudyResource
         fields = [
             'id', 'user', 'uploader_name', 'title', 'module_code', 'resource_type', 
-            'faculty', 'academic_stream', 'academic_year', 'file', 'uploaded_at'
+            'faculty', 'academic_stream', 'academic_year', 'file', 'uploaded_at',
+            'average_rating', 'total_ratings'
         ]
         read_only_fields = ['user', 'uploaded_at', 'uploader_name']
 
     def get_uploader_name(self, obj):
         return obj.user.full_name if obj.user else 'Unknown User'
+
+    def get_average_rating(self, obj):
+        from django.db.models import Avg
+        avg = obj.reviews.aggregate(Avg('rating'))['rating__avg']
+        return round(avg, 1) if avg else 0.0
+
+    def get_total_ratings(self, obj):
+        return obj.reviews.count()
 
     def validate_file(self, value):
         ext = os.path.splitext(value.name)[1].lower()

@@ -230,11 +230,33 @@ export const useContentStore = defineStore('content', () => {
     }
   }
 
+  const fetchResourceStats = async (resourceId) => {
+    try {
+      const response = await api.get(`core/resources/${resourceId}/stats/`)
+      return response.data
+    } catch (err) {
+      console.error('Failed to fetch resource stats', err)
+      return null
+    }
+  }
+
+  const fetchResourceReviews = async (resourceId) => {
+    try {
+      const response = await api.get(`core/resources/${resourceId}/reviews/`)
+      return response.data
+    } catch (err) {
+      console.error('Failed to fetch resource reviews', err)
+      return []
+    }
+  }
+
   const submitResourceReview = async (resourceId, reviewData) => {
     isLoading.value = true
     error.value = null
     try {
-      const response = await api.post(`core/resources/${resourceId}/reviews/`, reviewData)
+      // Body needs to include the resource ID
+      const data = { ...reviewData, resource: resourceId }
+      const response = await api.post('core/resources/reviews/add/', data)
       return response.data
     } catch (err) {
       error.value = err.response?.data || err.message
@@ -262,7 +284,10 @@ export const useContentStore = defineStore('content', () => {
     uploadSessionThumbnail,
     incrementSessionViews,
     recordResourceDownload,
+    recordResourceDownload,
     submitResourceReview,
+    fetchResourceStats,
+    fetchResourceReviews,
     syncWithGoogleClassroom
   }
 })

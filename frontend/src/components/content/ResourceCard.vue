@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useContentStore } from '@/stores/contentStore'
 
 const props = defineProps({
@@ -9,9 +10,17 @@ const props = defineProps({
   }
 })
 
+const router = useRouter()
+const emit = defineEmits(['preview'])
 const contentStore = useContentStore()
 
-const handleDownload = () => {
+const handleDownload = (e) => {
+  const isLoggedIn = !!localStorage.getItem('access_token')
+  if (!isLoggedIn) {
+    e.preventDefault()
+    router.push('/login')
+    return
+  }
   contentStore.recordResourceDownload(props.doc.id)
 }
 
@@ -39,7 +48,10 @@ const formatDate = (dateString) => {
 </script>
 
 <template>
-  <div class="bg-white rounded-[24px] overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer flex flex-col w-full h-full">
+  <div 
+    class="bg-white rounded-[24px] overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer flex flex-col w-full h-full"
+    @click="emit('preview', doc)"
+  >
     <!-- Thumbnail Cover -->
     <div class="relative h-[180px] overflow-hidden shrink-0">
       <img :src="getResourceImage(doc)" :alt="doc.title" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
@@ -64,13 +76,25 @@ const formatDate = (dateString) => {
 
     <!-- Meta Details -->
     <div class="p-6 flex flex-col flex-1">
-      <div class="flex items-start justify-between mb-3">
+      <div class="flex items-start justify-between mb-1">
         <h3 class="font-bold text-[#1E293B] text-[1.1rem] leading-tight line-clamp-2 group-hover:text-[#5C6BC0] transition-colors">
           {{ doc.title }}
         </h3>
         <span v-if="doc.module_code" class="text-[10px] font-bold text-[#5C6BC0] bg-[#5C6BC0]/10 px-2.5 py-1 rounded-md uppercase shrink-0 ml-3">
           {{ doc.module_code }}
         </span>
+      </div>
+
+      <!-- Rating Badges -->
+      <div v-if="doc.total_ratings > 0" class="flex items-center gap-1.5 mb-3">
+        <div class="flex text-amber-500 text-xs">
+          <span>★</span>
+        </div>
+        <span class="text-[11px] font-bold text-[#1E293B]">{{ (doc.average_rating || 0).toFixed(1) }}</span>
+        <span class="text-[10px] font-medium text-slate-400">({{ doc.total_ratings }})</span>
+      </div>
+      <div v-else class="flex items-center gap-1.5 mb-3 text-[10px] font-medium text-slate-300 italic">
+        No ratings yet
       </div>
 
       <!-- Faculty and Year Badges -->
