@@ -112,8 +112,9 @@ WSGI_APPLICATION = 'brightpath.wsgi.application'
 DATABASES = {
     'default': dj_database_url.config(
         default=os.environ.get('SUPABASE_DB_URL'),
-        conn_max_age=600,
-        ssl_require=True
+        conn_max_age=0,
+        ssl_require=True,
+        conn_health_checks=True
     )
 }
 
