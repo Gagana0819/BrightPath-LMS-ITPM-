@@ -14,6 +14,7 @@ const props = defineProps({
   }
 })
 
+const emit = defineEmits(['edit', 'delete'])
 const contentStore = useContentStore()
 
 onMounted(() => {
@@ -83,7 +84,11 @@ const filteredDocuments = computed(() => {
         :key="doc.id"
         class="w-full md:w-[calc(33.33%-16px)] min-w-[280px]"
       >
-        <ResourceCard :doc="doc" />
+        <ResourceCard 
+          :doc="doc" 
+          @edit="emit('edit', $event)" 
+          @delete="emit('delete', $event)" 
+        />
       </div>
 
     </div>

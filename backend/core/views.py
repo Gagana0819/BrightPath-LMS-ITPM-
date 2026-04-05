@@ -6,9 +6,30 @@ from rest_framework.authentication import SessionAuthentication
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
-from .models import StudyResource, KuppiSession, ResourceReview
-from .serializers import StudyResourceSerializer, KuppiSessionSerializer, ResourceReviewSerializer
+from .models import StudyResource, KuppiSession, ResourceReview, Notification
+from .serializers import StudyResourceSerializer, KuppiSessionSerializer, ResourceReviewSerializer, NotificationSerializer
 from rest_framework.views import APIView
+from rest_framework import viewsets
+from rest_framework.decorators import action
+
+class NotificationViewSet(viewsets.ModelViewSet):
+    serializer_class = NotificationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Notification.objects.filter(user=self.request.user)
+
+    @action(detail=True, methods=['patch'])
+    def mark_read(self, request, pk=None):
+        notification = self.get_object()
+        notification.is_read = True
+        notification.save()
+        return Response({'status': 'notification marked as read'})
+
+    @action(detail=False, methods=['post'])
+    def mark_all_read(self, request):
+        self.get_queryset().update(is_read=True)
+        return Response({'status': 'all notifications marked as read'})
 
 class ResourceReviewCreateView(generics.CreateAPIView):
     queryset = ResourceReview.objects.all()
@@ -126,6 +147,27 @@ class ResourceListView(generics.ListAPIView):
             
         return queryset
 
+class ResourceDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = StudyResource.objects.all()
+    serializer_class = StudyResourceSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Allow reading for all researchers/students but restrict update/delete to owners
+        if self.request.method in ['PUT', 'PATCH', 'DELETE']:
+            return StudyResource.objects.filter(user=self.request.user)
+        return StudyResource.objects.all()
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        if not serializer.is_valid():
+            print("DEBUG: Validation Errors:", serializer.errors)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
+
 class KuppiSessionListCreateView(generics.ListCreateAPIView):
     serializer_class = KuppiSessionSerializer
     authentication_classes = [JWTAuthentication, SessionAuthentication]
@@ -149,7 +191,19 @@ class KuppiSessionListCreateView(generics.ListCreateAPIView):
         return queryset
 
     def perform_create(self, serializer):
-        serializer.save(tutor=self.request.user)
+        session = serializer.save(tutor=self.request.user)
+        
+        # Trigger broadcast notification for new session
+        try:
+            from automation.tasks import broadcast_notification_task
+            broadcast_notification_task.delay(
+                title="New Kuppi Session Scheduled",
+                message=f"Join '{session.title}' by {session.tutor.full_name or session.tutor.username}.",
+                notification_type='SESSION'
+            )
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"Failed to queue session notification: {e}")
 
 class KuppiSessionDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = KuppiSession.objects.all()

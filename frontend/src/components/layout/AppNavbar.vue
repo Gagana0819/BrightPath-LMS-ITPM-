@@ -2,29 +2,35 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 
+import { useNotificationStore } from '@/stores/notificationStore'
+
 const router = useRouter()
 const route = useRoute()
+const notificationStore = useNotificationStore()
+
 const isLoggedIn = ref(false)
 const showNotifications = ref(false)
 
 // User state
-const userName = ref('IT23685116 PRABHATH L A K G')
-const userInitials = ref('IP')
+const userName = ref('STUDENT')
+const userInitials = ref('ST')
 
-// Demo notifications
-const demoNotifications = ref([
-  { id: 4, title: 'Start kuppi session', text: 'Dr. Samitha start new kuppi session.', time: '20min ago', unread: true },
-  { id: 1, title: 'Session Reminder', text: 'Your OOP Kuppi starts in 30 mins.', time: '10m ago', unread: true },
-  { id: 2, title: 'New Resource Uploaded', text: 'Dr. Amanda added new lecture notes.', time: '1h ago', unread: true },
-  { id: 3, title: 'Points Earned!', text: 'You received +50 BP for your upload.', time: '2h ago', unread: false },
-])
+const unreadNotifications = computed(() => notificationStore.unreadNotifications)
+const notificationCount = computed(() => notificationStore.unreadCount)
 
-// Only show unread notifications
-const unreadNotifications = computed(() => {
-  return demoNotifications.value.filter(n => n.unread)
-})
-
-const notificationCount = computed(() => unreadNotifications.value.length)
+const timeAgo = (dateStr) => {
+  const date = new Date(dateStr)
+  const now = new Date()
+  const seconds = Math.floor((now - date) / 1000)
+  
+  if (seconds < 60) return 'Just now'
+  const minutes = Math.floor(seconds / 60)
+  if (minutes < 60) return `${minutes}m ago`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours}h ago`
+  const days = Math.floor(hours / 24)
+  return `${days}d ago`
+}
 
 const updateAuthState = () => {
   const token = localStorage.getItem('access_token')
@@ -52,6 +58,15 @@ const updateAuthState = () => {
 onMounted(() => {
   updateAuthState()
   document.addEventListener('click', closeDropdowns)
+  
+  if (isLoggedIn.value) {
+    notificationStore.startPolling()
+  }
+})
+
+watch(isLoggedIn, (newVal) => {
+  if (newVal) notificationStore.startPolling()
+  else notificationStore.stopPolling()
 })
 
 watch(() => route.path, updateAuthState)
@@ -136,19 +151,32 @@ const navigateToProfile = () => {
                 <div v-if="showNotifications" class="absolute right-0 mt-3 w-80 bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden z-[100]" @click.stop>
                   <div class="p-4 border-b border-slate-100 bg-[#F4F7F9] flex justify-between items-center">
                     <h3 class="font-bold text-[#2C3E50]">Notifications</h3>
-                    <button class="text-xs font-semibold text-[#4A90E2] hover:underline">Mark all read</button>
+                    <button 
+                      @click="notificationStore.markAllRead"
+                      class="text-xs font-semibold text-[#4A90E2] hover:underline"
+                    >
+                      Mark all read
+                    </button>
                   </div>
                   <div class="max-h-[320px] overflow-y-auto">
+                    <div v-if="notificationStore.notifications.length === 0" class="p-8 text-center text-slate-400">
+                      <p class="text-sm">No notifications yet.</p>
+                    </div>
                     <div 
-                      v-for="notif in unreadNotifications" 
+                      v-for="notif in notificationStore.notifications" 
                       :key="notif.id"
-                      class="p-4 border-b border-slate-100 transition-colors cursor-pointer flex gap-3 bg-[#F4F7F9]/60 hover:bg-[#F4F7F9]"
+                      @click="notificationStore.markAsRead(notif.id)"
+                      class="p-4 border-b border-slate-100 transition-colors cursor-pointer flex gap-3"
+                      :class="notif.is_read ? 'bg-white' : 'bg-[#F4F7F9]/60 hover:bg-[#F4F7F9]'"
                     >
-                      <div class="w-2 h-2 rounded-full mt-1.5 shrink-0 transition-colors bg-[#4A90E2]"></div>
+                      <div 
+                        class="w-2 h-2 rounded-full mt-1.5 shrink-0 transition-colors"
+                        :class="notif.is_read ? 'bg-slate-200' : 'bg-[#4A90E2]'"
+                      ></div>
                       <div>
                         <p class="text-sm font-semibold text-[#2C3E50] leading-tight mb-1">{{ notif.title }}</p>
-                        <p class="text-xs text-[#2C3E50]/70 mb-1.5">{{ notif.text }}</p>
-                        <p class="text-[10px] font-medium text-[#4A90E2]">{{ notif.time }}</p>
+                        <p class="text-xs text-[#2C3E50]/70 mb-1.5">{{ notif.message }}</p>
+                        <p class="text-[10px] font-medium text-[#4A90E2]">{{ timeAgo(notif.created_at) }}</p>
                       </div>
                     </div>
                   </div>

@@ -43,6 +43,7 @@ const handleLogin = async () => {
       localStorage.setItem('refresh_token', response.data.refresh)
       localStorage.setItem('user_role', response.data.role)
       localStorage.setItem('full_name', response.data.full_name)
+      localStorage.setItem('user_id', response.data.user_id)
       
       // Redirect to the intended page (e.g. kuppi dashboard) or default dashboard
       const redirectPath = router.currentRoute.value.query.redirect || '/dashboard'

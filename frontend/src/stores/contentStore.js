@@ -64,7 +64,7 @@ export const useContentStore = defineStore('content', () => {
     isLoading.value = true
     error.value = null
     try {
-      const response = await api.put(`core/resources/${id}/`, resourceData)
+      const response = await api.patch(`core/resources/${id}/`, resourceData)
       const index = resources.value.findIndex(r => r.id === id)
       if (index !== -1) {
         resources.value[index] = response.data

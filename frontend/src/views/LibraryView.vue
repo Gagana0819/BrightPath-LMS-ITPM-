@@ -3,12 +3,40 @@ import { ref } from 'vue'
 import DocumentGrid from '../components/library/DocumentGrid.vue'
 import PointsWallet from '../components/library/PointsWallet.vue'
 import UploadResourceForm from '../components/content/UploadResourceForm.vue'
+import EditResourceModal from '../components/content/EditResourceModal.vue'
+import { useContentStore } from '@/stores/contentStore'
 
 const searchQuery = ref('')
+const contentStore = useContentStore()
+
+// Edit Modal State
+const showEditModal = ref(false)
+const selectedResource = ref(null)
+
+const handleEdit = (resource) => {
+  selectedResource.value = resource
+  showEditModal.value = true
+}
+
+const handleDelete = async (id) => {
+  try {
+    await contentStore.deleteResource(id)
+    // No need to manually refetch, store is updated in the action
+  } catch (err) {
+    alert('Failed to delete resource')
+  }
+}
 </script>
 
 <template>
   <div class="flex flex-col lg:flex-row gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <!-- Edit Modal -->
+    <EditResourceModal 
+      :show="showEditModal" 
+      :resource="selectedResource" 
+      @close="showEditModal = false"
+      @updated="contentStore.fetchResources({ userOnly: true })"
+    />
     <!-- Main Library Content -->
     <div class="flex-1 space-y-8">
       
@@ -26,7 +54,12 @@ const searchQuery = ref('')
       </div>
 
       <!-- Member 03: The Library Grid -->
-      <DocumentGrid :searchQuery="searchQuery" :userOnly="true" />
+      <DocumentGrid 
+        :searchQuery="searchQuery" 
+        :userOnly="true" 
+        @edit="handleEdit"
+        @delete="handleDelete"
+      />
     </div>
 
     <!-- Right Sidebar Modules -->

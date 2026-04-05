@@ -1,16 +1,23 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from .views import (
     ResourceUploadView, ResourceListView,
     KuppiSessionListCreateView, KuppiSessionDetailView,
     KuppiSessionVideoUploadView, KuppiSessionIncrementViews,
     KuppiSessionThumbnailUploadView,
     RecordResourceDownloadView, ResourceReviewCreateView,
-    ResourceReviewListView, ResourceRatingStatsView
+    ResourceReviewListView, ResourceRatingStatsView,
+    NotificationViewSet, ResourceDetailView
 )
 
+router = DefaultRouter()
+router.register(r'notifications', NotificationViewSet, basename='notification')
+
 urlpatterns = [
+    path('', include(router.urls)),
     path('resources/upload/', ResourceUploadView.as_view(), name='resource-upload'),
     path('resources/', ResourceListView.as_view(), name='resource-list'),
+    path('resources/<int:pk>/', ResourceDetailView.as_view(), name='resource-detail'),
     
     # Kuppi Sessions
     path('kuppi/sessions/', KuppiSessionListCreateView.as_view(), name='kuppi-session-list-create'),

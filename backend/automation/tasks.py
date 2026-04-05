@@ -2,9 +2,11 @@ from celery import shared_task
 from django.core.mail import EmailMessage
 from django.conf import settings
 from automation.services.recommendation import RecommendationEngine
-from core.models import User
+from core.models import Notification
+from django.contrib.auth import get_user_model
 import logging
 
+User = get_user_model()
 logger = logging.getLogger(__name__)
 
 @shared_task
@@ -23,10 +25,41 @@ def send_resource_notification_email_task(emails, resource_title):
         )
         email.send(fail_silently=False)
         
-        logger.info(f"Successfully sent notification emails to {len(emails)} users for resource '{resource_title}'")
+        # Also create in-app notifications
+        active_users = User.objects.filter(is_active=True)
+        notifications = [
+            Notification(
+                user=user,
+                title="New Resource Uploaded",
+                message=f"'{resource_title}' is now available in the Digital Library.",
+                notification_type='RESOURCE'
+            ) for user in active_users
+        ]
+        Notification.objects.bulk_create(notifications)
+        
+        logger.info(f"Successfully sent emails & notifications to {len(emails)} users for resource '{resource_title}'")
         return True
     except Exception as e:
         logger.error(f"Failed to send email notification: {e}")
+        return False
+
+@shared_task
+def broadcast_notification_task(title, message, notification_type='SYSTEM'):
+    """Broadcasts a notification to all active users."""
+    try:
+        active_users = User.objects.filter(is_active=True)
+        notifications = [
+            Notification(
+                user=user,
+                title=title,
+                message=message,
+                notification_type=notification_type
+            ) for user in active_users
+        ]
+        Notification.objects.bulk_create(notifications)
+        return True
+    except Exception as e:
+        logger.error(f"Broadcast notification failed: {e}")
         return False
 
 @shared_task
