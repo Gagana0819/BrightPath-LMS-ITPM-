@@ -1,5 +1,6 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { useWalletStore } from '@/stores/walletStore'
 import DocumentGrid from '../components/library/DocumentGrid.vue'
 import PointsWallet from '../components/library/PointsWallet.vue'
 import UploadResourceForm from '../components/content/UploadResourceForm.vue'
@@ -8,6 +9,11 @@ import { useContentStore } from '@/stores/contentStore'
 
 const searchQuery = ref('')
 const contentStore = useContentStore()
+const walletStore = useWalletStore()
+
+onMounted(() => {
+  walletStore.fetchWalletData()
+})
 
 // Edit Modal State
 const showEditModal = ref(false)
@@ -57,6 +63,7 @@ const handleDelete = async (id) => {
       <DocumentGrid 
         :searchQuery="searchQuery" 
         :userOnly="true" 
+        :allow-actions="true"
         @edit="handleEdit"
         @delete="handleDelete"
       />

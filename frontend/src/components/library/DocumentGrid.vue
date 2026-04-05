@@ -11,6 +11,10 @@ const props = defineProps({
   userOnly: {
     type: Boolean,
     default: false
+  },
+  allowActions: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -86,6 +90,7 @@ const filteredDocuments = computed(() => {
       >
         <ResourceCard 
           :doc="doc" 
+          :allow-actions="allowActions"
           @edit="emit('edit', $event)" 
           @delete="emit('delete', $event)" 
         />

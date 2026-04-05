@@ -1,5 +1,25 @@
 <script setup>
+import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
+import { useWalletStore } from '@/stores/walletStore'
+
+const walletStore = useWalletStore()
+
+const tierProgress = computed(() => {
+  const points = walletStore.lifetimePoints
+  if (points >= 7000) return 100
+  if (points >= 3000) return ((points - 3000) / 4000) * 100
+  if (points >= 1000) return ((points - 1000) / 2000) * 100
+  return (points / 1000) * 100
+})
+
+const pointsToNext = computed(() => {
+  const points = walletStore.lifetimePoints
+  if (points >= 7000) return 0
+  if (points >= 3000) return 7000 - points
+  if (points >= 1000) return 3000 - points
+  return 1000 - points
+})
 </script>
 
 <template>
@@ -21,7 +41,7 @@ import { RouterLink } from 'vue-router'
 
       <div class="flex items-end gap-3 mb-6">
         <span class="text-5xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400">
-          3,450
+          {{ (walletStore.balance || 0).toLocaleString() }}
         </span>
         <span class="text-hero-highlight font-bold pb-1.5 flex items-center gap-1">
           <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
@@ -36,14 +56,14 @@ import { RouterLink } from 'vue-router'
         <div class="flex justify-between items-center mb-2">
           <span class="text-sm font-medium text-slate-300">Current Tier</span>
           <span class="text-sm font-bold text-[#FFB800] uppercase tracking-wider flex items-center gap-1">
-            Gold Member
+            {{ walletStore.tier }} Member
           </span>
         </div>
         
         <div class="w-full bg-slate-800 rounded-full h-1.5 mb-2 overflow-hidden">
-          <div class="bg-gradient-to-r from-hero-highlight to-[#FFB800] h-1.5 rounded-full" style="width: 85%"></div>
+          <div class="bg-gradient-to-r from-hero-highlight to-[#FFB800] h-1.5 rounded-full" :style="{ width: tierProgress + '%' }"></div>
         </div>
-        <p class="text-xs text-slate-400 text-right">150 BP to Platinum</p>
+        <p class="text-xs text-slate-400 text-right">{{ pointsToNext }} BP to Next Rank</p>
       </div>
 
       <RouterLink 

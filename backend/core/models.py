@@ -49,8 +49,17 @@ class StudyResource(models.Model):
     academic_stream = models.CharField(max_length=255, blank=True, null=True)
     academic_year = models.CharField(max_length=20, blank=True, null=True)
     
+    
     file = models.FileField(upload_to=resource_upload_path)
     uploaded_at = models.DateTimeField(auto_now_add=True)
+    
+    # Quality & Ranking Stats
+    page_count = models.PositiveIntegerField(default=0)
+    word_count = models.PositiveIntegerField(default=0)
+    quality_score = models.FloatField(default=0.0) # 0-100
+    download_count = models.PositiveIntegerField(default=0)
+    average_rating = models.FloatField(default=0.0) # 0-5
+    total_ratings = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return f"{self.title} ({self.module_code})"
@@ -118,3 +127,31 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"{self.user.email} - {self.title}"
+
+class PointsWallet(models.Model):
+    TIERS = [
+        ('BRONZE', 'Bronze'),
+        ('SILVER', 'Silver'),
+        ('GOLD', 'Gold'),
+        ('PLATINUM', 'Platinum'),
+    ]
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='points_wallet')
+    balance = models.IntegerField(default=0)
+    lifetime_points = models.IntegerField(default=0)
+    tier = models.CharField(max_length=10, choices=TIERS, default='BRONZE')
+
+    def __str__(self):
+        return f"Wallet of {self.user.email} - {self.balance} BP"
+
+class PointTransaction(models.Model):
+    wallet = models.ForeignKey(PointsWallet, on_delete=models.CASCADE, related_name='transactions')
+    points = models.IntegerField()
+    action_type = models.CharField(max_length=100) # e.g. "Resource Upload", "Session Bonus"
+    description = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return f"{self.action_type} - {self.points} BP"

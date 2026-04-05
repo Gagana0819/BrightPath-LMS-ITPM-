@@ -7,6 +7,10 @@ const props = defineProps({
   doc: {
     type: Object,
     required: true
+  },
+  allowActions: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -80,8 +84,8 @@ const formatDate = (dateString) => {
         </span>
       </div>
       
-      <!-- Top-Right Actions (Owner Only) -->
-      <div v-if="isOwner" class="absolute top-4 left-4 flex gap-2 z-10">
+      <!-- Top-Right Actions (Owner Only + Allowed Context) -->
+      <div v-if="isOwner && allowActions" class="absolute top-4 left-4 flex gap-2 z-10">
         <button @click.stop="handleEdit" class="w-9 h-9 bg-white/90 backdrop-blur-md rounded-xl flex items-center justify-center text-slate-700 hover:text-hero-highlight transition-all shadow-md border border-white/30">
           <svg class="w-4 h-4 text-hero-highlight" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />

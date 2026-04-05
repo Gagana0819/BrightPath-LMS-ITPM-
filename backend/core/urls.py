@@ -7,11 +7,12 @@ from .views import (
     KuppiSessionThumbnailUploadView,
     RecordResourceDownloadView, ResourceReviewCreateView,
     ResourceReviewListView, ResourceRatingStatsView,
-    NotificationViewSet, ResourceDetailView
+    NotificationViewSet, ResourceDetailView, WalletViewSet
 )
 
 router = DefaultRouter()
 router.register(r'notifications', NotificationViewSet, basename='notification')
+router.register(r'wallet', WalletViewSet, basename='wallet')
 
 urlpatterns = [
     path('', include(router.urls)),

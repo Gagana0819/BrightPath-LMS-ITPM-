@@ -1,17 +1,29 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, computed } from 'vue'
+import { useWalletStore } from '@/stores/walletStore'
 
-// Points wallet data
-const walletData = ref({
-  totalPoints: 3450,
-  tier: 'Gold',
-  tierProgress: 85,
-  pointsToNext: 150,
-  recentActivity: [
-    { action: 'Downloaded', doc: 'ITPM Midterm Paper', points: -20, time: '2h ago' },
-    { action: 'Uploaded', doc: 'OOP Notes', points: +50, time: '1d ago' },
-    { action: 'Review Bonus', doc: 'SQL Joins Summary', points: +15, time: '2d ago' },
-  ]
+const walletStore = useWalletStore()
+
+onMounted(() => {
+  walletStore.fetchWalletData()
+  walletStore.fetchLeaderboard()
+  walletStore.fetchGlobalStats()
+})
+
+const tierProgress = computed(() => {
+  const points = walletStore.lifetimePoints
+  if (points >= 7000) return 100
+  if (points >= 3000) return ((points - 3000) / 4000) * 100
+  if (points >= 1000) return ((points - 1000) / 2000) * 100
+  return (points / 1000) * 100
+})
+
+const pointsToNext = computed(() => {
+  const points = walletStore.lifetimePoints
+  if (points >= 7000) return 0
+  if (points >= 3000) return 7000 - points
+  if (points >= 1000) return 3000 - points
+  return 1000 - points
 })
 
 const isLeaderboardOpen = ref(false)
@@ -30,16 +42,6 @@ const benefitsData = ref([
   { tier: 'Silver', points: '1,001 - 3,000', rewards: ['Priority Support', '15% Discount on Premium Resources', 'Early Access to New Features'], color: 'text-slate-500 bg-slate-100' },
   { tier: 'Gold', points: '3,001 - 7,000', rewards: ['Personal Success Manager', '30% Discount on Premium Resources', 'Free Access to Exclusive Webinars', 'Community Badge'], color: 'text-amber-500 bg-amber-50' },
   { tier: 'Platinum', points: '7,001+', rewards: ['VIP Support', '50% Discount on Premium Resources', 'All Webinars & Courses Free', 'Beta Tester Status', 'Custom Profile Theme'], color: 'text-[#4A90E2] bg-blue-50' },
-])
-
-const leaderboardData = ref([
-  { rank: 1, name: 'Kasun Silva', uploads: 42, points: '8.2k', tier: 'Gold', avatar: 'KS' },
-  { rank: 2, name: 'Sanduni M.', uploads: 38, points: '7.6k', tier: 'Gold', avatar: 'SM' },
-  { rank: 3, name: 'Nuwan P.', uploads: 29, points: '5.4k', tier: 'Silver', avatar: 'NP' },
-  { rank: 4, name: 'Dr. Amanda', uploads: 25, points: '4.8k', tier: 'Silver', avatar: 'DA' },
-  { rank: 5, name: 'Prof. Wijesekera', uploads: 22, points: '4.1k', tier: 'Silver', avatar: 'PW' },
-  { rank: 6, name: 'Lihan A.', uploads: 18, points: '3.4k', tier: 'Bronze', avatar: 'LA' },
-  { rank: 7, name: 'Dilshan F.', uploads: 15, points: '2.9k', tier: 'Bronze', avatar: 'DF' },
 ])
 </script>
 
@@ -74,7 +76,7 @@ const leaderboardData = ref([
 
               <div class="flex items-end gap-4 mb-8">
                 <span class="text-7xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-slate-400">
-                  {{ walletData.totalPoints.toLocaleString() }}
+                  {{ (walletStore.balance || 0).toLocaleString() }}
                 </span>
                 <span class="text-[#4A90E2] text-2xl font-black pb-3 flex items-center gap-1">
                   <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
@@ -90,7 +92,7 @@ const leaderboardData = ref([
                   <div class="flex flex-col">
                     <span class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Current Tier</span>
                     <span class="text-lg font-black text-[#FFB800] uppercase tracking-wider flex items-center gap-2">
-                      🏆 {{ walletData.tier }} Member
+                      🏆 {{ walletStore.tier }} Member
                     </span>
                   </div>
                   <div class="text-right">
@@ -100,14 +102,14 @@ const leaderboardData = ref([
                 </div>
                 <!-- Premium Progress Bar -->
                 <div class="w-full bg-slate-900/50 rounded-full h-4 mb-3 overflow-hidden p-[3px] border border-white/10">
-                  <div class="bg-gradient-to-r from-[#4A90E2] via-[#4A90E2] to-[#FFB800] h-full rounded-full transition-all duration-1000 shadow-[0_0_15px_rgba(74,144,226,0.5)] relative overflow-hidden" :style="{ width: walletData.tierProgress + '%' }">
+                  <div class="bg-gradient-to-r from-[#4A90E2] via-[#4A90E2] to-[#FFB800] h-full rounded-full transition-all duration-1000 shadow-[0_0_15px_rgba(74,144,226,0.5)] relative overflow-hidden" :style="{ width: tierProgress + '%' }">
                     <!-- Shimmer effect -->
                     <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-[45deg] -translate-x-full animate-shimmer"></div>
                   </div>
                 </div>
                 <div class="flex justify-between items-center">
                   <p class="text-xs font-medium text-slate-400 italic">"Keep contributing to earn more rewards"</p>
-                  <p class="text-xs font-bold text-slate-300">{{ walletData.pointsToNext }} BP remaining</p>
+                  <p class="text-xs font-bold text-slate-300">{{ pointsToNext }} BP remaining</p>
                 </div>
               </div>
 
@@ -143,16 +145,24 @@ const leaderboardData = ref([
                 </svg>
                 Recent Activity
               </h3>
-              <button class="text-xs font-bold text-[#4A90E2] hover:underline uppercase tracking-wider">Download Statement</button>
+              <button 
+                @click="walletStore.downloadStatement"
+                class="text-xs font-bold text-[#4A90E2] hover:underline uppercase tracking-wider"
+              >
+                Download Statement
+              </button>
             </div>
             
             <div class="space-y-2 text-slate-600">
+              <div v-if="walletStore.recentActivity.length === 0" class="py-12 text-center text-slate-400 font-bold uppercase tracking-widest text-xs italic">
+                No recent activity yet
+              </div>
               <div
-                v-for="(activity, i) in walletData.recentActivity"
+                v-for="(activity, i) in walletStore.recentActivity"
                 :key="i"
                 class="flex items-center justify-between py-4 border border-transparent hover:border-slate-100 hover:bg-slate-50/80 px-4 rounded-2xl transition-all duration-300 cursor-default group hover:scale-[1.01] hover:shadow-sm"
               >
-                <div class="flex items-center gap-4">
+                <div class="flex items-center gap-4 text-left">
                   <div class="w-12 h-12 rounded-2xl bg-[#F4F7F9] flex items-center justify-center shrink-0 group-hover:bg-white group-hover:shadow-sm border border-transparent group-hover:border-slate-100 transition-all">
                     <svg v-if="activity.points > 0" class="w-6 h-6 text-[#A8E6CF]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" />
@@ -162,15 +172,15 @@ const leaderboardData = ref([
                     </svg>
                   </div>
                   <div>
-                    <p class="font-bold text-[#2C3E50] text-[0.95rem] group-hover:text-[#4A90E2] transition-colors">{{ activity.action }}</p>
-                    <p class="text-xs text-slate-400 font-medium uppercase tracking-tighter">{{ activity.doc }} · {{ activity.time }}</p>
+                    <p class="font-bold text-[#2C3E50] text-[0.95rem] group-hover:text-[#4A90E2] transition-colors line-clamp-1">{{ activity.action }}</p>
+                    <p class="text-xs text-slate-400 font-medium uppercase tracking-tighter">{{ activity.description }}</p>
                   </div>
                 </div>
-                <div class="flex flex-col items-end">
+                <div class="flex flex-col items-end shrink-0">
                   <span class="text-base font-black tabular-nums" :class="activity.points > 0 ? 'text-[#2e7d32]' : 'text-slate-500'">
                     {{ activity.points > 0 ? '+' : '' }}{{ activity.points }} BP
                   </span>
-                  <span class="text-[10px] text-slate-400 font-bold uppercase">Points Status</span>
+                  <span class="text-[10px] text-slate-400 font-bold uppercase">{{ new Date(activity.timestamp).toLocaleDateString() }}</span>
                 </div>
               </div>
             </div>
@@ -185,19 +195,19 @@ const leaderboardData = ref([
             <h3 class="font-black text-[#2C3E50] mb-6 uppercase tracking-[0.2em] text-[10px] opacity-60">Global Impact</h3>
             <div class="grid grid-cols-2 gap-4">
               <div class="bg-[#F4F7F9] rounded-2xl p-5 border border-slate-100 hover:border-[#4A90E2]/30 transition-all hover:bg-white hover:shadow-xl hover:-translate-y-1 duration-300 group/item">
-                <span class="block text-3xl font-black text-[#4A90E2] mb-1 group-hover/item:scale-110 transition-transform origin-left">5k+</span>
+                <span class="block text-3xl font-black text-[#4A90E2] mb-1 group-hover/item:scale-110 transition-transform origin-left">{{ walletStore.globalStats.total_resources }}</span>
                 <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Resources</span>
               </div>
               <div class="bg-[#F4F7F9] rounded-2xl p-5 border border-slate-100 hover:border-[#4A90E2]/30 transition-all hover:bg-white hover:shadow-xl hover:-translate-y-1 duration-300 group/item">
-                <span class="block text-3xl font-black text-[#2C3E50] mb-1 group-hover/item:scale-110 transition-transform origin-left">1.2k</span>
+                <span class="block text-3xl font-black text-[#2C3E50] mb-1 group-hover/item:scale-110 transition-transform origin-left">{{ walletStore.globalStats.total_students }}</span>
                 <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Students</span>
               </div>
               <div class="bg-[#F4F7F9] rounded-2xl p-5 border border-slate-100 hover:border-[#4A90E2]/30 transition-all hover:bg-white hover:shadow-xl hover:-translate-y-1 duration-300 group/item">
-                <span class="block text-3xl font-black text-[#FFB800] mb-1 group-hover/item:scale-110 transition-transform origin-left">892</span>
+                <span class="block text-3xl font-black text-[#FFB800] mb-1 group-hover/item:scale-110 transition-transform origin-left">{{ walletStore.globalStats.gold_ranked }}</span>
                 <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Gold Ranked</span>
               </div>
               <div class="bg-[#A8E6CF]/10 rounded-2xl p-5 border border-[#A8E6CF]/20 hover:border-[#4A90E2]/30 transition-all hover:bg-white hover:shadow-xl hover:-translate-y-1 duration-300 group/item text-[#2C3E50]">
-                <span class="block text-3xl font-black mb-1 group-hover/item:scale-110 transition-transform origin-left text-[#2e7d32]">50+</span>
+                <span class="block text-3xl font-black mb-1 group-hover/item:scale-110 transition-transform origin-left text-[#2e7d32]">{{ walletStore.globalStats.total_lecturers }}</span>
                 <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Lecturers</span>
               </div>
             </div>
@@ -208,41 +218,26 @@ const leaderboardData = ref([
              <div class="absolute -left-12 -bottom-12 w-32 h-32 bg-[#FFB800]/5 rounded-full scale-0 group-hover/contri:scale-100 transition-transform duration-500"></div>
             <h3 class="font-black text-[#2C3E50] mb-8 uppercase tracking-[0.2em] text-[10px] opacity-60">Community Stars</h3>
             <div class="space-y-4 relative z-10">
-              <div class="flex items-center gap-4 group cursor-default p-3 -m-3 rounded-2xl hover:bg-slate-50 transition-all duration-300 hover:translate-x-1">
-                <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-[#FFB800] to-amber-200 flex items-center justify-center text-white font-black text-lg shadow-lg shadow-amber-200/50 group-hover:scale-110 transition-transform">1</div>
-                <div class="flex-1">
-                  <p class="font-bold text-[#2C3E50] group-hover:text-[#4A90E2] transition-colors">Kasun Silva</p>
+              <div 
+                v-for="user in walletStore.leaderboard.slice(0, 3)"
+                :key="user.rank"
+                class="flex items-center gap-4 group cursor-default p-3 -m-3 rounded-2xl hover:bg-slate-50 transition-all duration-300 hover:translate-x-1"
+              >
+                <div 
+                  class="w-12 h-12 rounded-full flex items-center justify-center font-black text-lg shadow-lg group-hover:scale-110 transition-transform"
+                  :class="user.rank === 1 ? 'bg-gradient-to-tr from-[#FFB800] to-amber-200 text-white shadow-amber-200/50' : 'bg-slate-100 text-slate-400'"
+                >
+                  {{ user.rank }}
+                </div>
+                <div class="flex-1 text-left">
+                  <p class="font-bold text-[#2C3E50] group-hover:text-[#4A90E2] transition-colors">{{ user.name }}</p>
                   <div class="flex items-center gap-2">
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">42 uploads</span>
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{{ user.uploads }} uploads</span>
                     <span class="w-1 h-1 rounded-full bg-slate-200"></span>
-                    <span class="text-[10px] font-black text-[#FFB800] uppercase">🏆 Gold</span>
+                    <span class="text-[10px] font-black uppercase" :class="user.tier === 'GOLD' ? 'text-[#FFB800]' : 'text-slate-500'">🏆 {{ user.tier }}</span>
                   </div>
                 </div>
-                <span class="font-black text-[#4A90E2] group-hover:scale-110 transition-transform">8.2k</span>
-              </div>
-              <div class="flex items-center gap-4 group cursor-default p-3 -m-3 rounded-2xl hover:bg-slate-50 transition-all duration-300 hover:translate-x-1">
-                <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 font-black text-lg group-hover:bg-[#4A90E2]/10 group-hover:text-[#4A90E2] transition-all">2</div>
-                <div class="flex-1">
-                  <p class="font-bold text-[#2C3E50] group-hover:text-[#4A90E2] transition-colors">Sanduni M.</p>
-                  <div class="flex items-center gap-2">
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">38 uploads</span>
-                    <span class="w-1 h-1 rounded-full bg-slate-200"></span>
-                    <span class="text-[10px] font-black text-[#FFB800] uppercase">🏆 Gold</span>
-                  </div>
-                </div>
-                <span class="font-black text-slate-400">7.6k</span>
-              </div>
-              <div class="flex items-center gap-4 group cursor-default p-3 -m-3 rounded-2xl hover:bg-slate-50 transition-all duration-300 hover:translate-x-1">
-                <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 font-black text-lg group-hover:bg-[#4A90E2]/10 group-hover:text-[#4A90E2] transition-all">3</div>
-                <div class="flex-1">
-                  <p class="font-bold text-[#2C3E50] group-hover:text-[#4A90E2] transition-colors">Nuwan P.</p>
-                  <div class="flex items-center gap-2">
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">29 uploads</span>
-                    <span class="w-1 h-1 rounded-full bg-slate-200"></span>
-                    <span class="text-[10px] font-black text-slate-500 uppercase">🥈 Silver</span>
-                  </div>
-                </div>
-                <span class="font-black text-slate-400">5.4k</span>
+                <span class="font-black text-[#4A90E2] group-hover:scale-110 transition-transform">{{ user.points }}</span>
               </div>
             </div>
             <button 
@@ -280,9 +275,9 @@ const leaderboardData = ref([
           <!-- List -->
           <div class="flex-1 overflow-y-auto p-8 pt-0 space-y-4 custom-scrollbar">
             <div 
-              v-for="user in leaderboardData" 
+              v-for="user in walletStore.leaderboard" 
               :key="user.rank"
-              class="flex items-center gap-6 p-5 rounded-3xl hover:bg-slate-50 transition-all border border-transparent hover:border-slate-100 group"
+              class="flex items-center gap-6 p-5 rounded-3xl hover:bg-slate-50 transition-all border border-transparent hover:border-slate-100 group text-left"
               :class="user.rank <= 3 ? 'bg-slate-50/50' : ''"
             >
               <div 
@@ -297,7 +292,7 @@ const leaderboardData = ref([
                 {{ user.rank }}
               </div>
               
-              <div class="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center font-bold text-slate-500 shrink-0">
+              <div class="w-12 h-12 rounded-2xl bg-[#4A90E2] flex items-center justify-center font-bold text-white shrink-0 shadow-lg">
                 {{ user.avatar }}
               </div>
 
@@ -361,7 +356,7 @@ const leaderboardData = ref([
                   </span>
                   <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">{{ tier.points }} Points</span>
                 </div>
-                <div v-if="tier.tier === walletData.tier" class="flex items-center gap-1.5 text-[#4A90E2] font-black text-[10px] uppercase tracking-widest bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
+                <div v-if="tier.tier.toUpperCase() === walletStore.tier" class="flex items-center gap-1.5 text-[#4A90E2] font-black text-[10px] uppercase tracking-widest bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
                   <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                   Current Tier
                 </div>
@@ -403,7 +398,7 @@ const leaderboardData = ref([
               <h2 class="text-2xl font-black text-[#2C3E50] uppercase tracking-wider mb-2">Redeem Your Points</h2>
               <div class="flex items-center gap-2">
                 <span class="text-slate-400 text-sm font-medium">Available Balance:</span>
-                <span class="text-[#4A90E2] font-black text-sm">{{ walletData.totalPoints.toLocaleString() }} BP</span>
+                <span class="text-[#4A90E2] font-black text-sm">{{ walletStore.balance.toLocaleString() }} BP</span>
               </div>
             </div>
             <button @click="isRedeemOpen = false" class="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-red-500 transition-all">
@@ -431,9 +426,9 @@ const leaderboardData = ref([
 
               <div class="text-right shrink-0">
                 <button 
-                  :disabled="walletData.totalPoints < item.cost"
+                  :disabled="walletStore.balance < item.cost"
                   class="px-6 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest transition-all"
-                  :class="walletData.totalPoints >= item.cost 
+                  :class="walletStore.balance >= item.cost 
                     ? 'bg-[#4A90E2] text-white hover:bg-[#3A7BC8] shadow-md' 
                     : 'bg-slate-100 text-slate-400 cursor-not-allowed'"
                 >
