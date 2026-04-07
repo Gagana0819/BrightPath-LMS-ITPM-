@@ -56,10 +56,18 @@ const getFileTypeLabel = (resourceType) => {
 }
 
 const getResourceImage = (doc) => {
-  if (doc.resource_type === 'PAST_PAPER') return 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'
-  if (doc.resource_type === 'LECTURE_NOTES') return 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'
-  if (doc.resource_type === 'SHORT_NOTE') return 'https://images.unsplash.com/photo-1517842645767-c639042777db?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'
-  return 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'
+  const text = (doc.title + ' ' + (doc.module_code || '')).toLowerCase();
+  
+  if (text.includes('database') || text.includes('sql') || text.includes('dbms') || text.includes('it3020')) return '/database_thumbnail.png';
+  if (text.includes('machine learning') || text.includes('ml') || text.includes('ai')) return '/ml_thumbnail.png';
+  if (text.includes('itpm') || text.includes('project management') || text.includes('it3030')) return '/itpm_thumbnail.png';
+  if (text.includes('oop') || text.includes('java') || text.includes('object oriented')) return '/oop_thumbnail.png';
+  if (text.includes('cloud') || text.includes('aws') || text.includes('azure')) return '/cloud_thumbnail.png';
+  if (text.includes('data structure') || text.includes('algorithm') || text.includes('it3040')) return '/data_structures_thumbnail.png';
+  
+  if (doc.resource_type === 'PAST_PAPER') return '/itpm_thumbnail.png';
+  if (doc.resource_type === 'SHORT_NOTE') return '/oop_thumbnail.png';
+  return '/database-ai-thumbnail.png'; // Distinctive fallback
 }
 
 const formatDate = (dateString) => {

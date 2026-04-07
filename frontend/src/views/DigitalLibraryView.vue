@@ -15,7 +15,10 @@ const router = useRouter()
 const route = useRoute()
 
 onMounted(async () => {
-  await contentStore.fetchResources({ userOnly: false })
+  await Promise.all([
+    contentStore.fetchResources({ userOnly: false }),
+    contentStore.fetchRecommendations()
+  ])
   checkDeepLink()
 })
 
@@ -45,14 +48,7 @@ const checkDeepLink = () => {
   }
 }
 
-const recommendedResources = ref([
-  { id: 'r1', title: 'ITPM 2025 Final Exam Past Paper with Model Answers', type: 'Past Paper', module: 'IT Project Management', uploader: 'Kasun Silva', tag: 'Most Downloaded', image: '/itpm_thumbnail.png' },
-  { id: 'r2', title: 'OOP Design Patterns — Complete Short Notes', type: 'Short Note', module: 'Object-Oriented Programming', uploader: 'Dr. Amanda', tag: 'Top Rated', image: '/oop_thumbnail.png' },
-  { id: 'r3', title: 'Database Normalization Cheat Sheet (1NF–BCNF)', type: 'Short Note', module: 'Database Systems', uploader: 'Sanduni M.', tag: 'Trending', image: '/database_thumbnail.png' },
-  { id: 'r4', title: 'Data Structures — 2024 Midterm Past Paper', type: 'Past Paper', module: 'Data Structures', uploader: 'Nuwan P.', tag: 'New', image: '/data_structures_thumbnail.png' },
-  { id: 'r5', title: 'Machine Learning Key Concepts Summary', type: 'Short Note', module: 'Machine Learning', uploader: 'Dr. Fernando', tag: 'AI Trending', image: '/ml_thumbnail.png' },
-  { id: 'r6', title: 'Cloud Computing — AWS Services Past Paper 2024', type: 'Past Paper', module: 'Cloud Computing', uploader: 'Prof. Kumara', tag: 'Popular', image: '/cloud_thumbnail.png' },
-])
+const recommendedResources = computed(() => contentStore.recommendedResources)
 
 const updateRecScroll = () => {
   const el = recScrollRef.value
@@ -66,6 +62,20 @@ const scrollRec = (dir) => {
   if (!el) return
   el.scrollBy({ left: dir === 'left' ? -320 : 320, behavior: 'smooth' })
   setTimeout(updateRecScroll, 350)
+}
+
+const getResourceImage = (res) => {
+  const text = (res.title + ' ' + (res.module_code || '')).toLowerCase();
+  
+  if (text.includes('database') || text.includes('sql') || text.includes('dbms') || text.includes('it3020')) return '/database_thumbnail.png';
+  if (text.includes('machine learning') || text.includes('ml') || text.includes('ai')) return '/ml_thumbnail.png';
+  if (text.includes('itpm') || text.includes('project management') || text.includes('it3030')) return '/itpm_thumbnail.png';
+  if (text.includes('oop') || text.includes('java') || text.includes('object oriented')) return '/oop_thumbnail.png';
+  if (text.includes('cloud') || text.includes('aws') || text.includes('azure')) return '/cloud_thumbnail.png';
+  if (text.includes('data structure') || text.includes('algorithm') || text.includes('ds ') || text.includes('it3040')) return '/data_structures_thumbnail.png';
+  
+  if (res.resource_type === 'PAST_PAPER') return '/itpm_thumbnail.png';
+  return '/database-ai-thumbnail.png'; // Diverse fallback
 }
 
 // Search & filter state
@@ -247,13 +257,14 @@ const filteredDocuments = computed(() => {
             <div
               v-for="rec in recommendedResources"
               :key="rec.id"
+              @click="openPreview(rec)"
               class="min-w-[280px] max-w-[280px] bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer group overflow-hidden flex flex-col shrink-0"
             >
               <!-- Thumbnail -->
               <div class="relative h-[150px] overflow-hidden">
-                <img :src="rec.image" class="absolute inset-0 w-full h-full object-cover opacity-90" />
+                <img :src="getResourceImage(rec)" class="absolute inset-0 w-full h-full object-cover opacity-90 transition-transform duration-500 group-hover:scale-110" />
                 <div class="absolute inset-0 flex items-center justify-center">
-                  <div v-if="rec.type === 'Past Paper'" class="w-16 h-20 bg-white/20 backdrop-blur-sm rounded-lg border border-white/30 flex flex-col items-center justify-center gap-1">
+                  <div v-if="rec.resource_type === 'PAST_PAPER'" class="w-16 h-20 bg-white/20 backdrop-blur-sm rounded-lg border border-white/30 flex flex-col items-center justify-center gap-1">
                     <svg class="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
                     <span class="text-[9px] text-white font-bold uppercase">PDF</span>
                   </div>
@@ -263,17 +274,23 @@ const filteredDocuments = computed(() => {
                   </div>
                 </div>
                 <!-- Tag badge -->
-                <span class="absolute top-3 left-3 bg-black/30 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-lg border border-white/10">{{ rec.tag }}</span>
+                <span class="absolute top-3 left-3 bg-black/40 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-lg border border-white/10">
+                   {{ rec.average_rating > 4 ? 'Top Rated' : (rec.download_count > 10 ? 'Trending' : 'New Content') }}
+                </span>
                 <!-- Type badge -->
-                <span class="absolute bottom-3 right-3 text-white text-[10px] font-extrabold px-2.5 py-1 rounded-lg" :class="rec.type === 'Past Paper' ? 'bg-red-500/80 backdrop-blur-sm' : 'bg-[#4A90E2]/80 backdrop-blur-sm'">{{ rec.type }}</span>
+                <span class="absolute bottom-3 right-3 text-white text-[10px] font-extrabold px-2.5 py-1 rounded-lg" :class="rec.resource_type === 'PAST_PAPER' ? 'bg-red-500/80 backdrop-blur-sm' : 'bg-[#4A90E2]/80 backdrop-blur-sm'">
+                  {{ rec.resource_type.replace('_', ' ') }}
+                </span>
               </div>
               <!-- Content -->
               <div class="p-4 flex flex-col flex-1">
-                <p class="text-[11px] text-slate-400 font-bold uppercase tracking-wider mb-1.5">{{ rec.module }}</p>
+                <p class="text-[11px] text-slate-400 font-bold uppercase tracking-wider mb-1.5">{{ rec.module_code || 'General' }}</p>
                 <h4 class="text-[14px] font-bold text-[#2C3E50] leading-snug mb-3 line-clamp-2 group-hover:text-[#4A90E2] transition-colors">{{ rec.title }}</h4>
                 <div class="mt-auto flex items-center gap-2">
-                  <div class="w-6 h-6 rounded-full bg-[#4A90E2]/10 flex items-center justify-center text-[#4A90E2] text-[9px] font-bold">{{ rec.uploader.split(' ').map(n => n[0]).join('').substring(0, 2) }}</div>
-                  <span class="text-xs text-slate-500 font-medium">{{ rec.uploader }}</span>
+                  <div class="w-6 h-6 rounded-full bg-[#4A90E2]/10 flex items-center justify-center text-[#4A90E2] text-[9px] font-bold">
+                    {{ (rec.uploader_name || 'U').split(' ').map(n => n[0]).join('').substring(0, 2) }}
+                  </div>
+                  <span class="text-xs text-slate-500 font-medium">{{ rec.uploader_name }}</span>
                 </div>
               </div>
             </div>

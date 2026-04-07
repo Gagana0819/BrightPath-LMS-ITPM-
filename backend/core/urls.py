@@ -7,7 +7,8 @@ from .views import (
     KuppiSessionThumbnailUploadView,
     RecordResourceDownloadView, ResourceReviewCreateView,
     ResourceReviewListView, ResourceRatingStatsView,
-    NotificationViewSet, ResourceDetailView, WalletViewSet
+    NotificationViewSet, ResourceDetailView, WalletViewSet,
+    ResourceRecommendationView, KuppiRecommendationView
 )
 
 router = DefaultRouter()
@@ -17,10 +18,12 @@ router.register(r'wallet', WalletViewSet, basename='wallet')
 urlpatterns = [
     path('', include(router.urls)),
     path('resources/upload/', ResourceUploadView.as_view(), name='resource-upload'),
+    path('resources/recommendations/', ResourceRecommendationView.as_view(), name='resource-recommendations'),
     path('resources/', ResourceListView.as_view(), name='resource-list'),
     path('resources/<int:pk>/', ResourceDetailView.as_view(), name='resource-detail'),
     
     # Kuppi Sessions
+    path('kuppi/sessions/recommendations/', KuppiRecommendationView.as_view(), name='kuppi-session-recommendations'),
     path('kuppi/sessions/', KuppiSessionListCreateView.as_view(), name='kuppi-session-list-create'),
     path('kuppi/sessions/<int:pk>/', KuppiSessionDetailView.as_view(), name='kuppi-session-detail'),
     path('kuppi/sessions/<int:pk>/upload-video/', KuppiSessionVideoUploadView.as_view(), name='kuppi-session-upload-video'),

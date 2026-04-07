@@ -483,7 +483,60 @@ class KuppiSessionIncrementViews(APIView):
         try:
             session = KuppiSession.objects.get(pk=pk)
             session.view_count += 1
-            session.save(update_fields=['view_count'])
             return Response({'view_count': session.view_count}, status=status.HTTP_200_OK)
         except KuppiSession.DoesNotExist:
             return Response({'error': 'Session not found'}, status=status.HTTP_404_NOT_FOUND)
+
+class ResourceRecommendationView(APIView):
+    permission_classes = [permissions.AllowAny] # Allow global trending for guest users
+
+    def get(self, request):
+        queryset = StudyResource.objects.all()
+        user = request.user
+        
+        # Personalized mode: Filter by stream/year if user is logged in
+        if user.is_authenticated and (user.academic_stream or user.academic_year):
+            filters = Q()
+            if user.academic_stream:
+                filters |= Q(academic_stream=user.academic_stream)
+            if user.academic_year:
+                filters |= Q(academic_year=user.academic_year)
+            
+            # Start with matches, fallback to broader trending
+            results = queryset.filter(filters).order_by('-download_count', '-quality_score')[:10]
+            
+            # If not enough matches, pad with global trending
+            if results.count() < 4:
+                trending = queryset.exclude(id__in=[r.id for r in results]).order_by('-download_count')[:10 - results.count()]
+                results = list(results) + list(trending)
+        else:
+            # Guest mode: Global trending
+            results = queryset.order_by('-download_count')[:10]
+
+        serializer = StudyResourceSerializer(results, many=True)
+        return Response(serializer.data)
+
+class KuppiRecommendationView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        queryset = KuppiSession.objects.filter(is_active=True)
+        user = request.user
+
+        if user.is_authenticated and (user.academic_stream or user.academic_year):
+            filters = Q()
+            if user.academic_stream:
+                filters |= Q(stream=user.academic_stream)
+            if user.academic_year:
+                filters |= Q(academic_year=user.academic_year)
+            
+            results = queryset.filter(filters).order_by('-view_count', '-created_at')[:10]
+            
+            if results.count() < 4:
+                trending = queryset.exclude(id__in=[s.id for s in results]).order_by('-view_count')[:10 - results.count()]
+                results = list(results) + list(trending)
+        else:
+            results = queryset.order_by('-view_count')[:10]
+
+        serializer = KuppiSessionSerializer(results, many=True)
+        return Response(serializer.data)

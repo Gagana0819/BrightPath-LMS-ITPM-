@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useContentStore } from '../stores/contentStore'
 
@@ -8,6 +8,7 @@ const contentStore = useContentStore()
 
 onMounted(() => {
   contentStore.fetchLiveSessions()
+  contentStore.fetchKuppiRecommendations()
 })
 
 // Recommendation carousel
@@ -30,14 +31,7 @@ const formatTime = (timeString) => {
   return `${displayHours}:${minutes} ${ampm}`
 }
 
-const recommendedVideos = ref([
-  { id: 'v1', videoId: 'v9ejT8FO-7I', title: 'OOP Design Patterns Full Course', tutor: 'Kasun Bandara', duration: '1h 20min', views: '2.3k', tag: 'Most Watched', image: '/5a108056-a070-44ee-a123-1afd489077e0.jpg' },
-  { id: 'v2', videoId: 'erW_Tf_YtE0', title: 'Database Design & Optimization', tutor: 'Nimesha Perera', duration: '45min', views: '1.8k', tag: 'Top Rated', image: '/de563836-04cc-4c46-bf78-228261acdef0_1024.jpeg' },
-  { id: 'v3', videoId: 'LlvBzyy-558', title: 'React Hooks Mastery Tutorial', tutor: 'Malithi Fernando', duration: '1h 05min', views: '1.5k', tag: 'Trending', image: '/flat-design-minimal-technology-youtube-thumbnail_23-2149150484.avif' },
-  { id: 'v4', videoId: '6m82_K0r9_k', title: 'Network Security Basics for Engineers', tutor: 'Tharindu Silva', duration: '55min', views: '980', tag: 'New', image: '/HCF_UvPWUAAJXQH.jpg' },
-  { id: 'v5', videoId: '7u2mO6S9E_U', title: 'Java Spring Boot + AWS S3 Integration', tutor: 'Sandun Dimantha', duration: '1h 30min', views: '3.1k', tag: 'Popular', image: '/hqdefault.jpg' },
-  { id: 'v6', videoId: 'edvg4eHi_Mw', title: 'Python for Data Science — Full Course', tutor: 'Amaya Jayasinghe', duration: '1h 10min', views: '2.0k', tag: 'AI Trending', image: '/modern-digital-coding-youtube-thumbnail-design-template-349557863df9c89a05c2c54b82d1d74b_screen.jpg' },
-])
+const recommendedVideos = computed(() => contentStore.recommendedSessions)
 
 const updateVidScroll = () => {
   const el = vidScrollRef.value
@@ -108,8 +102,7 @@ const joinSession = (session) => {
 
 const playRecommendation = (vid) => {
   const isLoggedIn = !!localStorage.getItem('access_token')
-  // Pass the videoId string directly to the play route
-  const targetPath = `/dashboard/kuppi/play/${vid.videoId}` 
+  const targetPath = `/dashboard/kuppi/play/${vid.id}` 
   
   if (isLoggedIn) {
     router.push(targetPath)
@@ -211,7 +204,7 @@ const playRecommendation = (vid) => {
           >
             <!-- Video Thumbnail -->
             <div class="relative h-[160px] overflow-hidden">
-              <img :src="vid.image" class="absolute inset-0 w-full h-full object-cover opacity-90" />
+              <img :src="vid.thumbnail || '/hqdefault.jpg'" class="absolute inset-0 w-full h-full object-cover opacity-90" />
               <!-- Play button overlay -->
               <div class="absolute inset-0 flex items-center justify-center">
                 <div class="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm border-2 border-white/40 flex items-center justify-center group-hover:scale-110 group-hover:bg-white/30 transition-all duration-300 shadow-lg">
@@ -221,11 +214,13 @@ const playRecommendation = (vid) => {
                 </div>
               </div>
               <!-- Tag badge -->
-              <span class="absolute top-3 left-3 bg-black/30 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-lg border border-white/10">{{ vid.tag }}</span>
-              <!-- Duration badge -->
-              <span class="absolute bottom-3 right-3 bg-black/50 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-lg flex items-center gap-1">
-                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3" /></svg>
-                {{ vid.duration }}
+              <span class="absolute top-3 left-3 bg-black/30 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-lg border border-white/10">
+                {{ vid.is_live ? 'LIVE NOW' : (vid.view_count > 100 ? 'Trending' : 'Recommended') }}
+              </span>
+              <!-- Duration badge (optional placeholder) -->
+              <span v-if="vid.view_count" class="absolute bottom-3 right-3 bg-black/50 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-lg flex items-center gap-1">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                {{ vid.view_count }} views
               </span>
             </div>
             <!-- Content -->
@@ -233,13 +228,11 @@ const playRecommendation = (vid) => {
               <h4 class="text-[14px] font-bold text-[#2C3E50] leading-snug mb-3 line-clamp-2 group-hover:text-[#4A90E2] transition-colors">{{ vid.title }}</h4>
               <div class="mt-auto flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                  <div class="w-7 h-7 rounded-full bg-gradient-to-br from-[#4A90E2]/20 to-indigo-100 flex items-center justify-center text-[#4A90E2] text-[10px] font-bold border border-[#4A90E2]/20">{{ vid.tutor.split(' ').map(n => n[0]).join('') }}</div>
-                  <span class="text-xs text-slate-500 font-semibold">{{ vid.tutor }}</span>
+                  <div class="w-7 h-7 rounded-full bg-gradient-to-br from-[#4A90E2]/20 to-indigo-100 flex items-center justify-center text-[#4A90E2] text-[10px] font-bold border border-[#4A90E2]/20">
+                    {{ (vid.tutor_name || 'U').split(' ').map(n => n[0]).join('') }}
+                  </div>
+                  <span class="text-xs text-slate-500 font-semibold">{{ vid.tutor_name }}</span>
                 </div>
-                <span class="text-[10px] text-slate-400 font-bold flex items-center gap-1">
-                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                  {{ vid.views }}
-                </span>
               </div>
             </div>
           </div>

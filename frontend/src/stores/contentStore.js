@@ -4,7 +4,9 @@ import api from '../api/axios'
 
 export const useContentStore = defineStore('content', () => {
   const resources = ref([])
+  const recommendedResources = ref([])
   const liveSessions = ref([])
+  const recommendedSessions = ref([])
   const isLoading = ref(false)
   const isSyncing = ref(false)
   const error = ref(null)
@@ -17,6 +19,18 @@ export const useContentStore = defineStore('content', () => {
       resources.value = response.data
     } catch (err) {
       error.value = err.response?.data || err.message
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  const fetchRecommendations = async () => {
+    isLoading.value = true
+    try {
+      const response = await api.get('core/resources/recommendations/')
+      recommendedResources.value = response.data
+    } catch (err) {
+      console.error('Failed to fetch recommendations', err)
     } finally {
       isLoading.value = false
     }
@@ -85,6 +99,18 @@ export const useContentStore = defineStore('content', () => {
       liveSessions.value = response.data
     } catch (err) {
       error.value = err.response?.data || err.message
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  const fetchKuppiRecommendations = async () => {
+    isLoading.value = true
+    try {
+      const response = await api.get('core/kuppi/sessions/recommendations/')
+      recommendedSessions.value = response.data
+    } catch (err) {
+      console.error('Failed to fetch kuppi recommendations', err)
     } finally {
       isLoading.value = false
     }
@@ -268,22 +294,25 @@ export const useContentStore = defineStore('content', () => {
 
   return {
     resources,
+    recommendedResources,
     liveSessions,
+    recommendedSessions,
     isLoading,
     isSyncing,
     error,
     fetchResources,
+    fetchRecommendations,
     uploadResource,
     deleteResource,
     updateResource,
     fetchLiveSessions,
+    fetchKuppiRecommendations,
     createLiveSession,
     updateLiveSession,
     deleteLiveSession,
     uploadSessionVideo,
     uploadSessionThumbnail,
     incrementSessionViews,
-    recordResourceDownload,
     recordResourceDownload,
     submitResourceReview,
     fetchResourceStats,
