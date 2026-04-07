@@ -5,3 +5,5 @@ Superuser created! Now you can log in to the Django admin:
 URL: http://127.0.0.1:8000/admin/
 Email: admin@brightpath.com
 Password: admin123
+
+run celery: celery -A brightpath worker --loglevel=info -P eventlet
