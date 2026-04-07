@@ -24,10 +24,10 @@ export const useContentStore = defineStore('content', () => {
     }
   }
 
-  const fetchRecommendations = async () => {
+  const fetchRecommendations = async (params = {}) => {
     isLoading.value = true
     try {
-      const response = await api.get('core/resources/recommendations/')
+      const response = await api.get('core/resources/recommendations/', { params })
       recommendedResources.value = response.data
     } catch (err) {
       console.error('Failed to fetch recommendations', err)

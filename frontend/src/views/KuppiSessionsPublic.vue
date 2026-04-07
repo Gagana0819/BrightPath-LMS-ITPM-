@@ -178,7 +178,7 @@ const playRecommendation = (vid) => {
       </div>
 
       <!-- BrightPath Recommend for You -->
-      <div class="max-w-[1200px] mx-auto px-4 mb-10 animate-fade-in-up delay-100">
+      <div v-if="recommendedVideos.length > 0" class="max-w-[1200px] mx-auto px-4 mb-10 animate-fade-in-up delay-100">
         <div class="flex items-center justify-between mb-6">
           <div class="flex items-center gap-3">
             <div>
@@ -214,9 +214,14 @@ const playRecommendation = (vid) => {
                 </div>
               </div>
               <!-- Tag badge -->
-              <span class="absolute top-3 left-3 bg-black/30 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-lg border border-white/10">
-                {{ vid.is_live ? 'LIVE NOW' : (vid.view_count > 100 ? 'Trending' : 'Recommended') }}
-              </span>
+              <div class="absolute top-3 left-3 flex flex-col gap-1.5">
+                <span class="bg-black/30 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-lg border border-white/10 w-max">
+                  {{ vid.is_live ? 'LIVE NOW' : (vid.view_count > 100 ? 'Trending' : 'Recommended') }}
+                </span>
+                <span v-if="vid.stream" class="bg-[#4A90E2]/80 backdrop-blur-md text-white text-[9px] font-black px-2.5 py-1 rounded-lg border border-white/10 uppercase tracking-wider w-max">
+                  {{ vid.stream }}
+                </span>
+              </div>
               <!-- Duration badge (optional placeholder) -->
               <span v-if="vid.view_count" class="absolute bottom-3 right-3 bg-black/50 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-lg flex items-center gap-1">
                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>

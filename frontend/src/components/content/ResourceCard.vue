@@ -145,7 +145,7 @@ const formatDate = (dateString) => {
         <span v-if="doc.faculty" class="text-[9px] font-black text-blue-600 bg-blue-50 px-2 py-1 rounded uppercase tracking-tighter border border-blue-100">
           {{ doc.faculty }}
         </span>
-        <span v-if="doc.academic_stream" class="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded uppercase tracking-tighter border border-emerald-100">
+        <span v-if="doc.academic_stream" class="text-[9px] font-black text-emerald-700 bg-emerald-50 px-2.5 py-1.5 rounded-lg uppercase tracking-wider border border-emerald-100 shadow-sm">
           {{ doc.academic_stream }}
         </span>
         <span v-if="doc.academic_year" class="text-[9px] font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded uppercase tracking-tighter border border-amber-100">

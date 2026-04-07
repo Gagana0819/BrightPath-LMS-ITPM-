@@ -59,9 +59,13 @@ def award_points_on_session(sender, instance, created, **kwargs):
 @receiver(post_save, sender=ResourceReview)
 def award_points_on_review(sender, instance, created, **kwargs):
     if created and instance.rating >= 4:
-        _award_points(
-            instance.resource.user, # Uploader gets the points
-            10,
-            "Positive Review Bonus",
-            f"Received a {instance.rating}-star review for {instance.resource.title}"
-        )
+        try:
+            _award_points(
+                instance.resource.user, # Uploader gets the points
+                10,
+                "Positive Review Bonus",
+                f"Received a {instance.rating}-star review for {instance.resource.title}"
+            )
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"Failed to award points for review {instance.id}: {e}")

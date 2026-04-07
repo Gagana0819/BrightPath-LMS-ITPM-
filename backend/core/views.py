@@ -47,6 +47,7 @@ class ResourceReviewCreateView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def perform_create(self, serializer):
+        print(f"DEBUG: Saving review by {self.request.user.email} (ID: {self.request.user.id})")
         serializer.save(user=self.request.user)
 
 class ResourceReviewListView(generics.ListAPIView):
@@ -511,27 +512,38 @@ class ResourceRecommendationView(APIView):
         queryset = StudyResource.objects.all()
         user = request.user
         
-        # Personalized mode: Filter by stream/year if user is logged in
-        if user.is_authenticated and (user.academic_stream or user.academic_year):
-            filters = Q()
-            if user.academic_stream:
-                filters |= Q(academic_stream=user.academic_stream)
-            if user.academic_year:
-                filters |= Q(academic_year=user.academic_year)
-            
-            # Start with matches, fallback to broader trending
-            results = queryset.filter(filters).order_by('-download_count', '-quality_score')[:10]
-            
-            # If not enough matches, pad with global trending
-            if results.count() < 4:
-                trending = queryset.exclude(id__in=[r.id for r in results]).order_by('-download_count')[:10 - results.count()]
-                results = list(results) + list(trending)
-        else:
-            # Guest mode: Global trending
-            results = queryset.order_by('-download_count')[:10]
+        # Optional filters from query params
+        module_code = request.query_params.get('module_code')
+        year = request.query_params.get('year')
 
-        serializer = StudyResourceSerializer(results, many=True)
-        return Response(serializer.data)
+        try:
+            # Personalized mode: Filter by stream/year if user is logged in
+            if user.is_authenticated and (user.academic_stream or user.academic_year):
+                filters = Q()
+                if user.academic_stream:
+                    filters |= Q(academic_stream=user.academic_stream)
+                if user.academic_year:
+                    filters |= Q(academic_year=user.academic_year)
+                
+                # Apply optional external filters
+                if module_code:
+                    filters &= Q(module_code__icontains=module_code)
+                if year:
+                    filters &= Q(academic_year=year)
+
+                # Start with matches, no fallback to global trending as per user request
+                results = queryset.filter(filters).order_by('-download_count', '-quality_score')[:10]
+            else:
+                # Guest mode: Global trending
+                results = queryset.order_by('-download_count')[:10]
+
+            serializer = StudyResourceSerializer(results, many=True)
+            return Response(serializer.data)
+        except Exception as e:
+            print(f"DEBUG ERROR (ResourceRecommendationView): {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return Response({'error': str(e)}, status=500)
 
 class KuppiRecommendationView(APIView):
     permission_classes = [permissions.AllowAny]
@@ -539,21 +551,23 @@ class KuppiRecommendationView(APIView):
     def get(self, request):
         queryset = KuppiSession.objects.filter(is_active=True)
         user = request.user
+        try:
+            if user.is_authenticated and (user.academic_stream or user.academic_year):
+                filters = Q()
+                if user.academic_stream:
+                    filters |= Q(stream=user.academic_stream)
+                if user.academic_year:
+                    filters |= Q(academic_year=user.academic_year)
+                
+                # Strictly matching stream/year
+                results = queryset.filter(filters).order_by('-view_count', '-created_at')[:10]
+            else:
+                results = queryset.order_by('-view_count')[:10]
 
-        if user.is_authenticated and (user.academic_stream or user.academic_year):
-            filters = Q()
-            if user.academic_stream:
-                filters |= Q(stream=user.academic_stream)
-            if user.academic_year:
-                filters |= Q(academic_year=user.academic_year)
-            
-            results = queryset.filter(filters).order_by('-view_count', '-created_at')[:10]
-            
-            if results.count() < 4:
-                trending = queryset.exclude(id__in=[s.id for s in results]).order_by('-view_count')[:10 - results.count()]
-                results = list(results) + list(trending)
-        else:
-            results = queryset.order_by('-view_count')[:10]
-
-        serializer = KuppiSessionSerializer(results, many=True)
-        return Response(serializer.data)
+            serializer = KuppiSessionSerializer(results, many=True)
+            return Response(serializer.data)
+        except Exception as e:
+            print(f"DEBUG ERROR (KuppiRecommendationView): {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return Response({'error': str(e)}, status=500)

@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
+import { useContentStore } from '@/stores/contentStore'
 
 // API base URL - adjusted for the accounts app
 const API_BASE = 'http://127.0.0.1:8000/api/accounts/profile/'
@@ -50,6 +51,8 @@ const fetchProfile = async () => {
   }
 }
 
+const contentStore = useContentStore()
+
 const updateProfile = async () => {
   isSaving.value = true
   message.value = { text: '', type: '' }
@@ -69,6 +72,12 @@ const updateProfile = async () => {
     
     // Update local storage for immediate UI updates in sidebar/navbar
     localStorage.setItem('full_name', user.value.full_name)
+    
+    // Refresh the recommendations based on the new academic stream/year
+    await Promise.all([
+      contentStore.fetchRecommendations(),
+      contentStore.fetchKuppiRecommendations()
+    ])
     
     setTimeout(() => { message.value = { text: '', type: '' } }, 3000)
   } catch (err) {
@@ -238,6 +247,20 @@ onMounted(fetchProfile)
                   <option value="Year 2">Year 2</option>
                   <option value="Year 3">Year 3</option>
                   <option value="Year 4">Year 4</option>
+                </select>
+              </div>
+
+              <div class="space-y-3">
+                <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Academic Stream</label>
+                <select v-model="user.academic_stream" class="w-full px-6 py-4 bg-slate-50 border-2 border-transparent rounded-[1.25rem] focus:bg-white focus:border-[#4A90E2] focus:ring-4 focus:ring-[#4A90E2]/10 outline-none transition-all font-bold text-[#2C3E50] appearance-none">
+                  <option value="">Select Stream</option>
+                  <option value="Software Engineering">Software Engineering</option>
+                  <option value="Data Science">Data Science</option>
+                  <option value="Information Technology">Information Technology</option>
+                  <option value="Computer Systems & Network">Computer Systems & Network</option>
+                  <option value="Interactive Media">Interactive Media</option>
+                  <option value="Cyber Security">Cyber Security</option>
+                  <option value="Business Management">Business Management</option>
                 </select>
               </div>
 

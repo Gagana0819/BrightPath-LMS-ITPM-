@@ -16,6 +16,18 @@ class ResourceReviewSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'user_name', 'resource', 'rating', 'comment', 'created_at']
         read_only_fields = ['user', 'created_at']
 
+    def validate(self, data):
+        # Accessing the request from context to get the current user
+        request = self.context.get('request')
+        if not request or not request.user.is_authenticated:
+            return data
+
+        resource = data.get('resource')
+        if ResourceReview.objects.filter(user=request.user, resource=resource).exists():
+            raise serializers.ValidationError("You have already reviewed this resource.")
+        
+        return data
+
 class StudyResourceSerializer(serializers.ModelSerializer):
     uploader_name = serializers.SerializerMethodField()
     average_rating = serializers.SerializerMethodField()

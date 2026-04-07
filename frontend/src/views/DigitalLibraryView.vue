@@ -236,7 +236,7 @@ const filteredDocuments = computed(() => {
         </div>
 
         <!-- BrightPath Recommend for You -->
-        <div class="mb-10 animate-fade-in-up delay-100">
+        <div v-if="recommendedResources.length > 0" class="mb-10 animate-fade-in-up delay-100">
           <div class="flex items-center justify-between mb-6">
             <div class="flex items-center gap-3">
               <div>
