@@ -1,9 +1,11 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useContentStore } from '../stores/contentStore'
+import { useWalletStore } from '../stores/walletStore'
 
 const emits = defineEmits(['close'])
 const contentStore = useContentStore()
+const walletStore = useWalletStore()
 
 const title = ref('')
 const description = ref('')
@@ -79,6 +81,9 @@ const submitForm = async () => {
   }
 
   await contentStore.uploadResource(resourceData, selectedFile.value)
+  
+  // Refresh wallet data to show new points
+  await walletStore.fetchWalletData()
   
   uploadProgress.value = 100
   isUploading.value = false

@@ -1,5 +1,14 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
+import { RouterLink } from 'vue-router'
+import PointsWallet from '@/components/library/PointsWallet.vue'
+import { useWalletStore } from '@/stores/walletStore'
+
+const walletStore = useWalletStore()
+
+onMounted(() => {
+  walletStore.fetchWalletData()
+})
 
 const academicStream = computed(() => 'Information Technology')
 
@@ -97,6 +106,9 @@ const resources = [
       <!-- RIGHT COLUMN -->
       <div class="lg:col-span-4 space-y-8">
 
+        <!-- Points Wallet -->
+        <PointsWallet />
+
         <!-- Kuppi Sessions -->
         <div class="bg-gradient-to-br from-[#1E293B] to-[#0F172A] rounded-[24px] p-6 border border-slate-700/50 shadow-lg relative overflow-hidden">
           <div class="absolute top-0 right-0 w-32 h-32 bg-yellow-500/10 blur-2xl rounded-full"></div>
@@ -141,7 +153,12 @@ const resources = [
               </button>
             </div>
           </div>
-          <button class="w-full mt-4 text-[#4A90E2] text-[13px] font-bold hover:underline text-center">Open Digital Library</button>
+          <RouterLink 
+            to="/dashboard/library" 
+            class="w-full mt-4 block py-2.5 bg-slate-50 border border-slate-200 text-[#4A90E2] text-[13px] font-bold rounded-xl hover:bg-[#4A90E2] hover:text-white transition-all text-center"
+          >
+            Open Digital Library
+          </RouterLink>
         </div>
 
       </div>

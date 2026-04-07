@@ -60,6 +60,7 @@ class StudyResource(models.Model):
     download_count = models.PositiveIntegerField(default=0)
     average_rating = models.FloatField(default=0.0) # 0-5
     total_ratings = models.PositiveIntegerField(default=0)
+    view_count = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return f"{self.title} ({self.module_code})"

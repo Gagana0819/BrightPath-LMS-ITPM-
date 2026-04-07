@@ -1,7 +1,7 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.auth import get_user_model
-from .models import PointsWallet, PointTransaction, StudyResource, KuppiSession, ResourceReview
+from .models import PointsWallet, PointTransaction, StudyResource, KuppiSession, ResourceReview, Notification
 from django.db import transaction
 
 User = get_user_model()
@@ -37,20 +37,14 @@ def _award_points(user, amount, action_type, description):
             description=description
         )
 
-@receiver(post_save, sender=StudyResource)
-def award_points_on_upload(sender, instance, created, **kwargs):
-    if created:
-        base_points = 50
-        # Check if we have quality analysis results stored on the instance (already calculated in view)
-        quality_bonus = getattr(instance, 'calculated_bonus_points', 0)
-        total = base_points + quality_bonus
-        
-        _award_points(
-            instance.user,
-            total,
-            "Resource Upload",
-            f"Uploaded {instance.title}. Base: {base_points}, Quality Bonus: {quality_bonus}"
+        # Create In-app Notification
+        Notification.objects.create(
+            user=user,
+            title=f"Points Earned: +{amount} BP",
+            message=description,
+            notification_type='POINTS'
         )
+
 
 @receiver(post_save, sender=KuppiSession)
 def award_points_on_session(sender, instance, created, **kwargs):

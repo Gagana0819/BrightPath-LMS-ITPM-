@@ -1,21 +1,45 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useNotificationStore } from '@/stores/notificationStore'
 
 const fullName = computed(() => localStorage.getItem('full_name') || 'User')
 const userRole = computed(() => localStorage.getItem('user_role') || 'STUDENT')
-const studentId = computed(() => localStorage.getItem('student_id') || 'STUDENT-XXX')
 
-// Mock notifications consistency
-const unreadCount = ref(2)
+const notificationStore = useNotificationStore()
+
 const isNotificationsOpen = ref(false)
-const notifications = ref([
-  { id: 1, title: 'New Student Joined', message: 'Malithi Perera just joined your OOP session.', time: '2 min ago', type: 'user' },
-  { id: 2, title: 'Resource Downloaded', message: 'Your "SQL Joins" PDF was downloaded 15 times.', time: '1 hour ago', type: 'file' }
-])
 
 const toggleNotifications = () => {
   isNotificationsOpen.value = !isNotificationsOpen.value
 }
+
+const getNotificationIcon = (type) => {
+  switch (type) {
+    case 'RESOURCE': return '📄'
+    case 'POINTS': return '💰'
+    case 'SESSION': return '💡'
+    default: return '🔔'
+  }
+}
+
+const formatTime = (dateStr) => {
+  const date = new Date(dateStr)
+  const now = new Date()
+  const diffInMinutes = Math.floor((now - date) / (1000 * 60))
+  
+  if (diffInMinutes < 1) return 'Just now'
+  if (diffInMinutes < 60) return `${diffInMinutes}m ago`
+  if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`
+  return date.toLocaleDateString()
+}
+
+onMounted(() => {
+  notificationStore.startPolling(10000) // Poll every 10 seconds for real-time feel
+})
+
+onUnmounted(() => {
+  notificationStore.stopPolling()
+})
 </script>
 
 <template>
@@ -39,7 +63,7 @@ const toggleNotifications = () => {
           <svg class="w-6 h-6 group-hover:text-hero-highlight transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
           </svg>
-          <span v-if="unreadCount > 0" class="absolute top-[6px] right-[8px] w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white shadow-sm"></span>
+          <span v-if="notificationStore.unreadCount > 0" class="absolute top-[6px] right-[8px] w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white shadow-sm"></span>
         </button>
 
         <!-- Notification Dropdown -->
@@ -48,22 +72,31 @@ const toggleNotifications = () => {
             <h3 class="font-extrabold text-[#1E293B] text-sm italic">Recent Activity</h3>
             <span class="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-bold">New</span>
           </div>
-          <div class="max-h-[300px] overflow-y-auto">
-            <div v-for="n in notifications" :key="n.id" class="px-6 py-4 hover:bg-slate-50 transition-colors cursor-pointer border-b border-slate-50 last:border-none">
+          <div class="max-h-[350px] overflow-y-auto">
+            <div v-if="notificationStore.notifications.length === 0" class="px-6 py-10 text-center">
+              <p class="text-[12px] text-slate-400">No recent notifications</p>
+            </div>
+            <div 
+              v-for="n in notificationStore.latestNotifications" 
+              :key="n.id" 
+              class="px-6 py-4 hover:bg-slate-50 transition-colors cursor-pointer border-b border-slate-50 last:border-none relative"
+              @click="notificationStore.markAsRead(n.id)"
+            >
+              <div v-if="!n.is_read" class="absolute left-2 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
               <div class="flex gap-3">
-                <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 text-xs">
-                  {{ n.type === 'user' ? '👤' : '📄' }}
+                <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-lg">
+                  {{ getNotificationIcon(n.notification_type) }}
                 </div>
                 <div>
                   <h4 class="text-[13px] font-bold text-slate-800">{{ n.title }}</h4>
                   <p class="text-[11px] text-slate-500 mt-0.5 leading-relaxed">{{ n.message }}</p>
-                  <span class="text-[10px] text-slate-400 font-medium mt-1 block">{{ n.time }}</span>
+                  <span class="text-[10px] text-slate-400 font-medium mt-1 block">{{ formatTime(n.created_at) }}</span>
                 </div>
               </div>
             </div>
           </div>
-          <div class="px-6 pt-3 mt-1 text-center">
-            <button class="text-xs font-bold text-blue-600 hover:underline">View All Notifications</button>
+          <div class="px-6 pt-3 mt-1 text-center border-t border-slate-50">
+            <button @click="notificationStore.markAllRead" class="text-xs font-bold text-blue-600 hover:underline">Mark all as read</button>
           </div>
         </div>
       </div>

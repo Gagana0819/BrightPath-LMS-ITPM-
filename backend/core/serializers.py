@@ -26,7 +26,7 @@ class StudyResourceSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'user', 'uploader_name', 'title', 'module_code', 'resource_type', 
             'faculty', 'academic_stream', 'academic_year', 'file', 'uploaded_at',
-            'average_rating', 'total_ratings'
+            'average_rating', 'total_ratings', 'view_count'
         ]
         read_only_fields = ['user', 'uploaded_at', 'uploader_name']
 

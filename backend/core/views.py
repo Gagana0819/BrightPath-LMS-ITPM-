@@ -152,9 +152,26 @@ class ResourceUploadView(generics.CreateAPIView):
             quality_score=analysis['quality_score']
         )
         
-        # Pass bonus points to signal via temporary attribute
-        resource.calculated_bonus_points = analysis['bonus_points']
-        resource.save()
+        # 1. Award Points (50 base + quality bonus)
+        from .signals import _award_points
+        base_points = 50
+        quality_bonus = analysis['bonus_points']
+        total_points = base_points + quality_bonus
+        
+        _award_points(
+            self.request.user,
+            total_points,
+            "Resource Upload",
+            f"Uploaded '{resource.title}'. (Base: {base_points}, Quality Bonus: {quality_bonus})"
+        )
+        
+        # 2. Create Success Notification
+        Notification.objects.create(
+            user=self.request.user,
+            title="Resource Uploaded Successfully",
+            message=f"Your resource '{resource.title}' has been analyzed and uploaded to the Digital Library.",
+            notification_type='RESOURCE'
+        )
         
         # Trigger async email notification
         try:
