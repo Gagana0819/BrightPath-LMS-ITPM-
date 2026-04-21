@@ -35,7 +35,7 @@ const joinSession = (session) => {
             Join student-led discussions and deep-dives happening now or starting soon in your faculty.
           </p>
         </div>
-        <router-link to="/kuppi-sessions" class="group relative px-6 py-3 bg-slate-900 text-white rounded-xl font-bold text-sm shadow-xl transition-all hover:shadow-indigo-200 hover:-translate-y-1 flex items-center gap-2 overflow-hidden">
+        <router-link to="/sessions" class="group relative px-6 py-3 bg-slate-900 text-white rounded-xl font-bold text-sm shadow-xl transition-all hover:shadow-indigo-200 hover:-translate-y-1 flex items-center gap-2 overflow-hidden">
           <span class="relative z-10 flex items-center gap-2">
             View All Sessions 
             <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">

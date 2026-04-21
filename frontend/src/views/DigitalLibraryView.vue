@@ -416,15 +416,20 @@ const filteredDocuments = computed(() => {
                     <!-- File Type Filter Section -->
                     <div>
                       <label class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 block">File Type</label>
-                      <div class="grid grid-cols-3 gap-2">
+                      <div class="flex flex-wrap gap-2">
                         <button
                           v-for="t in fileTypes"
                           :key="t"
                           @click="selectedType = t"
-                          class="px-3 py-2.5 rounded-xl text-sm font-bold transition-all border text-center"
-                          :class="selectedType === t ? 'bg-[#4A90E2] text-white border-[#4A90E2] shadow-md' : 'bg-[#F4F7F9] text-[#2C3E50] border-slate-200 hover:border-[#4A90E2]/40'"
+                          class="px-4 py-2.5 rounded-xl text-[13px] font-bold transition-all border text-center flex items-center gap-2"
+                          :class="selectedType === t ? 'bg-[#4A90E2] text-white border-[#4A90E2] shadow-md' : 'bg-[#F4F7F9] text-[#2C3E50] border-slate-200 hover:border-[#4A90E2]/40 hover:bg-white hover:shadow-sm'"
                         >
-                          {{ t === 'All' ? '📁 All' : t }}
+                          <span v-if="t === 'All'" class="text-base leading-none">📁</span>
+                          <span v-else-if="t === 'LECTURE_NOTES'" class="text-base leading-none">📝</span>
+                          <span v-else-if="t === 'PAST_PAPER'" class="text-base leading-none">📄</span>
+                          <span v-else-if="t === 'TUTORIAL_ANSWER'" class="text-base leading-none">✅</span>
+                          <span v-else-if="t === 'SHORT_NOTE'" class="text-base leading-none">📌</span>
+                          {{ t === 'All' ? 'All Types' : t.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') }}
                         </button>
                       </div>
                     </div>
