@@ -120,6 +120,7 @@ const formData = ref({
   fullName: '',
   email: '',
   password: '',
+  confirmPassword: '',
   nicNumber: '',
   phoneNumber: '',
 
@@ -428,6 +429,46 @@ const fillDemoData = () => {
   errors.value = {}
 }
 
+const validateField = (field) => {
+  const nicRegex = /^([0-9]{9}[vVxX]|[0-9]{12})$/
+  const phoneRegex = /^[0-9]{10}$/
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  const nameRegex = /^[a-zA-Z\s.-]+$/
+
+  switch (field) {
+    case 'fullName':
+      if (!formData.value.fullName) errors.value.fullName = 'Full Name is required.'
+      else if (!nameRegex.test(formData.value.fullName)) errors.value.fullName = 'Full Name should only contain letters, spaces, dots, or hyphens.'
+      else delete errors.value.fullName
+      break
+    case 'email':
+      if (!formData.value.email) errors.value.email = 'Email Address is required.'
+      else if (!emailRegex.test(formData.value.email)) errors.value.email = 'Please enter a valid email address.'
+      else delete errors.value.email
+      break
+    case 'password':
+      if (!formData.value.password) errors.value.password = 'Password is required.'
+      else if (formData.value.password.length < 8) errors.value.password = 'Password must be at least 8 characters.'
+      else delete errors.value.password
+      if (formData.value.confirmPassword) validateField('confirmPassword')
+      break
+    case 'confirmPassword':
+      if (!formData.value.confirmPassword) errors.value.confirmPassword = 'Please confirm your password.'
+      else if (formData.value.confirmPassword !== formData.value.password) errors.value.confirmPassword = 'Passwords do not match.'
+      else delete errors.value.confirmPassword
+      break
+    case 'nicNumber':
+      if (!formData.value.nicNumber) errors.value.nicNumber = 'NIC Number is required.'
+      else if (!nicRegex.test(formData.value.nicNumber)) errors.value.nicNumber = 'Invalid NIC format (9 digits + V/X or 12 digits).'
+      else delete errors.value.nicNumber
+      break
+    case 'phoneNumber':
+      if (formData.value.phoneNumber && !phoneRegex.test(formData.value.phoneNumber)) errors.value.phoneNumber = 'Phone number must be exactly 10 digits.'
+      else delete errors.value.phoneNumber
+      break
+  }
+}
+
 const validateForm = () => {
   const newErrors = {}
 
@@ -438,11 +479,12 @@ const validateForm = () => {
   const nicRegex = /^([0-9]{9}[vVxX]|[0-9]{12})$/
   const phoneRegex = /^[0-9]{10}$/
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  const nameRegex = /^[a-zA-Z\s.-]+$/
 
   if (!formData.value.fullName) {
     newErrors.fullName = 'Full Name is required.'
-  } else if (!/^[a-zA-Z\s]+$/.test(formData.value.fullName)) {
-    newErrors.fullName = 'Full Name should only contain letters and spaces.'
+  } else if (!nameRegex.test(formData.value.fullName)) {
+    newErrors.fullName = 'Full Name should only contain letters, spaces, dots, or hyphens.'
   }
 
   if (!formData.value.email) {
@@ -455,6 +497,12 @@ const validateForm = () => {
     newErrors.password = 'Password is required.'
   } else if (formData.value.password.length < 8) {
     newErrors.password = 'Password must be at least 8 characters.'
+  }
+
+  if (!formData.value.confirmPassword) {
+    newErrors.confirmPassword = 'Please confirm your password.'
+  } else if (formData.value.confirmPassword !== formData.value.password) {
+    newErrors.confirmPassword = 'Passwords do not match.'
   }
 
   if (!formData.value.nicNumber) {
@@ -643,18 +691,18 @@ const handleRegister = async () => {
                 </div>
                 <div>
                   <label for="fullName" class="block text-sm font-bold text-content mb-2 tracking-wide">Full Name</label>
-                  <input type="text" id="fullName" v-model="formData.fullName"
+                  <input type="text" id="fullName" v-model="formData.fullName" @input="validateField('fullName')"
                     class="w-full px-4 py-3.5 rounded-xl border-[1.5px] border-[#97C4C4]/50 hover:border-[#97C4C4] bg-white focus:bg-white focus:outline-none focus:ring-[3px] focus:ring-hero-highlight/20 focus:border-hero-highlight transition-all duration-200 placeholder:text-slate-400 text-content "
-                    :class="{'border-red-400 focus:border-red-500 bg-red-50/30': errors.fullName}"
+                    :class="{'border-red-400 focus:border-red-500 bg-red-50/30': errors.fullName, 'border-emerald-400 focus:border-emerald-500 bg-emerald-50/30': formData.fullName && !errors.fullName}"
                     placeholder="Enter your full name" />
                   <p v-if="errors.fullName" class="text-red-500 text-sm mt-2 flex items-center gap-1 font-bold">{{ errors.fullName }}</p>
                 </div>
                 
                 <div>
                   <label for="email" class="block text-sm font-bold text-content mb-2 tracking-wide">Email Address</label>
-                  <input type="email" id="email" v-model="formData.email"
+                  <input type="email" id="email" v-model="formData.email" @input="validateField('email')"
                     class="w-full px-4 py-3.5 rounded-xl border-[1.5px] border-[#97C4C4]/50 hover:border-[#97C4C4] bg-white focus:bg-white focus:outline-none focus:ring-[3px] focus:ring-hero-highlight/20 focus:border-hero-highlight transition-all duration-200 placeholder:text-slate-400 text-content "
-                    :class="{'border-red-400 focus:border-red-500 bg-red-50/30': errors.email}"
+                    :class="{'border-red-400 focus:border-red-500 bg-red-50/30': errors.email, 'border-emerald-400 focus:border-emerald-500 bg-emerald-50/30': formData.email && !errors.email}"
                     placeholder="user@university.edu" />
                   <p v-if="errors.email" class="text-red-500 text-sm mt-2 flex items-center gap-1 font-bold">{{ errors.email }}</p>
                 </div>
@@ -662,9 +710,9 @@ const handleRegister = async () => {
                 <div>
                   <label for="password" class="block text-sm font-bold text-content mb-2 tracking-wide">Password</label>
                   <div class="relative">
-                    <input :type="showPassword ? 'text' : 'password'" id="password" v-model="formData.password"
+                    <input :type="showPassword ? 'text' : 'password'" id="password" v-model="formData.password" @input="validateField('password')"
                       class="w-full px-4 py-3.5 pr-12 rounded-xl border-[1.5px] border-[#97C4C4]/50 hover:border-[#97C4C4] bg-white focus:bg-white focus:outline-none focus:ring-[3px] focus:ring-hero-highlight/20 focus:border-hero-highlight transition-all duration-200 placeholder:text-slate-400 text-content "
-                      :class="{'border-red-400 focus:border-red-500 bg-red-50/30': errors.password}"
+                      :class="{'border-red-400 focus:border-red-500 bg-red-50/30': errors.password, 'border-emerald-400 focus:border-emerald-500 bg-emerald-50/30': formData.password && !errors.password}"
                       placeholder="Create a strong password" />
                     <button type="button" @click="showPassword = !showPassword" class="absolute right-4 top-[14px] text-slate-400 hover:text-slate-800 transition-colors focus:outline-none">
                       <svg v-if="!showPassword" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
@@ -675,22 +723,33 @@ const handleRegister = async () => {
                 </div>
 
                 <div>
+                  <label for="confirmPassword" class="block text-sm font-bold text-content mb-2 tracking-wide">Confirm Password</label>
+                  <div class="relative">
+                    <input :type="showPassword ? 'text' : 'password'" id="confirmPassword" v-model="formData.confirmPassword" @input="validateField('confirmPassword')"
+                      class="w-full px-4 py-3.5 pr-12 rounded-xl border-[1.5px] border-[#97C4C4]/50 hover:border-[#97C4C4] bg-white focus:bg-white focus:outline-none focus:ring-[3px] focus:ring-hero-highlight/20 focus:border-hero-highlight transition-all duration-200 placeholder:text-slate-400 text-content "
+                      :class="{'border-red-400 focus:border-red-500 bg-red-50/30': errors.confirmPassword, 'border-emerald-400 focus:border-emerald-500 bg-emerald-50/30': formData.confirmPassword && !errors.confirmPassword}"
+                      placeholder="Confirm your password" />
+                  </div>
+                  <p v-if="errors.confirmPassword" class="text-red-500 text-sm mt-2 flex items-center gap-1 font-bold">{{ errors.confirmPassword }}</p>
+                </div>
+
+                <div>
                   <div class="flex items-center justify-between mb-2">
                     <label for="nicNumber" class="block text-sm font-bold text-content tracking-wide">NIC Number</label>
                     <span class="text-xs text-slate-400 font-medium">{{ formData.nicNumber.length }}/12</span>
                   </div>
-                  <input type="text" id="nicNumber" v-model="formData.nicNumber" maxlength="12"
+                  <input type="text" id="nicNumber" v-model="formData.nicNumber" maxlength="12" @input="validateField('nicNumber')"
                     class="w-full px-4 py-3.5 rounded-xl border-[1.5px] border-[#97C4C4]/50 hover:border-[#97C4C4] bg-white focus:bg-white focus:outline-none focus:ring-[3px] focus:ring-hero-highlight/20 focus:border-hero-highlight transition-all duration-200 placeholder:text-slate-400 text-content "
-                    :class="{'border-red-400 focus:border-red-500 bg-red-50/30': errors.nicNumber}"
+                    :class="{'border-red-400 focus:border-red-500 bg-red-50/30': errors.nicNumber, 'border-emerald-400 focus:border-emerald-500 bg-emerald-50/30': formData.nicNumber && !errors.nicNumber}"
                     placeholder="e.g. 199912345678 or 991234567V" />
                   <p v-if="errors.nicNumber" class="text-red-500 text-sm mt-2 flex items-center gap-1 font-bold">{{ errors.nicNumber }}</p>
                 </div>
 
                 <div>
                   <label for="phoneNumber" class="block text-sm font-bold text-content mb-2 tracking-wide">Phone Number</label>
-                  <input type="text" id="phoneNumber" v-model="formData.phoneNumber" maxlength="10"
+                  <input type="text" id="phoneNumber" v-model="formData.phoneNumber" maxlength="10" @input="validateField('phoneNumber')"
                     class="w-full px-4 py-3.5 rounded-xl border-[1.5px] border-[#97C4C4]/50 hover:border-[#97C4C4] bg-white focus:bg-white focus:outline-none focus:ring-[3px] focus:ring-hero-highlight/20 focus:border-hero-highlight transition-all duration-200 placeholder:text-slate-400 text-content "
-                    :class="{'border-red-400 focus:border-red-500 bg-red-50/30': errors.phoneNumber}"
+                    :class="{'border-red-400 focus:border-red-500 bg-red-50/30': errors.phoneNumber, 'border-emerald-400 focus:border-emerald-500 bg-emerald-50/30': formData.phoneNumber && !errors.phoneNumber}"
                     placeholder="e.g. 0771234567" />
                   <p v-if="errors.phoneNumber" class="text-red-500 text-sm mt-2 flex items-center gap-1 font-bold">{{ errors.phoneNumber }}</p>
                 </div>
