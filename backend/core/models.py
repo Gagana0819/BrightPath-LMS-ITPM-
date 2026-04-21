@@ -50,6 +50,20 @@ class StudyResource(models.Model):
     academic_year = models.CharField(max_length=20, blank=True, null=True)
     
     
+    # AI & Verification Metadata
+    is_smart_recommended = models.BooleanField(default=False)
+    verification_status = models.CharField(
+        max_length=20,
+        choices=[
+            ('PROCESSING', 'AI Analyzing...'),
+            ('PENDING', 'Pending Validation'),
+            ('VERIFIED', 'Verified & Secure'),
+            ('REJECTED', 'Validation Failed')
+        ],
+        default='PROCESSING'
+    )
+    ai_metadata = models.JSONField(blank=True, null=True)
+
     file = models.FileField(upload_to=resource_upload_path)
     uploaded_at = models.DateTimeField(auto_now_add=True)
     
