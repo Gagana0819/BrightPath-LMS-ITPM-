@@ -216,7 +216,18 @@ def extract_data_from_id_image(image_file) -> dict:
     """
     try:
         import pytesseract
-        pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+        import os
+        
+        # Robust Tesseract path detection for both Windows and Mac
+        if os.name == 'nt': # Windows
+            pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+        else: # Mac/Linux
+            # Check common Mac Homebrew paths
+            mac_paths = ['/opt/homebrew/bin/tesseract', '/usr/local/bin/tesseract']
+            for path in mac_paths:
+                if os.path.exists(path):
+                    pytesseract.pytesseract.tesseract_cmd = path
+                    break
     except ImportError:
         logger.error("pytesseract is not installed. Run: pip install pytesseract")
         return {"error": "OCR library not available on server."}

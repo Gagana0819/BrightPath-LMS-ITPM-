@@ -230,6 +230,79 @@ watch(() => formData.value.university, () => {
   deriveFieldsFromStudentId()
 })
 
+// ── Real-time Validations ──
+
+// Full Name: No numbers or symbols. Clean input in real-time.
+watch(() => formData.value.fullName, (newVal) => {
+  const cleaned = newVal.replace(/[^a-zA-Z\s]/g, '')
+  if (cleaned !== newVal) {
+    formData.value.fullName = cleaned
+    errors.value.fullName = 'Numbers and symbols are not allowed in the name.'
+  } else if (!newVal) {
+    errors.value.fullName = 'Full Name is required.'
+  } else {
+    errors.value.fullName = ''
+  }
+})
+
+// Email: Standard email regex
+watch(() => formData.value.email, (newVal) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (!newVal) {
+    errors.value.email = 'Email Address is required.'
+  } else if (!emailRegex.test(newVal)) {
+    errors.value.email = 'Please enter a valid email address (e.g., user@university.edu).'
+  } else {
+    errors.value.email = ''
+  }
+})
+
+// Password: Min 8 characters
+watch(() => formData.value.password, (newVal) => {
+  if (!newVal) {
+    errors.value.password = 'Password is required.'
+  } else if (newVal.length < 8) {
+    errors.value.password = 'Password must be at least 8 characters.'
+  } else {
+    errors.value.password = ''
+  }
+})
+
+// NIC/ID: Exactly 12 characters, only digits and 'V' allowed
+watch(() => formData.value.nicNumber, (newVal) => {
+  const cleaned = newVal.replace(/[^0-9Vv]/g, '')
+  if (cleaned !== newVal) {
+    formData.value.nicNumber = cleaned
+  }
+  
+  if (!formData.value.nicNumber) {
+    errors.value.nicNumber = 'ID/NIC is required.'
+  } else if (formData.value.nicNumber.length !== 12) {
+    errors.value.nicNumber = 'ID must contain exactly 12 characters.'
+  } else if (/[a-zA-Z]/.test(formData.value.nicNumber.replace(/[Vv]/g, ''))) {
+    // This case is handled by the regex cleaning, but just in case
+    errors.value.nicNumber = 'Only the letter "V" is allowed.'
+  } else {
+    errors.value.nicNumber = ''
+  }
+})
+
+// Phone Number: Exactly 10 digits
+watch(() => formData.value.phoneNumber, (newVal) => {
+  const cleaned = newVal.replace(/[^0-9]/g, '')
+  if (cleaned !== newVal) {
+    formData.value.phoneNumber = cleaned
+  }
+
+  if (!formData.value.phoneNumber) {
+    errors.value.phoneNumber = 'Phone number is required.'
+  } else if (formData.value.phoneNumber.length !== 10) {
+    errors.value.phoneNumber = 'Phone number must be exactly 10 digits.'
+  } else {
+    errors.value.phoneNumber = ''
+  }
+})
+
 const availableUniversities = computed(() => Object.keys(universityData))
 
 const filteredUniversities = computed(() => {
@@ -435,8 +508,6 @@ const validateForm = () => {
     newErrors.role = 'Please select a role.'
   }
   
-  const nicRegex = /^([0-9]{9}[vVxX]|[0-9]{12})$/
-  const phoneRegex = /^[0-9]{10}$/
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
   if (!formData.value.fullName) {
@@ -458,12 +529,14 @@ const validateForm = () => {
   }
 
   if (!formData.value.nicNumber) {
-    newErrors.nicNumber = 'NIC Number is required.'
-  } else if (!nicRegex.test(formData.value.nicNumber)) {
-    newErrors.nicNumber = 'Invalid NIC format (9 digits + V/X or 12 digits).'
+    newErrors.nicNumber = 'ID/NIC is required.'
+  } else if (formData.value.nicNumber.length !== 12) {
+    newErrors.nicNumber = 'ID must contain exactly 12 characters.'
   }
 
-  if (formData.value.phoneNumber && !phoneRegex.test(formData.value.phoneNumber)) {
+  if (!formData.value.phoneNumber) {
+    newErrors.phoneNumber = 'Phone number is required.'
+  } else if (formData.value.phoneNumber.length !== 10) {
     newErrors.phoneNumber = 'Phone number must be exactly 10 digits.'
   }
 
@@ -712,7 +785,7 @@ const handleRegister = async () => {
                   <div class="relative">
                     <label for="university" class="block text-sm font-bold text-content mb-2 tracking-wide">University</label>
                     <input type="text" id="university" v-model="universitySearchQuery" 
-                      @input="onUniversityInput" @focus="isUniversityDropdownOpen = true" @blur="setTimeout(() => isUniversityDropdownOpen = false, 200)"
+                      @input="onUniversityInput" @focus="isUniversityDropdownOpen = true" @blur="window.setTimeout(() => isUniversityDropdownOpen = false, 200)"
                       autocomplete="off"
                       class="w-full px-4 py-3.5 rounded-xl border-[1.5px] border-[#97C4C4]/50 hover:border-[#97C4C4] bg-white focus:bg-white focus:outline-none focus:ring-[3px] focus:ring-hero-highlight/20 focus:border-hero-highlight transition-all duration-200 placeholder:text-slate-400 text-content "
                       :class="{'border-red-400 focus:border-red-500 bg-red-50/30': errors.university}"
